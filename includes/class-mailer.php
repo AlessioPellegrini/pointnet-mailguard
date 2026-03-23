@@ -79,7 +79,13 @@ class PN_Mailguard_Mailer {
         $body .= __('Scan time', 'pointnet-mailguard') . '      : ' . current_time('mysql') . "\n\n";
 
         if ($data['is_alert'])    $body .= '🔴 ' . __('IP is listed on one or more blacklists.', 'pointnet-mailguard') . "\n";
-        if ($data['ptr_warning']) $body .= '🔴 ' . __('PTR (reverse DNS) is not configured.',    'pointnet-mailguard') . "\n";
+        if ($data['ptr_warning']) $body .= '🟡 ' . __('PTR (reverse DNS) is not configured.',    'pointnet-mailguard') . "\n";
+        if (!empty($data['spf_warning'])) {
+            $body .= '🟡 ' . ($data['spf_status'] === 'missing'
+                ? __('SPF record is missing.', 'pointnet-mailguard')
+                : __('SPF record is invalid.', 'pointnet-mailguard')
+            ) . "\n";
+        }
 
         $body .= "\n" . __('DNSBL Results', 'pointnet-mailguard') . ":\n";
         foreach ($data['dnsbl'] as $name => $val) {
@@ -90,6 +96,17 @@ class PN_Mailguard_Mailer {
         $body .= $data['ptr_warning']
             ? '  - PTR: ' . $data['ptr'] . ' (' . __('WARNING: not configured', 'pointnet-mailguard') . ')' . "\n"
             : '  - PTR: ' . $data['ptr'] . "\n";
+
+        if (isset($data['spf_status'])) {
+            $body .= "\n" . __('SPF Check', 'pointnet-mailguard') . ":\n";
+            if ($data['spf_status'] === 'ok') {
+                $body .= '  - SPF: ' . $data['spf_record'] . "\n";
+            } elseif ($data['spf_status'] === 'missing') {
+                $body .= '  - SPF: ' . __('MISSING — no SPF record found', 'pointnet-mailguard') . "\n";
+            } else {
+                $body .= '  - SPF: ' . __('INVALID', 'pointnet-mailguard') . ' — ' . $data['spf_record'] . "\n";
+            }
+        }
 
         return $body;
     }

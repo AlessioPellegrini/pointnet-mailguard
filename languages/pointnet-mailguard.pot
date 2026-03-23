@@ -164,3 +164,18 @@ msgstr ""
 
 msgid "⚠️ PointNet ALERT: %s — PTR (reverse DNS) not configured"
 msgstr ""
+
+msgid "SPF record is missing."
+msgstr ""
+
+msgid "SPF record is invalid."
+msgstr ""
+
+msgid "SPF Check"
+msgstr ""
+
+msgid "MISSING — no SPF record found"
+msgstr ""
+
+msgid "INVALID"
+msgstr ""

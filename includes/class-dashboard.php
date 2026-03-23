@@ -289,6 +289,14 @@ class PN_Mailguard_Dashboard {
                         ok: !d.shared_server,
                         warn: d.shared_server
                     });
+                    lines.push({
+                        t: '> SPF record...',
+                        v: d.spf_status === 'ok'      ? d.spf_record :
+                           d.spf_status === 'missing'  ? 'MISSING — no SPF record found' :
+                                                         'INVALID — ' + d.spf_record,
+                        ok: d.spf_status === 'ok',
+                        warn: d.spf_status !== 'ok'
+                    });
                     <?php else: ?>
                     lines.push({ t: '> IP address...', v: d.ip, ok: true });
                     <?php endif; ?>

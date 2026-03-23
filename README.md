@@ -8,8 +8,10 @@ Monitors your server IP and mail server against DNSBL blacklists, verifies PTR (
 
 - **Email Monitor** — detects your mail server automatically via MX lookup
 - **IP Monitor** — monitor any IPv4 address directly
+- SPF record validation — detects missing or invalid SPF configuration
 - Checks against 5 major DNSBL blacklists: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL
 - PTR (reverse DNS) verification
+- SPF record validation
 - Daily automated scan via WP-Cron
 - Real-time terminal-style diagnostic console
 - Email alerts only when problems are detected

@@ -108,6 +108,9 @@ class PN_Mailguard_Logger {
         if (!empty($data['ptr_warning'])) {
             $status = ($status === 'ALERT') ? 'ALERT + PTR' : 'PTR WARNING';
         }
+        if (!empty($data['spf_warning'])) {
+            $status = ($status === 'CLEAN') ? 'SPF WARNING' : $status . ' + SPF';
+        }
         return $status;
     }
 
@@ -130,6 +133,8 @@ class PN_Mailguard_Logger {
             $parts[] = 'MX: ' . $data['mx_host'] . ' (' . $data['mx_ip'] . ')';
             $parts[] = 'WP IP: ' . $data['wp_ip'];
             $parts[] = 'Server: ' . ($data['shared_server'] ? 'SHARED' : 'SEPARATE');
+            $parts[] = 'SPF: ' . strtoupper($data['spf_status'])
+                . (!empty($data['spf_record']) ? ' (' . $data['spf_record'] . ')' : '');
         } else {
             $parts[] = 'IP: ' . $data['ip'];
         }

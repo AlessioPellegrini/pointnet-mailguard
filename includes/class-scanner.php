@@ -37,6 +37,7 @@ class PN_Mailguard_Scanner {
         $ip    = $mx['mx_ip'];
         $dnsbl = PN_Mailguard_DNSBL::check($ip);
         $ptr   = PN_Mailguard_PTR::check($ip);
+        $spf   = PN_Mailguard_SPF::check($mx['domain']);
 
         return array(
             'email'         => $mx['email'],
@@ -49,6 +50,9 @@ class PN_Mailguard_Scanner {
             'is_alert'      => $dnsbl['is_alert'],
             'ptr'           => $ptr['ptr'],
             'ptr_warning'   => $ptr['ptr_warning'],
+            'spf_record'    => $spf['spf_record'],
+            'spf_status'    => $spf['spf_status'],
+            'spf_warning'   => $spf['spf_warning'],
             'error'         => '',
         );
     }

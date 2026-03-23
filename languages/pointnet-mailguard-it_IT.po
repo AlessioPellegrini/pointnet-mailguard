@@ -166,3 +166,18 @@ msgstr "⚠️ PointNet AVVISO: %s è presente in una blacklist"
 
 msgid "⚠️ PointNet ALERT: %s — PTR (reverse DNS) not configured"
 msgstr "⚠️ PointNet AVVISO: %s — PTR (reverse DNS) non configurato"
+
+msgid "SPF record is missing."
+msgstr "Il record SPF è assente."
+
+msgid "SPF record is invalid."
+msgstr "Il record SPF non è valido."
+
+msgid "SPF Check"
+msgstr "Verifica SPF"
+
+msgid "MISSING — no SPF record found"
+msgstr "ASSENTE — nessun record SPF trovato"
+
+msgid "INVALID"
+msgstr "NON VALIDO"

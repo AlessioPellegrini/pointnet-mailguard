@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -27,17 +27,17 @@ Both monitors run daily via WP-Cron and keep separate log tables, so you always 
 * Detects whether your mail server shares the same IP as WordPress or is on a dedicated server
 * Checks against 5 major DNSBL blacklists: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL
 * PTR (reverse DNS) verification — missing PTR triggers an immediate alert
+* SPF record validation — detects missing or invalid SPF configuration
 * Real-time terminal-style diagnostic console in the admin dashboard
 * Daily automated scan via WP-Cron — covers both monitors in a single cron event
 * Email alert only when problems are detected — no noise when everything is clean
 * Alerts sent via wp_mail() — fully compatible with WP Mail SMTP, FluentSMTP, Easy WP SMTP and any other SMTP plugin
 * Automatic cleanup of log entries older than 30 days
-* Modular architecture — SPF, DMARC and DKIM checks coming in future releases
+* Modular architecture — DMARC and DKIM checks coming in future releases
 * Full multilingual support — Italian translation included
 
 **Coming in future releases:**
 
-* SPF record validation
 * DMARC record validation
 * DKIM signature check
 * AI-powered deliverability analysis and automated fix suggestions
@@ -90,9 +90,13 @@ Both monitors check against 5 carefully selected blacklists: SpamCop, Barracuda,
 
 Yes. Each monitor has its own settings, its own log table and its own scan history. The daily cron event runs both in sequence. Alerts are sent independently for each monitor.
 
+= What does SPF WARNING mean? =
+
+SPF (Sender Policy Framework) is a DNS record that tells receiving mail servers which IPs are authorised to send email for your domain. If the SPF record is missing or invalid, email from your domain may be rejected or marked as spam by recipient servers. The plugin checks the SPF record of the monitored email domain and alerts you if it is absent or misconfigured.
+
 = How does the email alert work? =
 
-Alerts are sent via WordPress's `wp_mail()` only when a problem is detected: blacklisted IP, missing PTR, or a scan error. No email is sent when everything is clean. Each alert includes a full report specific to the monitor that triggered it.
+Alerts are sent via WordPress's `wp_mail()` only when a problem is detected: blacklisted IP, missing or invalid SPF, missing PTR, or a scan error. No email is sent when everything is clean. Each alert includes a full report specific to the monitor that triggered it.
 
 = Does it work with WP Mail SMTP or other SMTP plugins? =
 
@@ -111,7 +115,7 @@ Log entries are automatically deleted after 30 days. Cleanup runs at the end of 
 
 = What AI features are included right now? =
 
-The current version (1.0.0) focuses on solid, reliable deliverability monitoring in PHP. AI-powered features are planned for upcoming releases. The name reflects the project's direction and roadmap, not the current feature set.
+The current version (1.1.0) focuses on solid, reliable deliverability monitoring in PHP. AI-powered features are planned for upcoming releases. The name reflects the project's direction and roadmap, not the current feature set.
 
 = Is the plugin compatible with multisite? =
 
@@ -124,6 +128,12 @@ The current version is designed for single-site installations. Multisite support
 3. Log table with colour-coded status indicators: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
 == Changelog ==
+
+= 1.1.0 =
+* Added SPF record validation to Email Monitor
+* SPF status shown in real-time terminal console (green = ok, yellow = missing or invalid)
+* SPF check included in email alerts and diagnostic logs
+* Italian translation updated
 
 = 1.0.0 =
 * Initial public release
@@ -143,6 +153,9 @@ The current version is designed for single-site installations. Multisite support
 * Full Italian translation included
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds SPF record validation to the Email Monitor. Update recommended.
 
 = 1.0.0 =
 Initial release. No previous version to upgrade from.
