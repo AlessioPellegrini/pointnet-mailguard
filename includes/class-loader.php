@@ -40,9 +40,12 @@ class PN_Mailguard_Loader {
         // AJAX — IP tab
         add_action('wp_ajax_pn_mailguard_start_scan_ip',      array('PN_Mailguard_Dashboard', 'ajax_start_scan_ip'));
         add_action('wp_ajax_pn_mailguard_refresh_logs_ip',    array('PN_Mailguard_Dashboard', 'ajax_refresh_logs_ip'));
+<<<<<<< HEAD
 
         // AJAX — SPF Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_spf',        array('PN_Mailguard_Dashboard', 'ajax_analyze_spf'));
+=======
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c
     }
 
     public static function load_textdomain() {

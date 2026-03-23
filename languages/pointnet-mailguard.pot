@@ -179,6 +179,7 @@ msgstr ""
 
 msgid "INVALID"
 msgstr ""
+<<<<<<< HEAD
 
 msgid "SPF Analyzer"
 msgstr ""
@@ -230,3 +231,5 @@ msgstr ""
 
 msgid "Please wait 30 seconds before running another analysis."
 msgstr ""
+=======
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c

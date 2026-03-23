@@ -181,6 +181,7 @@ msgstr "ASSENTE — nessun record SPF trovato"
 
 msgid "INVALID"
 msgstr "NON VALIDO"
+<<<<<<< HEAD
 
 msgid "SPF Analyzer"
 msgstr "Analizzatore SPF"
@@ -232,3 +233,5 @@ msgstr "Inserisci un dominio o un indirizzo email."
 
 msgid "Please wait 30 seconds before running another analysis."
 msgstr "Attendi 30 secondi prima di eseguire un'altra analisi."
+=======
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c

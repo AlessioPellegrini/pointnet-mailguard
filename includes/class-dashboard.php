@@ -427,9 +427,7 @@ class PN_Mailguard_Dashboard {
         PN_Mailguard_Logger::render_rows('ip');
         wp_send_json_success(ob_get_clean());
     }
-}
-
-    // Appended methods — SPF Analyzer tab
+    // --- SPF Analyzer tab ---
 
     private static function render_spf_tab() {
         $saved_domain = get_option('pn_mailguard_spf_domain', '');
@@ -606,3 +604,4 @@ class PN_Mailguard_Dashboard {
 
         wp_send_json_success($result);
     }
+}

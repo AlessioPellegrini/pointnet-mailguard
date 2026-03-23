@@ -3,7 +3,11 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 5.0
 Tested up to: 6.7
+<<<<<<< HEAD
 Stable tag: 1.2.0
+=======
+Stable tag: 1.1.0
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -27,7 +31,11 @@ Both monitors run daily via WP-Cron and keep separate log tables, so you always 
 * Detects whether your mail server shares the same IP as WordPress or is on a dedicated server
 * Checks against 5 major DNSBL blacklists: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL
 * PTR (reverse DNS) verification — missing PTR triggers an immediate alert
+<<<<<<< HEAD
 * SPF Analyzer tab — full RFC 7208 analysis with 9 individual checks, visual results and provider detection
+=======
+* SPF record validation — detects missing or invalid SPF configuration
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c
 * Real-time terminal-style diagnostic console in the admin dashboard
 * Daily automated scan via WP-Cron — covers both monitors in a single cron event
 * Email alert only when problems are detected — no noise when everything is clean
@@ -115,7 +123,11 @@ Log entries are automatically deleted after 30 days. Cleanup runs at the end of 
 
 = What AI features are included right now? =
 
+<<<<<<< HEAD
 The current version (1.2.0) focuses on solid, reliable deliverability monitoring in PHP. AI-powered features are planned for upcoming releases. The name reflects the project's direction and roadmap, not the current feature set.
+=======
+The current version (1.1.0) focuses on solid, reliable deliverability monitoring in PHP. AI-powered features are planned for upcoming releases. The name reflects the project's direction and roadmap, not the current feature set.
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c
 
 = Is the plugin compatible with multisite? =
 
@@ -129,6 +141,7 @@ The current version is designed for single-site installations. Multisite support
 
 == Changelog ==
 
+<<<<<<< HEAD
 = 1.2.0 =
 * Added dedicated SPF Analyzer tab with full RFC 7208 analysis
 * 9 individual SPF checks: record presence, duplicates, length, qualifier, DNS lookup count, void lookups, ptr mechanism, exists mechanism, +all detection
@@ -137,6 +150,8 @@ The current version is designed for single-site installations. Multisite support
 * SPF domain saved across sessions
 * Italian translation updated
 
+=======
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c
 = 1.1.0 =
 * Added SPF record validation to Email Monitor
 * SPF status shown in real-time terminal console (green = ok, yellow = missing or invalid)
@@ -162,9 +177,12 @@ The current version is designed for single-site installations. Multisite support
 
 == Upgrade Notice ==
 
+<<<<<<< HEAD
 = 1.2.0 =
 Adds a full SPF Analyzer tab with RFC 7208 checks and provider detection. Update recommended.
 
+=======
+>>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c
 = 1.1.0 =
 Adds SPF record validation to the Email Monitor. Update recommended.
 
