@@ -46,6 +46,9 @@ class PN_Mailguard_Loader {
 
         // AJAX — DMARC Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_dmarc',       array('PN_Mailguard_Dashboard', 'ajax_analyze_dmarc'));
+
+        // AJAX — DKIM Analyzer tab
+        add_action('wp_ajax_pn_mailguard_analyze_dkim',        array('PN_Mailguard_Dashboard', 'ajax_analyze_dkim'));
     }
 
     public static function load_textdomain() {

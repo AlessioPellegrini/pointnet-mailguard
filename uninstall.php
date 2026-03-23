@@ -16,6 +16,9 @@ delete_transient('pn_mailguard_scan_lock');
 delete_transient('pn_mailguard_spf_lock');
 delete_option('pn_mailguard_dmarc_domain');
 delete_transient('pn_mailguard_dmarc_lock');
+delete_option('pn_mailguard_dkim_domain');
+delete_option('pn_mailguard_dkim_selector');
+delete_transient('pn_mailguard_dkim_lock');
 
 // 3. Clear the scheduled cron event
 $timestamp = wp_next_scheduled('pn_mailguard_daily_scan');

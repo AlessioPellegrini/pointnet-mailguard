@@ -87,7 +87,7 @@ class PN_Mailguard_Dashboard {
         }
 
         $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'email';
-        if (!in_array($current_tab, array('email', 'ip', 'spf', 'dmarc'), true)) {
+        if (!in_array($current_tab, array('email', 'ip', 'spf', 'dmarc', 'dkim'), true)) {
             $current_tab = 'email';
         }
 
@@ -129,10 +129,14 @@ class PN_Mailguard_Dashboard {
                    class="nav-tab <?php echo $current_tab === 'dmarc' ? 'nav-tab-active' : ''; ?>">
                     📋 <?php esc_html_e('DMARC Analyzer', 'pointnet-mailguard'); ?>
                 </a>
+                <a href="<?php echo esc_url($base_url . '&tab=dkim'); ?>"
+                   class="nav-tab <?php echo $current_tab === 'dkim' ? 'nav-tab-active' : ''; ?>">
+                    🔑 <?php esc_html_e('DKIM Analyzer', 'pointnet-mailguard'); ?>
+                </a>
             </nav>
 
             <!-- Terminal console (hidden on SPF tab) -->
-            <?php if ($current_tab !== 'spf' && $current_tab !== 'dmarc'): ?>
+            <?php if ($current_tab !== 'spf' && $current_tab !== 'dmarc' && $current_tab !== 'dkim'): ?>
             <div id="pn-mailguard-terminal" style="display:none; background:#000; color:#0f0; padding:20px; font-family:monospace; border-radius:5px; margin:20px 0; border:2px solid #333; height:250px; overflow-y:auto; box-shadow: inset 0 0 10px #000;">
                 <div id="pn-mailguard-terminal-content"></div>
             </div>
@@ -144,8 +148,10 @@ class PN_Mailguard_Dashboard {
                 <?php self::render_ip_tab($check_ip, $alert_email); ?>
             <?php elseif ($current_tab === 'spf'): ?>
                 <?php self::render_spf_tab(); ?>
-            <?php else: ?>
+            <?php elseif ($current_tab === 'dmarc'): ?>
                 <?php self::render_dmarc_tab(); ?>
+            <?php else: ?>
+                <?php self::render_dkim_tab(); ?>
             <?php endif; ?>
 
         </div>
@@ -762,6 +768,217 @@ class PN_Mailguard_Dashboard {
         update_option('pn_mailguard_dmarc_domain', $input);
 
         $result = PN_Mailguard_DMARC::analyze($input);
+
+        if (!empty($result['error'])) {
+            wp_send_json_error(array('message' => $result['error']));
+            return;
+        }
+
+        wp_send_json_success($result);
+    }
+
+    // --- DKIM Analyzer tab ---
+
+    private static function render_dkim_tab() {
+        $saved_domain   = get_option('pn_mailguard_dkim_domain', '');
+        $saved_selector = get_option('pn_mailguard_dkim_selector', '');
+        ?>
+        <div class="card" style="padding:20px; max-width:800px; margin-bottom:20px;">
+            <p style="margin:0 0 12px; color:#666;">
+                <?php esc_html_e('Enter your domain name or the email address you send from. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it. Public providers like Gmail and Outlook do not expose DKIM records publicly.', 'pointnet-mailguard'); ?>
+            </p>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="pn-dkim-input" value="<?php echo esc_attr($saved_domain); ?>"
+                    placeholder="domain.com or email@domain.com" class="regular-text">
+                <input type="text" id="pn-dkim-selector" value="<?php echo esc_attr($saved_selector); ?>"
+                    placeholder="<?php esc_attr_e('Selector (e.g. google, mail, 202406)', 'pointnet-mailguard'); ?>"
+                    style="width:240px;">
+                <button type="button" id="pn-dkim-analyze-btn" class="button button-primary">
+                    <?php esc_html_e('Analyze DKIM', 'pointnet-mailguard'); ?>
+                </button>
+            </div>
+            <p class="description" style="margin-top:8px;">
+                <?php esc_html_e('Leave the selector field empty to attempt automatic detection of common selectors.', 'pointnet-mailguard'); ?>
+            </p>
+        </div>
+
+        <div id="pn-dkim-autodetect-notice" style="display:none; max-width:800px; margin-bottom:16px;"></div>
+
+        <div id="pn-dkim-results" style="max-width:800px; display:none;">
+
+            <div id="pn-dkim-record-box" style="background:#1e1e2e; color:#a6e3a1; font-family:monospace; font-size:12px; padding:14px 18px; border-radius:5px; word-break:break-all; margin-bottom:16px; border:1px solid #333; line-height:1.6;"></div>
+
+            <div id="pn-dkim-summary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;"></div>
+
+            <div class="wp-list-table widefat" style="border-radius:5px; overflow:hidden;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f0f0f0;">
+                            <th style="width:16px; padding:10px 8px 10px 14px;"></th>
+                            <th style="padding:10px 14px; text-align:left; font-size:12px;"><?php esc_html_e('Check', 'pointnet-mailguard'); ?></th>
+                            <th style="padding:10px 14px; text-align:left; font-size:12px; width:110px;"><?php esc_html_e('Result', 'pointnet-mailguard'); ?></th>
+                            <th style="padding:10px 14px; text-align:left; font-size:12px;"><?php esc_html_e('Details', 'pointnet-mailguard'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="pn-dkim-checks"></tbody>
+                </table>
+            </div>
+
+            <p style="font-size:12px; color:#999; margin-top:16px;">
+                <?php esc_html_e('Need help configuring DKIM? Contact', 'pointnet-mailguard'); ?>
+                <a href="https://www.pointnet.it/" target="_blank">PointNet</a> —
+                <?php esc_html_e('email deliverability specialists.', 'pointnet-mailguard'); ?>
+            </p>
+        </div>
+
+        <div id="pn-dkim-error" style="display:none; max-width:800px;"></div>
+
+        <script>
+        jQuery(document).ready(function($) {
+            var nonce = "<?php echo esc_js(wp_create_nonce('pn_mailguard_ajax_nonce')); ?>";
+
+            $('#pn-dkim-analyze-btn').on('click', function() {
+                var domain   = $('#pn-dkim-input').val().trim();
+                var selector = $('#pn-dkim-selector').val().trim();
+                if (!domain) return;
+
+                var btn = $(this);
+                btn.prop('disabled', true).text('<?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?>');
+                $('#pn-dkim-results').hide();
+                $('#pn-dkim-error').hide();
+                $('#pn-dkim-autodetect-notice').hide();
+
+                $.post(ajaxurl, {
+                    action:   'pn_mailguard_analyze_dkim',
+                    nonce:    nonce,
+                    domain:   domain,
+                    selector: selector
+                }, function(res) {
+                    btn.prop('disabled', false).text('<?php echo esc_js(__('Analyze DKIM', 'pointnet-mailguard')); ?>');
+
+                    if (!res.success) {
+                        $('#pn-dkim-error')
+                            .html('<div class="notice notice-error inline"><p>' + (res.data.message || 'Error') + '</p></div>')
+                            .show();
+                        return;
+                    }
+
+                    var d = res.data;
+
+                    // Se il selettore è stato autodetectato, mostralo e precompila il campo
+                    if (d.autodetected) {
+                        $('#pn-dkim-selector').val(d.selector);
+                        $('#pn-dkim-autodetect-notice')
+                            .html('<div class="notice notice-success inline"><p><?php echo esc_js(__('Selector auto-detected:', 'pointnet-mailguard')); ?> <strong>' + escHtml(d.selector) + '</strong></p></div>')
+                            .show();
+                    }
+
+                    // Record
+                    $('#pn-dkim-record-box').text(d.record || '<?php echo esc_js(__('No DKIM record found.', 'pointnet-mailguard')); ?>');
+
+                    // Summary
+                    $('#pn-dkim-summary').html(
+                        dkimCard(d.passed,   '<?php echo esc_js(__('passed', 'pointnet-mailguard')); ?>',   '#00a32a') +
+                        dkimCard(d.warnings, '<?php echo esc_js(__('warnings', 'pointnet-mailguard')); ?>', '#dba617') +
+                        dkimCard(d.errors,   '<?php echo esc_js(__('errors', 'pointnet-mailguard')); ?>',   '#d63638')
+                    );
+
+                    // Checks
+                    var rows = '';
+                    $.each(d.checks, function(i, check) {
+                        var dot, badge, bg;
+                        if (check.status === 'ok') {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#00a32a;"></span>';
+                            badge = '<span style="background:#edfaef;color:#00a32a;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#10003; Pass</span>';
+                            bg    = i % 2 === 0 ? '#fff' : '#fafafa';
+                        } else if (check.status === 'warning') {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dba617;"></span>';
+                            badge = '<span style="background:#fff8e5;color:#996800;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#9888; Warning</span>';
+                            bg    = i % 2 === 0 ? '#fffdf0' : '#fffce8';
+                        } else if (check.status === 'info') {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2271b1;"></span>';
+                            badge = '<span style="background:#e8f0fb;color:#2271b1;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#8505; Info</span>';
+                            bg    = i % 2 === 0 ? '#f0f5ff' : '#eaf0fc';
+                        } else {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d63638;"></span>';
+                            badge = '<span style="background:#fbeaea;color:#a30000;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#10007; Error</span>';
+                            bg    = i % 2 === 0 ? '#fff8f8' : '#fff2f2';
+                        }
+                        rows += '<tr style="background:' + bg + '; border-top:0.5px solid #e0e0e0;">';
+                        rows += '<td style="padding:10px 8px 10px 14px;">' + dot + '</td>';
+                        rows += '<td style="padding:10px 14px; font-size:13px; font-weight:600;">' + escHtml(check.title) + '</td>';
+                        rows += '<td style="padding:10px 14px;">' + badge + '</td>';
+                        rows += '<td style="padding:10px 14px; font-size:12px; color:#555; line-height:1.5;">' + escHtml(check.description) + '</td>';
+                        rows += '</tr>';
+                    });
+                    $('#pn-dkim-checks').html(rows);
+                    $('#pn-dkim-results').show();
+                });
+            });
+
+            function dkimCard(num, label, color) {
+                return '<div style="background:#f8f8f8;border-radius:5px;padding:14px;text-align:center;border:1px solid #e0e0e0;">' +
+                    '<div style="font-size:24px;font-weight:600;color:' + color + ';">' + num + '</div>' +
+                    '<div style="font-size:11px;color:#666;margin-top:3px;">' + label + '</div></div>';
+            }
+
+            function escHtml(str) {
+                return $('<div>').text(str).html();
+            }
+        });
+        </script>
+        <?php
+    }
+
+    public static function ajax_analyze_dkim() {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Unauthorized.'));
+        }
+
+        $input    = isset($_POST['domain'])   ? sanitize_text_field($_POST['domain'])   : '';
+        $selector = isset($_POST['selector']) ? sanitize_text_field($_POST['selector']) : '';
+
+        if (empty($input)) {
+            wp_send_json_error(array('message' => __('Please enter a domain or email address.', 'pointnet-mailguard')));
+            return;
+        }
+
+        if (get_transient('pn_mailguard_dkim_lock')) {
+            wp_send_json_error(array('message' => __('Please wait 30 seconds before running another analysis.', 'pointnet-mailguard')));
+            return;
+        }
+        set_transient('pn_mailguard_dkim_lock', 1, 30);
+
+        $domain       = PN_Mailguard_DKIM::extract_domain($input);
+        $autodetected = false;
+
+        // Check if public provider — DKIM not publicly accessible
+        if (PN_Mailguard_DKIM::is_public_provider($domain)) {
+            wp_send_json_error(array('message' => sprintf(
+                __('%s is a public email provider and does not expose DKIM records in public DNS. Enter your own domain name (e.g. yourdomain.com) instead.', 'pointnet-mailguard'),
+                esc_html($domain)
+            )));
+            return;
+        }
+
+        // Auto-detect selector if not provided
+        if (empty($selector)) {
+            $detected = PN_Mailguard_DKIM::autodetect($domain);
+            if (!empty($detected['selector'])) {
+                $selector     = $detected['selector'];
+                $autodetected = true;
+            } else {
+                wp_send_json_error(array('message' => __('Could not auto-detect a DKIM selector for this domain. Please enter the selector manually — you can find it in your mail server or DNS provider settings.', 'pointnet-mailguard')));
+                return;
+            }
+        }
+
+        update_option('pn_mailguard_dkim_domain',   $input);
+        update_option('pn_mailguard_dkim_selector', $selector);
+
+        $result = PN_Mailguard_DKIM::analyze($domain, $selector);
+        $result['autodetected'] = $autodetected;
 
         if (!empty($result['error'])) {
             wp_send_json_error(array('message' => $result['error']));

@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: PointNet Mail Guard AI
- * Version: 1.3.0
+ * Version: 1.4.0
  * Description: Complete email deliverability monitoring. Checks DNSBL blacklists, PTR record and SMTP configuration natively in PHP — no external dependencies required.
  * Plugin URI: https://www.pointnet.it/
  * Author: PointNet
@@ -27,7 +27,7 @@ if (version_compare(PHP_VERSION, '7.4', '<')) {
 }
 
 // --- Constants ---
-define('PN_MAILGUARD_VERSION',    '1.3.0');
+define('PN_MAILGUARD_VERSION',    '1.4.0');
 define('PN_MAILGUARD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('PN_MAILGUARD_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('PN_MAILGUARD_PLUGIN_FILE', __FILE__);
@@ -39,8 +39,8 @@ require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dnsbl.php';
 require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-ptr.php';
 require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-spf.php';
 require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dmarc.php';
+require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dkim.php';
 // Future modules — uncomment as you add them:
-// require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dkim.php';
 require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-scanner.php';
 require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-logger.php';
 require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-mailer.php';

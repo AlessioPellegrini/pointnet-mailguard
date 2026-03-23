@@ -250,3 +250,39 @@ msgstr "Hai bisogno di aiuto per configurare DMARC? Contatta"
 
 msgid "Please wait 30 seconds before running another analysis."
 msgstr "Attendi 30 secondi prima di eseguire un'altra analisi."
+
+msgid "DKIM Analyzer"
+msgstr "Analizzatore DKIM"
+
+msgid "Enter a domain or email address. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it."
+msgstr "Inserisci un dominio o un indirizzo email. Il plugin tenterà di rilevare automaticamente il selettore DKIM — oppure inseriscilo manualmente se lo conosci."
+
+msgid "Selector (e.g. google, mail, 202406)"
+msgstr "Selettore (es. google, mail, 202406)"
+
+msgid "Analyze DKIM"
+msgstr "Analizza DKIM"
+
+msgid "Leave the selector field empty to attempt automatic detection of common selectors."
+msgstr "Lascia il campo selettore vuoto per tentare il rilevamento automatico dei selettori comuni."
+
+msgid "Selector auto-detected:"
+msgstr "Selettore rilevato automaticamente:"
+
+msgid "No DKIM record found."
+msgstr "Nessun record DKIM trovato."
+
+msgid "Need help configuring DKIM? Contact"
+msgstr "Hai bisogno di aiuto per configurare DKIM? Contatta"
+
+msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually."
+msgstr "Impossibile rilevare automaticamente il selettore DKIM. Inseriscilo manualmente."
+
+msgid "%s is a public email provider and does not expose DKIM records in public DNS. Enter your own domain name (e.g. yourdomain.com) instead."
+msgstr "%s è un provider email pubblico e non espone i record DKIM nel DNS pubblico. Inserisci il tuo dominio personalizzato (es. tuodominio.it)."
+
+msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually — you can find it in your mail server or DNS provider settings."
+msgstr "Impossibile rilevare automaticamente il selettore DKIM. Inseriscilo manualmente — puoi trovarlo nelle impostazioni del tuo server email o del provider DNS."
+
+msgid "Enter your domain name or the email address you send from. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it. Public providers like Gmail and Outlook do not expose DKIM records publicly."
+msgstr "Inserisci il tuo dominio o l'indirizzo email da cui invii. Il plugin tenterà di rilevare automaticamente il selettore DKIM — oppure inseriscilo manualmente se lo conosci. Provider pubblici come Gmail e Outlook non espongono i record DKIM pubblicamente."

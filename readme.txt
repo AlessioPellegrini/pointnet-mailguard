@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -29,6 +29,7 @@ Both monitors run daily via WP-Cron and keep separate log tables, so you always 
 * PTR (reverse DNS) verification — missing PTR triggers an immediate alert
 * SPF Analyzer tab — full RFC 7208 analysis with 9 individual checks, visual results and provider detection
 * DMARC Analyzer tab — full RFC 7489 analysis with policy strength, report configuration and SPF correlation
+* DKIM Analyzer tab — selector auto-detection, key type, key length, test mode and hash algorithm checks
 * Real-time terminal-style diagnostic console in the admin dashboard
 * Daily automated scan via WP-Cron — covers both monitors in a single cron event
 * Email alert only when problems are detected — no noise when everything is clean
@@ -39,7 +40,6 @@ Both monitors run daily via WP-Cron and keep separate log tables, so you always 
 
 **Coming in future releases:**
 
-* DKIM signature check
 * AI-powered deliverability analysis and automated fix suggestions
 * Historical trend graphs and PDF reports
 
@@ -115,7 +115,7 @@ Log entries are automatically deleted after 30 days. Cleanup runs at the end of 
 
 = What AI features are included right now? =
 
-The current version (1.3.0) focuses on solid, reliable deliverability monitoring in PHP. AI-powered features are planned for upcoming releases. The name reflects the project's direction and roadmap, not the current feature set.
+The current version (1.4.0) focuses on solid, reliable deliverability monitoring in PHP. AI-powered features are planned for upcoming releases. The name reflects the project's direction and roadmap, not the current feature set.
 
 = Is the plugin compatible with multisite? =
 
@@ -128,6 +128,13 @@ The current version is designed for single-site installations. Multisite support
 3. Log table with colour-coded status indicators: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
 == Changelog ==
+
+= 1.4.0 =
+* Added DKIM Analyzer tab
+* Auto-detection of common DKIM selectors (Google Workspace, Microsoft 365, Mailchimp, Mailgun, etc.)
+* Checks: record presence, version tag, key type (RSA/Ed25519), public key presence, RSA key length, test mode flag, hash algorithm
+* Manual selector input as fallback when auto-detection fails
+* Italian translation updated
 
 = 1.3.0 =
 * Added DMARC Analyzer tab with full RFC 7489 analysis
@@ -166,6 +173,9 @@ The current version is designed for single-site installations. Multisite support
 * Full Italian translation included
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Adds DKIM Analyzer tab with selector auto-detection and key checks. Update recommended.
 
 = 1.3.0 =
 Adds DMARC Analyzer tab with RFC 7489 checks and SPF correlation. Update recommended.

@@ -248,3 +248,39 @@ msgstr ""
 
 msgid "Please wait 30 seconds before running another analysis."
 msgstr ""
+
+msgid "DKIM Analyzer"
+msgstr ""
+
+msgid "Enter a domain or email address. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it."
+msgstr ""
+
+msgid "Selector (e.g. google, mail, 202406)"
+msgstr ""
+
+msgid "Analyze DKIM"
+msgstr ""
+
+msgid "Leave the selector field empty to attempt automatic detection of common selectors."
+msgstr ""
+
+msgid "Selector auto-detected:"
+msgstr ""
+
+msgid "No DKIM record found."
+msgstr ""
+
+msgid "Need help configuring DKIM? Contact"
+msgstr ""
+
+msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually."
+msgstr ""
+
+msgid "%s is a public email provider and does not expose DKIM records in public DNS. Enter your own domain name (e.g. yourdomain.com) instead."
+msgstr ""
+
+msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually — you can find it in your mail server or DNS provider settings."
+msgstr ""
+
+msgid "Enter your domain name or the email address you send from. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it. Public providers like Gmail and Outlook do not expose DKIM records publicly."
+msgstr ""
