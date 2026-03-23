@@ -179,7 +179,6 @@ msgstr ""
 
 msgid "INVALID"
 msgstr ""
-<<<<<<< HEAD
 
 msgid "SPF Analyzer"
 msgstr ""
@@ -231,5 +230,21 @@ msgstr ""
 
 msgid "Please wait 30 seconds before running another analysis."
 msgstr ""
-=======
->>>>>>> 7b5b5e0b9c353e4b88096cfe0f79704c2f5edd4c
+
+msgid "DMARC Analyzer"
+msgstr ""
+
+msgid "Enter a domain or email address to run a full DMARC record analysis."
+msgstr ""
+
+msgid "Analyze DMARC"
+msgstr ""
+
+msgid "No DMARC record found."
+msgstr ""
+
+msgid "Need help configuring DMARC? Contact"
+msgstr ""
+
+msgid "Please wait 30 seconds before running another analysis."
+msgstr ""

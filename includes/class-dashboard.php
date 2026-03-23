@@ -87,7 +87,7 @@ class PN_Mailguard_Dashboard {
         }
 
         $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : 'email';
-        if (!in_array($current_tab, array('email', 'ip', 'spf'), true)) {
+        if (!in_array($current_tab, array('email', 'ip', 'spf', 'dmarc'), true)) {
             $current_tab = 'email';
         }
 
@@ -125,10 +125,14 @@ class PN_Mailguard_Dashboard {
                    class="nav-tab <?php echo $current_tab === 'spf' ? 'nav-tab-active' : ''; ?>">
                     🔐 <?php esc_html_e('SPF Analyzer', 'pointnet-mailguard'); ?>
                 </a>
+                <a href="<?php echo esc_url($base_url . '&tab=dmarc'); ?>"
+                   class="nav-tab <?php echo $current_tab === 'dmarc' ? 'nav-tab-active' : ''; ?>">
+                    📋 <?php esc_html_e('DMARC Analyzer', 'pointnet-mailguard'); ?>
+                </a>
             </nav>
 
             <!-- Terminal console (hidden on SPF tab) -->
-            <?php if ($current_tab !== 'spf'): ?>
+            <?php if ($current_tab !== 'spf' && $current_tab !== 'dmarc'): ?>
             <div id="pn-mailguard-terminal" style="display:none; background:#000; color:#0f0; padding:20px; font-family:monospace; border-radius:5px; margin:20px 0; border:2px solid #333; height:250px; overflow-y:auto; box-shadow: inset 0 0 10px #000;">
                 <div id="pn-mailguard-terminal-content"></div>
             </div>
@@ -138,8 +142,10 @@ class PN_Mailguard_Dashboard {
                 <?php self::render_email_tab($check_email, $alert_email); ?>
             <?php elseif ($current_tab === 'ip'): ?>
                 <?php self::render_ip_tab($check_ip, $alert_email); ?>
-            <?php else: ?>
+            <?php elseif ($current_tab === 'spf'): ?>
                 <?php self::render_spf_tab(); ?>
+            <?php else: ?>
+                <?php self::render_dmarc_tab(); ?>
             <?php endif; ?>
 
         </div>
@@ -596,6 +602,166 @@ class PN_Mailguard_Dashboard {
         update_option('pn_mailguard_spf_domain', $input);
 
         $result = PN_Mailguard_SPF::analyze($input);
+
+        if (!empty($result['error'])) {
+            wp_send_json_error(array('message' => $result['error']));
+            return;
+        }
+
+        wp_send_json_success($result);
+    }
+
+    // --- DMARC Analyzer tab ---
+
+    private static function render_dmarc_tab() {
+        $saved_domain = get_option('pn_mailguard_dmarc_domain', '');
+        ?>
+        <div class="card" style="padding:20px; max-width:800px; margin-bottom:20px;">
+            <p style="margin:0 0 12px; color:#666;">
+                <?php esc_html_e('Enter a domain or email address to run a full DMARC record analysis.', 'pointnet-mailguard'); ?>
+            </p>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <input type="text" id="pn-dmarc-input" value="<?php echo esc_attr($saved_domain); ?>"
+                    placeholder="domain.com or email@domain.com" class="regular-text">
+                <button type="button" id="pn-dmarc-analyze-btn" class="button button-primary">
+                    <?php esc_html_e('Analyze DMARC', 'pointnet-mailguard'); ?>
+                </button>
+            </div>
+        </div>
+
+        <div id="pn-dmarc-results" style="max-width:800px; display:none;">
+
+            <div id="pn-dmarc-record-box" style="background:#1e1e2e; color:#a6e3a1; font-family:monospace; font-size:13px; padding:14px 18px; border-radius:5px; word-break:break-all; margin-bottom:16px; border:1px solid #333;"></div>
+
+            <div id="pn-dmarc-summary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px;"></div>
+
+            <div class="wp-list-table widefat" style="border-radius:5px; overflow:hidden;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f0f0f0;">
+                            <th style="width:16px; padding:10px 8px 10px 14px;"></th>
+                            <th style="padding:10px 14px; text-align:left; font-size:12px;"><?php esc_html_e('Check', 'pointnet-mailguard'); ?></th>
+                            <th style="padding:10px 14px; text-align:left; font-size:12px; width:110px;"><?php esc_html_e('Result', 'pointnet-mailguard'); ?></th>
+                            <th style="padding:10px 14px; text-align:left; font-size:12px;"><?php esc_html_e('Details', 'pointnet-mailguard'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="pn-dmarc-checks"></tbody>
+                </table>
+            </div>
+
+            <p style="font-size:12px; color:#999; margin-top:16px;">
+                <?php esc_html_e('Need help configuring DMARC? Contact', 'pointnet-mailguard'); ?>
+                <a href="https://www.pointnet.it/" target="_blank">PointNet</a> —
+                <?php esc_html_e('email deliverability specialists.', 'pointnet-mailguard'); ?>
+            </p>
+        </div>
+
+        <div id="pn-dmarc-error" style="display:none; max-width:800px;"></div>
+
+        <script>
+        jQuery(document).ready(function($) {
+            var nonce = "<?php echo esc_js(wp_create_nonce('pn_mailguard_ajax_nonce')); ?>";
+
+            $('#pn-dmarc-analyze-btn').on('click', function() {
+                var domain = $('#pn-dmarc-input').val().trim();
+                if (!domain) return;
+
+                var btn = $(this);
+                btn.prop('disabled', true).text('<?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?>');
+                $('#pn-dmarc-results').hide();
+                $('#pn-dmarc-error').hide();
+
+                $.post(ajaxurl, {
+                    action: 'pn_mailguard_analyze_dmarc',
+                    nonce: nonce,
+                    domain: domain
+                }, function(res) {
+                    btn.prop('disabled', false).text('<?php echo esc_js(__('Analyze DMARC', 'pointnet-mailguard')); ?>');
+
+                    if (!res.success) {
+                        $('#pn-dmarc-error')
+                            .html('<div class="notice notice-error inline"><p>' + (res.data.message || 'Error') + '</p></div>')
+                            .show();
+                        return;
+                    }
+
+                    var d = res.data;
+
+                    $('#pn-dmarc-record-box').text(d.record || '<?php echo esc_js(__('No DMARC record found.', 'pointnet-mailguard')); ?>');
+
+                    $('#pn-dmarc-summary').html(
+                        dmarcCard(d.passed,   '<?php echo esc_js(__('passed', 'pointnet-mailguard')); ?>',   '#00a32a') +
+                        dmarcCard(d.warnings, '<?php echo esc_js(__('warnings', 'pointnet-mailguard')); ?>', '#dba617') +
+                        dmarcCard(d.errors,   '<?php echo esc_js(__('errors', 'pointnet-mailguard')); ?>',   '#d63638')
+                    );
+
+                    var rows = '';
+                    $.each(d.checks, function(i, check) {
+                        var dot, badge, bg;
+                        if (check.status === 'ok') {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#00a32a;"></span>';
+                            badge = '<span style="background:#edfaef;color:#00a32a;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#10003; Pass</span>';
+                            bg    = i % 2 === 0 ? '#fff' : '#fafafa';
+                        } else if (check.status === 'warning') {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dba617;"></span>';
+                            badge = '<span style="background:#fff8e5;color:#996800;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#9888; Warning</span>';
+                            bg    = i % 2 === 0 ? '#fffdf0' : '#fffce8';
+                        } else if (check.status === 'info') {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2271b1;"></span>';
+                            badge = '<span style="background:#e8f0fb;color:#2271b1;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#8505; Info</span>';
+                            bg    = i % 2 === 0 ? '#f0f5ff' : '#eaf0fc';
+                        } else {
+                            dot   = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d63638;"></span>';
+                            badge = '<span style="background:#fbeaea;color:#a30000;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;">&#10007; Error</span>';
+                            bg    = i % 2 === 0 ? '#fff8f8' : '#fff2f2';
+                        }
+                        rows += '<tr style="background:' + bg + '; border-top:0.5px solid #e0e0e0;">';
+                        rows += '<td style="padding:10px 8px 10px 14px;">' + dot + '</td>';
+                        rows += '<td style="padding:10px 14px; font-size:13px; font-weight:600;">' + escHtml(check.title) + '</td>';
+                        rows += '<td style="padding:10px 14px;">' + badge + '</td>';
+                        rows += '<td style="padding:10px 14px; font-size:12px; color:#555; line-height:1.5;">' + escHtml(check.description) + '</td>';
+                        rows += '</tr>';
+                    });
+                    $('#pn-dmarc-checks').html(rows);
+                    $('#pn-dmarc-results').show();
+                });
+            });
+
+            function dmarcCard(num, label, color) {
+                return '<div style="background:#f8f8f8;border-radius:5px;padding:14px;text-align:center;border:1px solid #e0e0e0;">' +
+                    '<div style="font-size:24px;font-weight:600;color:' + color + ';">' + num + '</div>' +
+                    '<div style="font-size:11px;color:#666;margin-top:3px;">' + label + '</div></div>';
+            }
+
+            function escHtml(str) {
+                return $('<div>').text(str).html();
+            }
+        });
+        </script>
+        <?php
+    }
+
+    public static function ajax_analyze_dmarc() {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Unauthorized.'));
+        }
+
+        $input = isset($_POST['domain']) ? sanitize_text_field($_POST['domain']) : '';
+        if (empty($input)) {
+            wp_send_json_error(array('message' => __('Please enter a domain or email address.', 'pointnet-mailguard')));
+            return;
+        }
+
+        if (get_transient('pn_mailguard_dmarc_lock')) {
+            wp_send_json_error(array('message' => __('Please wait 30 seconds before running another analysis.', 'pointnet-mailguard')));
+            return;
+        }
+        set_transient('pn_mailguard_dmarc_lock', 1, 30);
+
+        update_option('pn_mailguard_dmarc_domain', $input);
+
+        $result = PN_Mailguard_DMARC::analyze($input);
 
         if (!empty($result['error'])) {
             wp_send_json_error(array('message' => $result['error']));
