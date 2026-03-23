@@ -1,0 +1,15 @@
+# Windows
+Thumbs.db
+desktop.ini
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# ZIP di distribuzione
+*.zip
+
+# Log
+*.log

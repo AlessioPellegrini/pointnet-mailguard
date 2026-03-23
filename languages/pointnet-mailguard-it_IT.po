@@ -1,0 +1,234 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PointNet Mail Guard AI 1.0.0\n"
+"POT-Creation-Date: 2026-03-20 00:00+0100\n"
+"PO-Revision-Date: 2026-03-20 00:00+0100\n"
+"Last-Translator: PointNet Lab\n"
+"Language-Team: Italian\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+
+msgid "Settings"
+msgstr "Impostazioni"
+
+msgid "Unauthorized"
+msgstr "Non autorizzato"
+
+msgid "Next automatic scan scheduled for:"
+msgstr "Prossima scansione automatica prevista per:"
+
+msgid "Email Monitor"
+msgstr "Monitor Email"
+
+msgid "IP Monitor"
+msgstr "Monitor IP"
+
+msgid "Email address to monitor"
+msgstr "Indirizzo email da monitorare"
+
+msgid "Enter the email address you send from (e.g. info@yourdomain.com). The plugin will detect your mail server automatically."
+msgstr "Inserisci l'indirizzo email da cui invii (es. info@tuodominio.it). Il plugin rileverà automaticamente il tuo server di posta."
+
+msgid "Alert email"
+msgstr "Email per gli avvisi"
+
+msgid "Where to send alerts when problems are detected."
+msgstr "Dove inviare gli avvisi quando vengono rilevati problemi."
+
+msgid "Save Settings"
+msgstr "Salva Impostazioni"
+
+msgid "Run Diagnosis Now"
+msgstr "Esegui Diagnosi Ora"
+
+msgid "Save a valid email address first."
+msgstr "Salva prima un indirizzo email valido."
+
+msgid "Email Monitor — Diagnostic Logs"
+msgstr "Monitor Email — Log Diagnostici"
+
+msgid "IP address to monitor"
+msgstr "Indirizzo IP da monitorare"
+
+msgid "Enter any IPv4 address to monitor — your VPS, a mail relay, or any server you manage."
+msgstr "Inserisci qualsiasi indirizzo IPv4 da monitorare — il tuo VPS, un mail relay o qualsiasi server che gestisci."
+
+msgid "Save a valid IPv4 address first."
+msgstr "Salva prima un indirizzo IPv4 valido."
+
+msgid "IP Monitor — Diagnostic Logs"
+msgstr "Monitor IP — Log Diagnostici"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Status"
+msgstr "Stato"
+
+msgid "Technical Details"
+msgstr "Dettagli Tecnici"
+
+msgid "No logs found."
+msgstr "Nessun log trovato."
+
+msgid "Running..."
+msgstr "Analisi in corso..."
+
+msgid "DIAGNOSIS COMPLETE."
+msgstr "DIAGNOSI COMPLETATA."
+
+msgid "Settings saved."
+msgstr "Impostazioni salvate."
+
+msgid "Please enter a valid alert email address."
+msgstr "Inserisci un indirizzo email valido per gli avvisi."
+
+msgid "Please enter a valid email address to monitor."
+msgstr "Inserisci un indirizzo email valido da monitorare."
+
+msgid "Please enter a valid IPv4 address to monitor."
+msgstr "Inserisci un indirizzo IPv4 valido da monitorare."
+
+msgid "Please wait 30 seconds before running another scan."
+msgstr "Attendi 30 secondi prima di eseguire un'altra scansione."
+
+msgid "No valid email address configured. Please save your settings first."
+msgstr "Nessun indirizzo email valido configurato. Salva prima le impostazioni."
+
+msgid "No valid IP address configured. Please save your settings first."
+msgstr "Nessun indirizzo IP valido configurato. Salva prima le impostazioni."
+
+msgid "PointNet Mail Guard AI — ALERT"
+msgstr "PointNet Mail Guard AI — AVVISO"
+
+msgid "Scan error"
+msgstr "Errore di scansione"
+
+msgid "Target"
+msgstr "Destinazione"
+
+msgid "Email checked"
+msgstr "Email verificata"
+
+msgid "Domain"
+msgstr "Dominio"
+
+msgid "Mail server"
+msgstr "Server di posta"
+
+msgid "Mail server IP"
+msgstr "IP server di posta"
+
+msgid "WordPress IP"
+msgstr "IP WordPress"
+
+msgid "Server setup"
+msgstr "Configurazione server"
+
+msgid "SHARED (mail and WordPress on same server)"
+msgstr "CONDIVISO (posta e WordPress sullo stesso server)"
+
+msgid "SEPARATE (dedicated mail server)"
+msgstr "SEPARATO (server di posta dedicato)"
+
+msgid "Scan time"
+msgstr "Ora scansione"
+
+msgid "IP address"
+msgstr "Indirizzo IP"
+
+msgid "IP is listed on one or more blacklists."
+msgstr "L'IP è presente in una o più blacklist."
+
+msgid "PTR (reverse DNS) is not configured."
+msgstr "Il PTR (reverse DNS) non è configurato."
+
+msgid "DNSBL Results"
+msgstr "Risultati DNSBL"
+
+msgid "PTR Check"
+msgstr "Verifica PTR"
+
+msgid "WARNING: not configured"
+msgstr "ATTENZIONE: non configurato"
+
+msgid "⚠️ PointNet ALERT: scan error for %s"
+msgstr "⚠️ PointNet AVVISO: errore di scansione per %s"
+
+msgid "⚠️ PointNet ALERT: %s — blacklist + PTR issue"
+msgstr "⚠️ PointNet AVVISO: %s — problema blacklist + PTR"
+
+msgid "⚠️ PointNet ALERT: %s is listed on a blacklist"
+msgstr "⚠️ PointNet AVVISO: %s è presente in una blacklist"
+
+msgid "⚠️ PointNet ALERT: %s — PTR (reverse DNS) not configured"
+msgstr "⚠️ PointNet AVVISO: %s — PTR (reverse DNS) non configurato"
+
+msgid "SPF record is missing."
+msgstr "Il record SPF è assente."
+
+msgid "SPF record is invalid."
+msgstr "Il record SPF non è valido."
+
+msgid "SPF Check"
+msgstr "Verifica SPF"
+
+msgid "MISSING — no SPF record found"
+msgstr "ASSENTE — nessun record SPF trovato"
+
+msgid "INVALID"
+msgstr "NON VALIDO"
+
+msgid "SPF Analyzer"
+msgstr "Analizzatore SPF"
+
+msgid "Enter a domain or email address to run a full SPF record analysis."
+msgstr "Inserisci un dominio o un indirizzo email per avviare un'analisi completa del record SPF."
+
+msgid "Analyze SPF"
+msgstr "Analizza SPF"
+
+msgid "Analyzing..."
+msgstr "Analisi in corso..."
+
+msgid "Detected senders:"
+msgstr "Mittenti rilevati:"
+
+msgid "Check"
+msgstr "Controllo"
+
+msgid "Result"
+msgstr "Risultato"
+
+msgid "Details"
+msgstr "Dettagli"
+
+msgid "No SPF record found."
+msgstr "Nessun record SPF trovato."
+
+msgid "passed"
+msgstr "superati"
+
+msgid "warnings"
+msgstr "avvisi"
+
+msgid "errors"
+msgstr "errori"
+
+msgid "DNS lookups"
+msgstr "DNS lookup"
+
+msgid "Need help fixing SPF issues? Contact"
+msgstr "Hai bisogno di aiuto con i problemi SPF? Contatta"
+
+msgid "email deliverability specialists."
+msgstr "specialisti in email deliverability."
+
+msgid "Please enter a domain or email address."
+msgstr "Inserisci un dominio o un indirizzo email."
+
+msgid "Please wait 30 seconds before running another analysis."
+msgstr "Attendi 30 secondi prima di eseguire un'altra analisi."
