@@ -61,6 +61,15 @@ class PN_Mailguard_Loader {
 
         // AJAX — AI analysis
         add_action('wp_ajax_pn_mailguard_ai_analyze',          ['PN_Mailguard_Dashboard', 'ajax_ai_analyze']);
+
+        // AJAX — Save monitor settings (inline edit)
+        add_action('wp_ajax_pn_mailguard_save_monitor',        ['PN_Mailguard_Dashboard', 'ajax_save_monitor']);
+
+        // AJAX — IP Analysis tools (DNS & IP Tools tab)
+        add_action('wp_ajax_pn_mailguard_ip_dnsbl',            ['PN_Mailguard_Dashboard', 'ajax_ip_dnsbl']);
+        add_action('wp_ajax_pn_mailguard_ip_ptr',              ['PN_Mailguard_Dashboard', 'ajax_ip_ptr']);
+        add_action('wp_ajax_pn_mailguard_ip_geoip',            ['PN_Mailguard_Dashboard', 'ajax_ip_geoip']);
+        add_action('wp_ajax_pn_mailguard_ip_whois',            ['PN_Mailguard_Dashboard', 'ajax_ip_whois']);
     }
 
     public static function load_textdomain(): void {

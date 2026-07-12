@@ -27,33 +27,87 @@ class PN_Mailguard_Dashboard {
         check_admin_referer('pn_mailguard_save_action', 'pn_mailguard_nonce');
         if (!current_user_can('manage_options')) wp_die(__('Unauthorized', 'pointnet-mailguard'));
 
-        $check_email = sanitize_email($_POST['pn_mailguard_check_email'] ?? '');
-        $check_ip    = sanitize_text_field($_POST['pn_mailguard_check_ip'] ?? '');
-        $alert_email = sanitize_email($_POST['pn_mailguard_email_alert'] ?? '');
-
-        if (!empty($check_email) && !is_email($check_email)) {
-            add_settings_error('pn_mailguard_messages', 'invalid_email', __('Please enter a valid email address to monitor.', 'pointnet-mailguard'));
-            return;
-        }
-        if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            add_settings_error('pn_mailguard_messages', 'invalid_ip', __('Please enter a valid IPv4 address to monitor.', 'pointnet-mailguard'));
-            return;
-        }
-        if (!empty($alert_email) && !is_email($alert_email)) {
-            add_settings_error('pn_mailguard_messages', 'invalid_alert', __('Please enter a valid alert email address.', 'pointnet-mailguard'));
-            return;
+        // Save onboarding / monitor fields only if present in the request.
+        // This prevents the Advanced tab from clearing monitor data.
+        if (isset($_POST['pn_mailguard_check_email'])) {
+            $check_email = sanitize_email($_POST['pn_mailguard_check_email']);
+            if (!empty($check_email) && !is_email($check_email)) {
+                add_settings_error('pn_mailguard_messages', 'invalid_email', __('Please enter a valid email address to monitor.', 'pointnet-mailguard'), 'error');
+                return;
+            }
+            update_option('pn_mailguard_check_email', $check_email);
         }
 
+        if (isset($_POST['pn_mailguard_check_ip'])) {
+            $check_ip = sanitize_text_field($_POST['pn_mailguard_check_ip']);
+            if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                add_settings_error('pn_mailguard_messages', 'invalid_ip', __('Please enter a valid IPv4 address.', 'pointnet-mailguard'), 'error');
+                return;
+            }
+            update_option('pn_mailguard_check_ip', $check_ip);
+        }
+
+        if (isset($_POST['pn_mailguard_email_alert'])) {
+            $alert_email = sanitize_email($_POST['pn_mailguard_email_alert']);
+            if (!empty($alert_email) && !is_email($alert_email)) {
+                add_settings_error('pn_mailguard_messages', 'invalid_alert_email', __('Please enter a valid alert email address.', 'pointnet-mailguard'), 'error');
+                return;
+            }
+            if (!empty($alert_email)) {
+                update_option('pn_mailguard_email_alert', $alert_email);
+            }
+        }
+
+        // Save DKIM selector and Gemini config (from onboarding or advanced tab)
         $dkim_selector = isset($_POST['pn_mailguard_dkim_selector']) ? sanitize_text_field($_POST['pn_mailguard_dkim_selector']) : '';
         $gemini_key    = isset($_POST['pn_mailguard_gemini_key']) ? sanitize_text_field($_POST['pn_mailguard_gemini_key']) : '';
         $gemini_model  = isset($_POST['pn_mailguard_gemini_model']) ? sanitize_text_field($_POST['pn_mailguard_gemini_model']) : '';
-        update_option('pn_mailguard_check_email', $check_email);
-        update_option('pn_mailguard_check_ip',    $check_ip);
-        update_option('pn_mailguard_email_alert', $alert_email);
         update_option('pn_mailguard_dkim_selector', $dkim_selector);
         update_option('pn_mailguard_gemini_key', $gemini_key);
         update_option('pn_mailguard_gemini_model', $gemini_model);
+
+        // Clear models cache when API key changes
+        PN_Mailguard_AI::clear_models_cache();
+
         add_settings_error('pn_mailguard_messages', 'settings_saved', __('Settings saved.', 'pointnet-mailguard'), 'success');
+    }
+
+    /**
+     * AJAX handler to save monitor settings (email, IP, alert email) from the Monitor tab inline edit.
+     */
+    public static function ajax_save_monitor(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die(-1);
+
+        // Only save fields that were actually sent in the request.
+        // This prevents overwriting the other monitor with an empty string.
+        if (isset($_POST['pn_mailguard_check_email'])) {
+            $check_email = sanitize_email($_POST['pn_mailguard_check_email']);
+            if (!empty($check_email) && !is_email($check_email)) {
+                wp_send_json_error(['message' => __('Please enter a valid email address to monitor.', 'pointnet-mailguard')]);
+            }
+            update_option('pn_mailguard_check_email', $check_email);
+        }
+
+        if (isset($_POST['pn_mailguard_check_ip'])) {
+            $check_ip = sanitize_text_field($_POST['pn_mailguard_check_ip']);
+            if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                wp_send_json_error(['message' => __('Please enter a valid IPv4 address.', 'pointnet-mailguard')]);
+            }
+            update_option('pn_mailguard_check_ip', $check_ip);
+        }
+
+        if (isset($_POST['pn_mailguard_email_alert'])) {
+            $alert_email = sanitize_email($_POST['pn_mailguard_email_alert']);
+            if (!empty($alert_email) && !is_email($alert_email)) {
+                wp_send_json_error(['message' => __('Please enter a valid alert email address.', 'pointnet-mailguard')]);
+            }
+            if (!empty($alert_email)) {
+                update_option('pn_mailguard_email_alert', $alert_email);
+            }
+        }
+
+        wp_send_json_success(['message' => __('Monitor settings saved.', 'pointnet-mailguard')]);
     }
 
     // -------------------------------------------------------------------------
@@ -95,7 +149,7 @@ class PN_Mailguard_Dashboard {
     public static function render_page(): void {
         if (!current_user_can('manage_options')) wp_die(__('Unauthorized', 'pointnet-mailguard'));
 
-        $tabs   = ['monitors', 'dnstools', 'settings'];
+        $tabs   = ['monitors', 'dnstools', 'advanced'];
         $raw    = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
         $tab    = in_array($raw, $tabs, true) ? $raw : 'monitors';
         $base   = admin_url('admin.php?page=pn-mailguard');
@@ -117,8 +171,8 @@ class PN_Mailguard_Dashboard {
                 <?php
                 $tab_labels = [
                     'monitors'  => '📊 ' . __('Monitors',    'pointnet-mailguard'),
-                    'dnstools'  => '🔬 ' . __('DNS Tools',   'pointnet-mailguard'),
-                    'settings'  => '⚙️ '  . __('Settings',    'pointnet-mailguard'),
+                    'dnstools'  => '🔬 ' . __('DNS & IP Tools',   'pointnet-mailguard'),
+                    'advanced'  => '⚙️ '  . __('Advanced',    'pointnet-mailguard'),
                 ];
                 foreach ($tab_labels as $key => $label) {
                     $active = $tab === $key ? 'nav-tab-active' : '';
@@ -131,7 +185,7 @@ class PN_Mailguard_Dashboard {
             switch ($tab) {
                 case 'monitors': self::render_monitors($check_email, $check_ip); break;
                 case 'dnstools': self::render_dnstools(); break;
-                case 'settings': self::render_settings($check_email, $check_ip, $alert_email); break;
+                case 'advanced': self::render_advanced(); break;
             }
             ?>
         </div>
@@ -146,6 +200,7 @@ class PN_Mailguard_Dashboard {
      * Render inline onboarding wizard for first-time configuration.
      */
     private static function render_onboarding(): void {
+        $dkim_sel = get_option('pn_mailguard_dkim_selector', '');
         ?>
         <div style="background:linear-gradient(135deg,#f0f6ff 0%,#e8f0fb 100%); border:1px solid #c8d8f0; border-radius:10px; padding:24px; margin-bottom:24px;">
             <h2 style="font-size:18px; margin:0 0 4px; color:#1d2327;">
@@ -163,7 +218,7 @@ class PN_Mailguard_Dashboard {
                     <p style="font-size:12px; color:#666; margin:0 0 10px;">
                         <?php esc_html_e('The email address you send from — we will detect your mail server automatically.', 'pointnet-mailguard'); ?>
                     </p>
-                    <input type="email" name="pn_mailguard_check_email" value="" class="regular-text" placeholder="info@yourdomain.com" style="width:100%;">
+                    <input type="email" id="onboarding-email" name="pn_mailguard_check_email" value="" class="regular-text" placeholder="info@yourdomain.com" style="width:100%;">
                 </div>
 
                 <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde;">
@@ -187,11 +242,77 @@ class PN_Mailguard_Dashboard {
                     </p>
                 </div>
 
+                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde;">
+                    <div style="font-size:24px; margin-bottom:8px;">🔑</div>
+                    <p style="font-weight:600; margin:0 0 4px;"><?php esc_html_e('Step 4: DKIM Selector (optional)', 'pointnet-mailguard'); ?></p>
+                    <p style="font-size:12px; color:#666; margin:0 0 10px;">
+                        <?php esc_html_e('If known, enter your DKIM selector. Leave empty to auto-detect.', 'pointnet-mailguard'); ?>
+                    </p>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" name="pn_mailguard_dkim_selector" id="onboarding-dkim-selector"
+                            value="<?php echo esc_attr($dkim_sel); ?>"
+                            placeholder="<?php esc_attr_e('Leave empty to auto-detect', 'pointnet-mailguard'); ?>"
+                            style="flex:1; padding:6px 8px; font-size:13px;">
+                        <button type="button" id="onboarding-dkim-detect" class="button button-secondary">
+                            🔍 <?php esc_html_e('Detect', 'pointnet-mailguard'); ?>
+                        </button>
+                    </div>
+                    <div id="onboarding-dkim-status" style="font-size:11px; margin-top:6px;"></div>
+                </div>
+
                 <div style="grid-column:1/-1;">
                     <input type="submit" name="pn_mailguard_save_settings" class="button button-primary button-hero" value="<?php esc_attr_e('Save & Start Monitoring →', 'pointnet-mailguard'); ?>" style="width:100%;">
                 </div>
             </form>
         </div>
+
+        <script>
+        jQuery(document).ready(function($) {
+            var pnNonce = "<?php echo esc_js(wp_create_nonce('pn_mailguard_ajax_nonce')); ?>";
+            var $emailInput = $('#onboarding-email');
+            var $dkimInput = $('#onboarding-dkim-selector');
+            var $dkimStatus = $('#onboarding-dkim-status');
+            var $detectBtn = $('#onboarding-dkim-detect');
+
+            $detectBtn.on('click', function() {
+                var email = $emailInput.val().trim();
+                var atPos = email.indexOf('@');
+                if (atPos === -1) {
+                    $dkimStatus.html('<span style="color:#d63638;"><?php esc_html_e('Enter a valid email first (Step 1).', 'pointnet-mailguard'); ?></span>');
+                    return;
+                }
+                var domain = email.substring(atPos + 1).toLowerCase();
+                if (!domain) {
+                    $dkimStatus.html('<span style="color:#d63638;"><?php esc_html_e('Please enter an email address first.', 'pointnet-mailguard'); ?></span>');
+                    return;
+                }
+
+                $detectBtn.prop('disabled', true).text('⏳...');
+                $dkimStatus.html('<span style="color:#999;"><?php esc_html_e('Detecting DKIM selector...', 'pointnet-mailguard'); ?></span>');
+
+                $.post(ajaxurl, {
+                    action: 'pn_mailguard_analyze_dkim',
+                    nonce: pnNonce,
+                    domain: domain,
+                    selector: ''
+                }, function(res) {
+                    $detectBtn.prop('disabled', false).text('🔍 <?php esc_html_e('Detect', 'pointnet-mailguard'); ?>');
+                    if (res.success && res.data.autodetected && res.data.selector) {
+                        $dkimInput.val(res.data.selector);
+                        $dkimStatus.html('<span style="color:#00a32a;">✅ <?php esc_html_e('DKIM selector detected:', 'pointnet-mailguard'); ?> ' + escHtml(res.data.selector) + '</span>');
+                    } else if (res.success && res.data.selector) {
+                        $dkimInput.val(res.data.selector);
+                        $dkimStatus.html('<span style="color:#00a32a;">✅ <?php esc_html_e('DKIM selector found:', 'pointnet-mailguard'); ?> ' + escHtml(res.data.selector) + '</span>');
+                    } else {
+                        $dkimStatus.html('<span style="color:#dba617;">⚠️ <?php esc_html_e('Could not auto-detect DKIM selector. You can enter it manually if you know it, or leave empty.', 'pointnet-mailguard'); ?></span>');
+                    }
+                }).fail(function() {
+                    $detectBtn.prop('disabled', false).text('🔍 <?php esc_html_e('Detect', 'pointnet-mailguard'); ?>');
+                    $dkimStatus.html('<span style="color:#d63638;"><?php esc_html_e('Network error. Try again or enter manually.', 'pointnet-mailguard'); ?></span>');
+                });
+            });
+        });
+        </script>
         <?php
     }
 
@@ -445,7 +566,7 @@ class PN_Mailguard_Dashboard {
     }
 
     /**
-     * New combined monitor card: header + last scan status + run button.
+     * New combined monitor card: header + last scan status + run + edit buttons.
      */
     private static function monitor_card_v2(string $type, string $value, $last_log, ?string $domain): void {
         $is_email = ($type === 'email');
@@ -455,6 +576,8 @@ class PN_Mailguard_Dashboard {
             ? __('Auto-detected mail server IP', 'pointnet-mailguard')
             : __('Manual IP address', 'pointnet-mailguard');
         $btn_id   = $is_email ? 'pn-dash-email-btn' : 'pn-dash-ip-btn';
+        $edit_id  = $is_email ? 'pn-dash-email-edit' : 'pn-dash-ip-edit';
+        $edit_form_id = $is_email ? 'pn-dash-email-edit-form' : 'pn-dash-ip-edit-form';
         $btn_label = $is_email
             ? __('📧 Run Email Diagnosis', 'pointnet-mailguard')
             : __('🌐 Run IP Diagnosis', 'pointnet-mailguard');
@@ -462,27 +585,53 @@ class PN_Mailguard_Dashboard {
             ? (!empty($value) && is_email($value))
             : (!empty($value) && filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
         $disabled = !$active;
-        $disable_title = $is_email
-            ? __('Save a valid email in Settings first.', 'pointnet-mailguard')
-            : __('Save a valid IP in Settings first.', 'pointnet-mailguard');
+        $alert_email = get_option('pn_mailguard_email_alert', get_option('admin_email'));
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; overflow:hidden;">
             <div style="background:#f8f8f8; border-bottom:1px solid #e0e0e0; padding:12px 16px; display:flex; align-items:center; gap:8px;">
                 <span style="font-size:18px;"><?php echo esc_html($icon); ?></span>
                 <span style="font-size:14px; font-weight:600;"><?php echo esc_html($title); ?></span>
-                <span style="font-size:11px; color:#999; margin-left:auto;"><?php echo esc_html($subtitle); ?></span>
+                <button type="button" id="<?php echo esc_attr($edit_id); ?>" class="button button-small button-secondary" style="margin-left:auto;" title="<?php esc_attr_e('Edit this monitor', 'pointnet-mailguard'); ?>">
+                    ✏️
+                </button>
             </div>
             <div style="padding:16px;">
+                <!-- Inline edit form (hidden by default) -->
+                <div id="<?php echo esc_attr($edit_form_id); ?>" style="display:none; margin-bottom:12px; background:#f8f8f8; border:1px solid #e0e0e0; border-radius:6px; padding:12px;">
+                    <p style="font-size:12px; font-weight:600; margin:0 0 8px; color:#333;">
+                        <?php esc_html_e('Edit monitor settings:', 'pointnet-mailguard'); ?>
+                    </p>
+                    <?php if ($is_email): ?>
+                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📧 <?php esc_html_e('Email', 'pointnet-mailguard'); ?></label>
+                    <input type="email" class="pn-edit-email" value="<?php echo esc_attr($value); ?>" placeholder="info@yourdomain.com" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:8px;">
+                    <?php else: ?>
+                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">🌐 <?php esc_html_e('IP Address', 'pointnet-mailguard'); ?></label>
+                    <input type="text" class="pn-edit-ip" value="<?php echo esc_attr($value); ?>" placeholder="1.2.3.4" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:8px;">
+                    <?php endif; ?>
+                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📬 <?php esc_html_e('Alert email', 'pointnet-mailguard'); ?></label>
+                    <input type="email" class="pn-edit-alert" value="<?php echo esc_attr($alert_email); ?>" placeholder="admin@yourdomain.com" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:10px;">
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="button button-primary button-small pn-edit-save" data-type="<?php echo esc_attr($type); ?>">
+                            <?php esc_html_e('Save', 'pointnet-mailguard'); ?>
+                        </button>
+                        <button type="button" class="button button-secondary button-small pn-edit-cancel">
+                            <?php esc_html_e('Cancel', 'pointnet-mailguard'); ?>
+                        </button>
+                        <span class="pn-edit-spinner" style="display:none; font-size:11px; color:#999; align-self:center;">⏳ <?php esc_html_e('Saving...', 'pointnet-mailguard'); ?></span>
+                    </div>
+                    <div class="pn-edit-msg" style="display:none; margin-top:6px; font-size:11px;"></div>
+                </div>
+
                 <?php if ($active): ?>
-                <div style="font-size:14px; color:#2271b1; font-weight:600; margin-bottom:10px;">
+                <div class="pn-monitor-value" style="font-size:14px; color:#2271b1; font-weight:600; margin-bottom:10px;">
                     <?php echo esc_html($value); ?>
                     <?php if ($domain && $is_email): ?>
                     <span style="font-size:12px; color:#666; font-weight:400;">→ <?php echo esc_html($domain); ?></span>
                     <?php endif; ?>
                 </div>
                 <?php else: ?>
-                <p style="font-size:13px; color:#999; margin:0 0 10px;">
-                    <?php esc_html_e('Not configured. Add one in Settings.', 'pointnet-mailguard'); ?>
+                <p class="pn-monitor-value" style="font-size:13px; color:#999; margin:0 0 10px;">
+                    <?php esc_html_e('Not configured. Click ✏️ to set up.', 'pointnet-mailguard'); ?>
                 </p>
                 <?php endif; ?>
 
@@ -509,7 +658,7 @@ class PN_Mailguard_Dashboard {
                 </p>
                 <?php endif; ?>
 
-                <button type="button" id="<?php echo esc_attr($btn_id); ?>" class="button button-secondary" style="width:100%; text-align:center;" <?php disabled($disabled); ?> title="<?php echo $disabled ? esc_attr($disable_title) : ''; ?>">
+                <button type="button" id="<?php echo esc_attr($btn_id); ?>" class="button button-secondary" style="width:100%; text-align:center;" <?php disabled($disabled); ?> title="">
                     <?php echo esc_html($btn_label); ?>
                 </button>
             </div>
@@ -817,6 +966,53 @@ class PN_Mailguard_Dashboard {
                     sendChatQuestion();
                 }
             });
+
+            // --- Inline edit for monitor cards ---
+            $('[id^="pn-dash-email-edit"], [id^="pn-dash-ip-edit"]').on('click', function() {
+                var formId = $(this).attr('id').replace('-edit', '-edit-form');
+                $('#' + formId).slideToggle();
+            });
+
+            $('.pn-edit-cancel').on('click', function() {
+                $(this).closest('[id$="-edit-form"]').slideUp();
+            });
+
+            $('.pn-edit-save').on('click', function() {
+                var btn = $(this);
+                var form = btn.closest('[id$="-edit-form"]');
+                var spinner = form.find('.pn-edit-spinner');
+                var msg = form.find('.pn-edit-msg');
+                var type = btn.data('type'); // 'email' or 'ip'
+                var alertEmail = form.find('.pn-edit-alert').val();
+                var postData = {
+                    action: 'pn_mailguard_save_monitor',
+                    nonce: pnNonce,
+                    pn_mailguard_email_alert: alertEmail || ''
+                };
+
+                if (type === 'email') {
+                    var email = form.find('.pn-edit-email').val();
+                    postData.pn_mailguard_check_email = email || '';
+                } else {
+                    var ip = form.find('.pn-edit-ip').val();
+                    postData.pn_mailguard_check_ip = ip || '';
+                }
+
+                btn.prop('disabled', true);
+                spinner.show();
+                msg.hide().removeClass('notice-error notice-success');
+
+                $.post(ajaxurl, postData, function(res) {
+                    btn.prop('disabled', false);
+                    spinner.hide();
+                    if (res.success) {
+                        msg.addClass('notice-success').css({color: '#00a32a', background: '#edfaef', padding: '4px 8px', borderRadius: '3px'}).text(res.data.message).show();
+                        setTimeout(function() { location.reload(); }, 1000);
+                    } else {
+                        msg.addClass('notice-error').css({color: '#d63638', background: '#fbeaea', padding: '4px 8px', borderRadius: '3px'}).text(res.data.message || '<?php echo esc_js(__('Save failed.', 'pointnet-mailguard')); ?>').show();
+                    }
+                });
+            });
         });
         </script>
         <?php
@@ -880,6 +1076,40 @@ class PN_Mailguard_Dashboard {
             </div>
         </div>
 
+        <!-- 🌐 IP Analysis section -->
+        <hr style="margin:32px 0 24px;">
+        <h2 style="font-size:16px; margin:0 0 8px; color:#1d2327;">🌐 <?php esc_html_e('IP Analysis', 'pointnet-mailguard'); ?></h2>
+        <p style="font-size:13px; color:#666; margin:0 0 16px;">
+            <?php esc_html_e('Analyze any IPv4 address with DNSBL, PTR, GeoIP and WHOIS lookups.', 'pointnet-mailguard'); ?>
+        </p>
+
+        <div style="margin-bottom:20px;">
+            <div class="card" style="padding:16px; max-width:600px;">
+                <label for="pn-ip-address" style="font-weight:600; font-size:14px;">
+                    <?php esc_html_e('IP address to analyze', 'pointnet-mailguard'); ?>
+                </label>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <input type="text" id="pn-ip-address" value="" placeholder="1.2.3.4"
+                        style="flex:1; padding:6px 10px; font-size:14px;">
+                    <button type="button" id="pn-ip-analyze-all" class="button button-primary">
+                        🔬 <?php esc_html_e('Analyze IP', 'pointnet-mailguard'); ?>
+                    </button>
+                </div>
+                <p class="description" style="margin:6px 0 0;">
+                    <?php esc_html_e('Enter any IPv4 address to check DNSBL blacklists, PTR record, geolocation and WHOIS info.', 'pointnet-mailguard'); ?>
+                </p>
+            </div>
+        </div>
+
+        <div id="pn-ip-results">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:20px;">
+                <?php self::render_ip_section('dnsbl', '🚫', 'DNSBL', '5 ' . __('blacklists checked', 'pointnet-mailguard')); ?>
+                <?php self::render_ip_section('ptr',   '↩️', 'PTR / ' . __('Reverse DNS', 'pointnet-mailguard'), __('Hostname lookup', 'pointnet-mailguard')); ?>
+                <?php self::render_ip_section('geoip', '🌍', 'GeoIP', __('Location & ISP', 'pointnet-mailguard')); ?>
+                <?php self::render_ip_section('whois', '📋', 'WHOIS', __('IP block info', 'pointnet-mailguard')); ?>
+            </div>
+        </div>
+
         <?php self::render_dnstools_js(); ?>
         <?php
     }
@@ -901,6 +1131,27 @@ class PN_Mailguard_Dashboard {
             <div id="pn-dns-<?php echo esc_attr($type); ?>-body" style="padding:16px;">
                 <p style="font-size:13px; color:#999; margin:0;">
                     <?php esc_html_e('Enter a domain and click "Analyze All Records".', 'pointnet-mailguard'); ?>
+                </p>
+            </div>
+        </div>
+        <?php
+    }
+
+    private static function render_ip_section(string $type, string $icon, string $label, string $subtitle): void {
+        ?>
+        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; overflow:hidden;">
+            <div style="background:#f8f8f8; border-bottom:1px solid #e0e0e0; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-size:14px; font-weight:600;">
+                    <span style="font-size:18px;"><?php echo esc_html($icon); ?></span>
+                    <?php echo esc_html($label); ?>
+                </span>
+                <span style="font-size:11px; color:#999;">
+                    <?php echo esc_html($subtitle); ?>
+                </span>
+            </div>
+            <div id="pn-ip-<?php echo esc_attr($type); ?>-body" style="padding:16px;">
+                <p style="font-size:13px; color:#999; margin:0;">
+                    <?php esc_html_e('Enter an IP address and click "Analyze IP".', 'pointnet-mailguard'); ?>
                 </p>
             </div>
         </div>
@@ -1041,110 +1292,285 @@ class PN_Mailguard_Dashboard {
                     analyzeAll();
                 }
             });
+
+            // --- IP Analysis ---
+            var isIpAnalyzing = false;
+
+            function getIp() {
+                return $('#pn-ip-address').val().trim();
+            }
+
+            function analyzeIpAll() {
+                var ip = getIp();
+                if (!ip) return;
+
+                isIpAnalyzing = true;
+                $('#pn-ip-analyze-all').prop('disabled', true).text('⏳ <?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?>');
+
+                runIpSingle('dnsbl', ip, function() {
+                    runIpSingle('ptr', ip, function() {
+                        runIpSingle('geoip', ip, function() {
+                            runIpSingle('whois', ip, function() {
+                                isIpAnalyzing = false;
+                                $('#pn-ip-analyze-all').prop('disabled', false).text('🔬 <?php echo esc_js(__('Analyze IP', 'pointnet-mailguard')); ?>');
+                            });
+                        });
+                    });
+                });
+            }
+
+            function runIpSingle(type, ip, callback) {
+                var action = type === 'dnsbl' ? 'pn_mailguard_ip_dnsbl'
+                          : type === 'ptr' ? 'pn_mailguard_ip_ptr'
+                          : type === 'geoip' ? 'pn_mailguard_ip_geoip'
+                          : 'pn_mailguard_ip_whois';
+
+                var $body = $('#pn-ip-' + type + '-body');
+                $body.html('<p style="color:#999;">⏳ <?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?></p>');
+
+                $.post(ajaxurl, { action: action, nonce: pnNonce, ip: ip }, function(res) {
+                    if (!res.success) {
+                        var msg = (res.data && res.data.message) ? res.data.message : '<?php echo esc_js(__('Analysis failed.', 'pointnet-mailguard')); ?>';
+                        $body.html('<div class="notice notice-error inline" style="margin:0;"><p>' + msg + '</p></div>');
+                        if (callback) callback();
+                        return;
+                    }
+
+                    var d = res.data;
+                    var html = '';
+
+                    if (type === 'dnsbl') {
+                        if (d.results) {
+                            var anyListed = false;
+                            html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
+                            $.each(d.results, function(name, status) {
+                                if (status === 'LISTED') anyListed = true;
+                                var dotColor = status === 'LISTED' ? '#d63638' : '#00a32a';
+                                var badgeText = status === 'LISTED' ? '✗ LISTED' : '✓ CLEAN';
+                                var badgeBg = status === 'LISTED' ? '#fbeaea' : '#edfaef';
+                                var badgeColor = status === 'LISTED' ? '#a30000' : '#00a32a';
+                                html += '<tr style="border-top:0.5px solid #e8e8e8;">';
+                                html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
+                                html += '<td style="padding:6px 4px; font-weight:600;">' + escHtml(name) + '</td>';
+                                html += '<td style="padding:6px 4px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
+                                html += '</tr>';
+                            });
+                            html += '</table>';
+                            if (anyListed) {
+                                html += '<p style="font-size:11px; color:#d63638; margin:8px 0 0;">⚠ <?php echo esc_js(__('IP is listed on one or more blacklists!', 'pointnet-mailguard')); ?></p>';
+                            } else {
+                                html += '<p style="font-size:11px; color:#00a32a; margin:8px 0 0;">✅ <?php echo esc_js(__('IP is clean on all checked blacklists.', 'pointnet-mailguard')); ?></p>';
+                            }
+                        } else {
+                            html = '<p style="font-size:13px; color:#999; margin:0;"><?php echo esc_js(__('No DNSBL results.', 'pointnet-mailguard')); ?></p>';
+                        }
+                    } else if (type === 'ptr') {
+                        if (d.ptr_warning) {
+                            html = '<div style="background:#fff8e5; border:1px solid #f0d080; border-radius:4px; padding:10px; font-size:12px;">';
+                            html += '<strong style="color:#996800;">⚠ <?php echo esc_js(__('No PTR record found', 'pointnet-mailguard')); ?></strong>';
+                            html += '<p style="margin:4px 0 0; color:#666;"><?php echo esc_js(__('PTR: ', 'pointnet-mailguard')); ?>' + escHtml(d.ptr) + '</p>';
+                            html += '</div>';
+                        } else {
+                            html = '<div style="background:#1e1e2e; color:#a6e3a1; font-family:monospace; font-size:11px; padding:8px 10px; border-radius:4px; word-break:break-all; line-height:1.5;">' + escHtml(d.ptr) + '</div>';
+                            html += '<p style="font-size:11px; color:#00a32a; margin:6px 0 0;">✅ <?php echo esc_js(__('PTR record found', 'pointnet-mailguard')); ?></p>';
+                        }
+                    } else if (type === 'geoip') {
+                        if (d.status === 'success') {
+                            html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
+                            var fields = [
+                                ['<?php echo esc_js(__('IP', 'pointnet-mailguard')); ?>', d.ip],
+                                ['<?php echo esc_js(__('Country', 'pointnet-mailguard')); ?>', d.country + ' (' + d.countryCode + ')'],
+                                ['<?php echo esc_js(__('Region', 'pointnet-mailguard')); ?>', d.region],
+                                ['<?php echo esc_js(__('City', 'pointnet-mailguard')); ?>', d.city],
+                                ['<?php echo esc_js(__('ISP', 'pointnet-mailguard')); ?>', d.isp],
+                                ['<?php echo esc_js(__('Organization', 'pointnet-mailguard')); ?>', d.org],
+                                ['<?php echo esc_js(__('ASN', 'pointnet-mailguard')); ?>', d.as],
+                            ];
+                            $.each(fields, function(i, f) {
+                                if (f[1]) {
+                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
+                                    html += '<td style="padding:4px 6px; font-weight:600; width:30%;">' + escHtml(f[0]) + '</td>';
+                                    html += '<td style="padding:4px 6px; color:#333;">' + escHtml(f[1]) + '</td>';
+                                    html += '</tr>';
+                                }
+                            });
+                            html += '</table>';
+                        } else {
+                            html = '<p style="font-size:13px; color:#d63638; margin:0;">' + escHtml(d.error) + '</p>';
+                        }
+                    } else if (type === 'whois') {
+                        if (d.status === 'success') {
+                            html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
+                            var fields = [
+                                ['<?php echo esc_js(__('IP Range', 'pointnet-mailguard')); ?>', d.inetnum],
+                                ['<?php echo esc_js(__('Net Name', 'pointnet-mailguard')); ?>', d.netname],
+                                ['<?php echo esc_js(__('Organization', 'pointnet-mailguard')); ?>', d.org],
+                                ['<?php echo esc_js(__('Country', 'pointnet-mailguard')); ?>', d.country],
+                                ['<?php echo esc_js(__('Person', 'pointnet-mailguard')); ?>', d.person],
+                                ['<?php echo esc_js(__('Email', 'pointnet-mailguard')); ?>', d.email],
+                                ['<?php echo esc_js(__('Source', 'pointnet-mailguard')); ?>', d.source],
+                            ];
+                            $.each(fields, function(i, f) {
+                                if (f[1]) {
+                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
+                                    html += '<td style="padding:4px 6px; font-weight:600; width:35%;">' + escHtml(f[0]) + '</td>';
+                                    html += '<td style="padding:4px 6px; color:#333;">' + escHtml(f[1]) + '</td>';
+                                    html += '</tr>';
+                                }
+                            });
+                            html += '</table>';
+                            if (d.remarks) {
+                                html += '<p style="font-size:11px; color:#666; margin:6px 0 0;">' + escHtml(d.remarks) + '</p>';
+                            }
+                        } else {
+                            html = '<p style="font-size:13px; color:#d63638; margin:0;">' + escHtml(d.error) + '</p>';
+                        }
+                    }
+
+                    $body.html(html);
+                    if (callback) callback();
+                }).fail(function() {
+                    $body.html('<div class="notice notice-error inline" style="margin:0;"><p><?php echo esc_js(__('Network error.', 'pointnet-mailguard')); ?></p></div>');
+                    if (callback) callback();
+                });
+            }
+
+            $('#pn-ip-analyze-all').on('click', analyzeIpAll);
+            $('#pn-ip-address').on('keydown', function(e) {
+                if (e.key === 'Enter' && !isIpAnalyzing) {
+                    e.preventDefault();
+                    analyzeIpAll();
+                }
+            });
         });
         </script>
         <?php
     }
 
     // -------------------------------------------------------------------------
-    // TAB: Settings
+    // TAB: Advanced (only DKIM + Gemini config)
     // -------------------------------------------------------------------------
 
-    private static function render_settings(string $check_email, string $check_ip, string $alert_email): void {
+    private static function render_advanced(): void {
         $gemini_key   = get_option('pn_mailguard_gemini_key', '');
         $gemini_model = get_option('pn_mailguard_gemini_model', '');
         $dkim_sel     = get_option('pn_mailguard_dkim_selector', '');
         ?>
-        <form method="post">
-            <?php wp_nonce_field('pn_mailguard_save_action', 'pn_mailguard_nonce'); ?>
+        <div class="card" style="padding:16px; max-width:800px;">
+            <h2 style="margin-top:0;">🔑 <?php esc_html_e('DKIM Configuration', 'pointnet-mailguard'); ?></h2>
+            <p><?php esc_html_e('The DKIM selector is used to automatically detect your DKIM DNS record. If auto-detection fails, you can set it here.', 'pointnet-mailguard'); ?></p>
 
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th scope="row"><label for="pn_mailguard_check_email">📧 <?php esc_html_e('Email to Monitor', 'pointnet-mailguard'); ?></label></th>
-                    <td>
-                        <input type="email" name="pn_mailguard_check_email" id="pn_mailguard_check_email"
-                            value="<?php echo esc_attr($check_email); ?>" class="regular-text" placeholder="info@yourdomain.com">
-                        <p class="description"><?php esc_html_e('The plugin will detect your mail server automatically and run DNSBL, PTR and SPF checks on it.', 'pointnet-mailguard'); ?></p>
-                    </td>
-                </tr>
+            <form method="post">
+                <?php wp_nonce_field('pn_mailguard_save_action', 'pn_mailguard_nonce'); ?>
 
-                <tr>
-                    <th scope="row"><label for="pn_mailguard_check_ip">🌐 <?php esc_html_e('IP Address to Monitor', 'pointnet-mailguard'); ?></label></th>
-                    <td>
-                        <input type="text" name="pn_mailguard_check_ip" id="pn_mailguard_check_ip"
-                            value="<?php echo esc_attr($check_ip); ?>" class="regular-text" placeholder="1.2.3.4">
-                        <p class="description"><?php esc_html_e('Optional — enter any IPv4 address. Useful for monitoring a VPS, mail relay or third-party mail server directly.', 'pointnet-mailguard'); ?></p>
-                    </td>
-                </tr>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><label for="pn_mailguard_dkim_selector">🔑 <?php esc_html_e('DKIM Selector', 'pointnet-mailguard'); ?></label></th>
+                        <td>
+                            <input type="text" name="pn_mailguard_dkim_selector" id="pn_mailguard_dkim_selector"
+                                value="<?php echo esc_attr($dkim_sel); ?>" class="regular-text" placeholder="<?php esc_attr_e('Leave empty to auto-detect', 'pointnet-mailguard'); ?>">
+                            <p class="description"><?php esc_html_e('Optional. If DKIM auto-detection does not find your selector, enter it here. Common examples: google, selector1, mail, dkim.', 'pointnet-mailguard'); ?></p>
+                        </td>
+                    </tr>
+                </table>
 
-                <tr>
-                    <th scope="row"><label for="pn_mailguard_email_alert">📬 <?php esc_html_e('Alert Email Address', 'pointnet-mailguard'); ?></label></th>
-                    <td>
-                        <input type="email" name="pn_mailguard_email_alert" id="pn_mailguard_email_alert"
-                            value="<?php echo esc_attr($alert_email); ?>" class="regular-text" placeholder="admin@yourdomain.com">
-                        <p class="description"><?php esc_html_e('We recommend a different address from the one you monitor — if your server has issues, alerts sent to the same address may not arrive.', 'pointnet-mailguard'); ?></p>
-                    </td>
-                </tr>
+                <hr>
 
-                <tr>
-                    <th scope="row"><label for="pn_mailguard_dkim_selector">🔑 <?php esc_html_e('DKIM Selector', 'pointnet-mailguard'); ?></label></th>
-                    <td>
-                        <input type="text" name="pn_mailguard_dkim_selector" id="pn_mailguard_dkim_selector"
-                            value="<?php echo esc_attr($dkim_sel); ?>" class="regular-text" placeholder="<?php esc_attr_e('Leave empty to auto-detect', 'pointnet-mailguard'); ?>">
-                        <p class="description"><?php esc_html_e('Optional. If DKIM auto-detection does not find your selector, enter it here and save. Common examples: google, selector1, mail, dkim.', 'pointnet-mailguard'); ?></p>
-                    </td>
-                </tr>
-            </table>
+                <h2>🤖 <?php esc_html_e('AI Configuration (Gemini API)', 'pointnet-mailguard'); ?></h2>
+                <p><?php esc_html_e('Configure your Google Gemini API key and model for AI-powered deliverability analysis.', 'pointnet-mailguard'); ?></p>
 
-            <hr>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><label for="pn_mailguard_gemini_key"><?php esc_html_e('Gemini API Key', 'pointnet-mailguard'); ?></label></th>
+                        <td>
+                            <input type="password" name="pn_mailguard_gemini_key" id="pn_mailguard_gemini_key"
+                                value="<?php echo esc_attr($gemini_key); ?>" class="regular-text" placeholder="AIza...">
+                            <p class="description">
+                                <?php esc_html_e('Get your free API key from', 'pointnet-mailguard'); ?>
+                                <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>.
+                                <?php esc_html_e('You can also define', 'pointnet-mailguard'); ?>
+                                <code>PN_MAILGUARD_GEMINI_KEY</code> <?php esc_html_e('in wp-config.php.', 'pointnet-mailguard'); ?>
+                            </p>
+                        </td>
+                    </tr>
 
-            <h2 style="margin-top:24px;">🤖 <?php esc_html_e('AI Configuration (Gemini API)', 'pointnet-mailguard'); ?></h2>
-            <p><?php esc_html_e('Configure your Google Gemini API key and model for AI-powered deliverability analysis.', 'pointnet-mailguard'); ?></p>
+                    <tr>
+                        <th scope="row"><label for="pn_mailguard_gemini_model"><?php esc_html_e('AI Model', 'pointnet-mailguard'); ?></label></th>
+                        <td>
+                            <div style="display:flex; gap:6px; align-items:flex-start;">
+                                <select name="pn_mailguard_gemini_model" id="pn_mailguard_gemini_model" style="min-width:300px;">
+                                    <option value=""><?php esc_html_e('Default (gemini-3.1-flash-lite)', 'pointnet-mailguard'); ?></option>
+                                    <?php
+                                    $available = PN_Mailguard_AI::fetch_available_models();
+                                    foreach ($available as $id => $display) {
+                                        $selected = selected($id, $gemini_model, false);
+                                        echo '<option value="' . esc_attr($id) . '" ' . $selected . '>' . esc_html($display . ' (' . $id . ')') . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                                <button type="button" id="pn-fetch-models-btn" class="button button-secondary">
+                                    🔄 <?php esc_html_e('Fetch Models', 'pointnet-mailguard'); ?>
+                                </button>
+                            </div>
+                            <p class="description">
+                                <?php esc_html_e('Choose a model. You can also set', 'pointnet-mailguard'); ?>
+                                <code>PN_MAILGUARD_GEMINI_MODEL</code> <?php esc_html_e('in wp-config.php.', 'pointnet-mailguard'); ?>
+                                <?php if (empty($gemini_key)): ?>
+                                <br><strong style="color:#d63638;"><?php esc_html_e('Save your AI API key first to see available models.', 'pointnet-mailguard'); ?></strong>
+                                <?php endif; ?>
+                            </p>
+                            <div id="pn-fetch-models-status" style="font-size:11px; margin-top:4px;"></div>
+                        </td>
+                    </tr>
+                </table>
 
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th scope="row"><label for="pn_mailguard_gemini_key"><?php esc_html_e('Gemini API Key', 'pointnet-mailguard'); ?></label></th>
-                    <td>
-                        <input type="password" name="pn_mailguard_gemini_key" id="pn_mailguard_gemini_key"
-                            value="<?php echo esc_attr($gemini_key); ?>" class="regular-text" placeholder="AIza...">
-                        <p class="description">
-                            <?php esc_html_e('Get your free API key from', 'pointnet-mailguard'); ?>
-                            <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>.
-                            <?php esc_html_e('You can also define', 'pointnet-mailguard'); ?>
-                            <code>PN_MAILGUARD_GEMINI_KEY</code> <?php esc_html_e('in wp-config.php.', 'pointnet-mailguard'); ?>
-                        </p>
-                    </td>
-                </tr>
+                <p class="submit">
+                    <input type="submit" name="pn_mailguard_save_settings" class="button button-primary button-hero"
+                        value="<?php esc_attr_e('Save Settings', 'pointnet-mailguard'); ?>">
+                </p>
+            </form>
+        </div>
 
-                <tr>
-                    <th scope="row"><label for="pn_mailguard_gemini_model"><?php esc_html_e('AI Model', 'pointnet-mailguard'); ?></label></th>
-                    <td>
-                        <select name="pn_mailguard_gemini_model" id="pn_mailguard_gemini_model" style="min-width:300px;">
-                            <option value=""><?php esc_html_e('Default (gemini-3.1-flash-lite)', 'pointnet-mailguard'); ?></option>
-                            <?php
-                            $available = PN_Mailguard_AI::fetch_available_models();
-                            foreach ($available as $id => $display) {
-                                $selected = selected($id, $gemini_model, false);
-                                echo '<option value="' . esc_attr($id) . '" ' . $selected . '>' . esc_html($display . ' (' . $id . ')') . '</option>';
-                            }
-                            ?>
-                        </select>
-                        <p class="description">
-                            <?php esc_html_e('Choose a model. You can also set', 'pointnet-mailguard'); ?>
-                            <code>PN_MAILGUARD_GEMINI_MODEL</code> <?php esc_html_e('in wp-config.php.', 'pointnet-mailguard'); ?>
-                            <?php if (empty($gemini_key)): ?>
-                            <br><strong style="color:#d63638;"><?php esc_html_e('Save your AI API key first to see available models.', 'pointnet-mailguard'); ?></strong>
-                            <?php endif; ?>
-                        </p>
-                    </td>
-                </tr>
-            </table>
+        <script>
+        jQuery(document).ready(function($) {
+            var pnNonce = "<?php echo esc_js(wp_create_nonce('pn_mailguard_ajax_nonce')); ?>";
+            var $fetchBtn = $('#pn-fetch-models-btn');
+            var $modelSelect = $('#pn_mailguard_gemini_model');
+            var $fetchStatus = $('#pn-fetch-models-status');
 
-            <p class="submit">
-                <input type="submit" name="pn_mailguard_save_settings" class="button button-primary button-hero"
-                    value="<?php esc_attr_e('Save Settings', 'pointnet-mailguard'); ?>">
-            </p>
-        </form>
+            $fetchBtn.on('click', function() {
+                $fetchBtn.prop('disabled', true).text('⏳ <?php echo esc_js(__('Loading...', 'pointnet-mailguard')); ?>');
+                $fetchStatus.html('<span style="color:#999;"><?php echo esc_js(__('Fetching available models...', 'pointnet-mailguard')); ?></span>');
+
+                $.post(ajaxurl, {
+                    action: 'pn_mailguard_fetch_models',
+                    nonce: pnNonce
+                }, function(res) {
+                    $fetchBtn.prop('disabled', false).text('🔄 <?php echo esc_js(__('Fetch Models', 'pointnet-mailguard')); ?>');
+                    if (res.success && res.data) {
+                        var currentVal = $modelSelect.val();
+                        $modelSelect.find('option:not(:first)').remove();
+                        var hasModels = false;
+                        $.each(res.data, function(id, display) {
+                            var selected = (id === currentVal) ? ' selected' : '';
+                            $modelSelect.append('<option value="' + id + '"' + selected + '>' + display + ' (' + id + ')</option>');
+                            hasModels = true;
+                        });
+                        if (hasModels) {
+                            $fetchStatus.html('<span style="color:#00a32a;">✅ <?php echo esc_js(__('Models updated successfully.', 'pointnet-mailguard')); ?></span>');
+                        } else {
+                            $fetchStatus.html('<span style="color:#dba617;"><?php echo esc_js(__('No models found. Make sure your API key is valid.', 'pointnet-mailguard')); ?></span>');
+                        }
+                    } else {
+                        $fetchStatus.html('<span style="color:#d63638;"><?php echo esc_js(__('Failed to fetch models. Check your API key.', 'pointnet-mailguard')); ?></span>');
+                    }
+                }).fail(function() {
+                    $fetchBtn.prop('disabled', false).text('🔄 <?php echo esc_js(__('Fetch Models', 'pointnet-mailguard')); ?>');
+                    $fetchStatus.html('<span style="color:#d63638;"><?php echo esc_js(__('Network error.', 'pointnet-mailguard')); ?></span>');
+                });
+            });
+        });
+        </script>
         <?php
     }
 
@@ -1276,6 +1702,8 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die(-1);
 
+        // Clear cache first, then fetch fresh models
+        PN_Mailguard_AI::clear_models_cache();
         $models = PN_Mailguard_AI::fetch_available_models();
         wp_send_json_success($models);
     }
@@ -1320,6 +1748,62 @@ class PN_Mailguard_Dashboard {
             wp_send_json_error(['message' => $result['error_msg'] ?? 'AI analysis failed.']);
         }
 
+        wp_send_json_success($result);
+    }
+
+    // -------------------------------------------------------------------------
+    // AJAX — IP Analysis tools
+    // -------------------------------------------------------------------------
+
+    public static function ajax_ip_dnsbl(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die(-1);
+
+        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        if (empty($ip)) {
+            wp_send_json_error(['message' => 'IP address is required.']);
+        }
+
+        $result = PN_Mailguard_DNSBL::check($ip);
+        wp_send_json_success($result);
+    }
+
+    public static function ajax_ip_ptr(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die(-1);
+
+        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        if (empty($ip)) {
+            wp_send_json_error(['message' => 'IP address is required.']);
+        }
+
+        $result = PN_Mailguard_PTR::check($ip);
+        wp_send_json_success($result);
+    }
+
+    public static function ajax_ip_geoip(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die(-1);
+
+        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        if (empty($ip)) {
+            wp_send_json_error(['message' => 'IP address is required.']);
+        }
+
+        $result = PN_Mailguard_GeoIP::lookup($ip);
+        wp_send_json_success($result);
+    }
+
+    public static function ajax_ip_whois(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die(-1);
+
+        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        if (empty($ip)) {
+            wp_send_json_error(['message' => 'IP address is required.']);
+        }
+
+        $result = PN_Mailguard_Whois::lookup($ip);
         wp_send_json_success($result);
     }
 }

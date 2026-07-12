@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 6.5  
 **Tested up to:** 7.1
-**Stable tag:** 1.7.0  
+**Stable tag:** 1.7.2  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -78,6 +78,25 @@ SpamCop, Barracuda, SORBS, UCEProtect Level 1 and PSBL. Spamhaus is intentionall
 Yes, automatically. Any SMTP plugin hooks into `wp_mail()`. PointNet Mail Guard uses `wp_mail()` for all alerts, so your SMTP configuration is picked up with no extra setup.
 
 ## Changelog
+
+### 1.7.2
+- Fixed: GeoIP lookup — switched from ip-api.com (HTTP 403) to ipwhois.app for reliable geolocation
+- Fixed: WHOIS lookup — replaced fsockopen (TCP port 43, often blocked) with RDAP HTTPS API (rdap.org)
+- Fixed: Monitor inline edit no longer clears the other monitor (sending email edit no longer removes IP and vice versa)
+- Fixed: Advanced tab "Save Settings" no longer clears Email/IP monitors (save_settings now uses isset() check)
+- New: DKIM Selector auto-detection in onboarding wizard (Step 4 with 🔍 Detect button)
+- New: 🔄 Fetch Models button in Advanced tab — refresh available Gemini models list without reloading
+- New: Models cache automatically cleared when API key changes
+
+### 1.7.1
+- New: IP Analysis section in DNS & IP Tools tab — analyze any IPv4 address with DNSBL, PTR, GeoIP and WHOIS lookups
+- New: GeoIP lookup — country, region, city, ISP, ASN via ip-api.com (free, no API key required)
+- New: WHOIS lookup — IP block owner, range, organization via regional internet registries (RIRs)
+- New: Inline edit for monitor cards — ✏️ button to change email/IP/alert email directly from the Monitors tab
+- Changed: Tab "Settings" renamed to "Advanced" — now only contains DKIM Selector and Gemini AI config
+- Changed: Monitor configuration removed from Advanced tab — now editable directly via the Monitor cards
+- Changed: Tab "DNS Tools" renamed to "DNS & IP Tools" — expanded with IP analysis section
+- Updated Italian translation (.pot/.po)
 
 ### 1.7.0
 - New: Gemini AI model selector — fetch available models from Gemini API and choose your preferred model in Settings
