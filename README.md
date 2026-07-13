@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 6.5  
 **Tested up to:** 7.0  
-**Stable tag:** 1.7.4  
+**Stable tag:** 1.7.5  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -19,11 +19,33 @@ PointNet Mail Guard is a complete email deliverability monitoring system for Wor
 The plugin offers **two independent monitors** in a tabbed admin interface:
 
 - **Email Monitor** — enter your sender email, the plugin detects your mail server automatically via MX lookup and runs a full deliverability check.
-- **IP Monitor** — enter any IPv4 address to monitor your VPS, mail relay or any server independently.
+- **IP Monitor** — enter any IPv4 or IPv6 address to monitor your VPS, mail relay or any server independently.
 
 Both monitors run daily via WP-Cron, keep separate logs, and send email alerts only when problems are detected.
 
 Developed by [PointNet](https://www.pointnet.it/).
+
+## IPv6 Support
+
+| Feature | IPv4 | IPv6 | Notes |
+|---|---|---|---|
+| DNSBL checks (9 blacklists) | ✅ | ❌ | Only SPFBL supports IPv6. 8 of 9 blacklists return NXDOMAIN. |
+| PTR (reverse DNS) | ✅ | ✅ | Native PHP function `gethostbyaddr()` |
+| GeoIP (ipwhois.app) | ✅ | ✅ | API supports both |
+| WHOIS (rdap.org) | ✅ | ✅ | API supports both |
+| SPF Analyzer | ✅ | ✅ | `ip6:` mechanisms recognized |
+| DMARC Analyzer | ✅ | ✅ | DNS-based |
+| DKIM Analyzer | ✅ | ✅ | DNS-based |
+| IP Monitor | ✅ | ✅ | PTR/GeoIP/WHOIS work; DNSBL shows informative message |
+| IP Analysis tool | ✅ | ✅ | PTR/GeoIP/WHOIS work; DNSBL shows informative message |
+
+## Security
+- **API Key encryption**: Gemini API keys are encrypted with AES-256-CBC before storage in the database. The encryption key is derived from your WordPress `SECURE_AUTH_KEY` salt. Plaintext keys are automatically migrated on first use.
+- **Header-based API authentication**: API keys are sent via `x-goog-api-key` HTTP header instead of URL query string, preventing key leakage in server access logs.
+- **Keys never exposed in UI**: The admin interface shows only a placeholder when a key is configured — the actual key (plaintext or encrypted) is never sent to the browser.
+- **Full input sanitization**: All user inputs are sanitized with `sanitize_email()`, `sanitize_text_field()`, and `filter_var()` for IP addresses.
+- **CSRF protection via nonces**: Every AJAX handler and form submission validates a WordPress nonce.
+- **Capability checks**: All administrative actions require `manage_options` capability.
 
 ## Features
 
@@ -108,6 +130,16 @@ This plugin has not been tested on WordPress Multisite. Use on a network install
 By default, all plugin data (tables, settings, and logs) is removed when you delete the plugin from the Plugins screen. If you want to keep your data in the database — for example if you plan to reinstall the plugin later — go to **Advanced** → **Uninstall Behavior** and uncheck "Delete all data on uninstall" before deleting the plugin.
 
 ## Changelog
+
+### 1.7.5
+* **Security**: Gemini API key encrypted with AES-256-CBC before database storage
+* **Security**: API key sent via `x-goog-api-key` header instead of URL query string
+* **Security**: API key field shows `********` placeholder — actual key never visible
+* **IPv6**: DNSBL checks now detect IPv6 and show clear message (only 1 of 9 blacklists supports IPv6)
+* **IPv6**: WHOIS lookup now supports IPv6 addresses (rdap.org API)
+* **IPv6**: IP Monitor now accepts IPv6 (PTR/GeoIP/WHOIS work; DNSBL shows informative message)
+* **IPv6**: IP Analysis tool accepts IPv6 for PTR, GeoIP, WHOIS
+* Added: `includes/class-crypto.php` — AES-256-CBC encryption helper using WordPress SECURE_AUTH_KEY
 
 ### 1.7.4
 * New: Export / Support tab — download full diagnostic JSON report for assistance or AI external analysis

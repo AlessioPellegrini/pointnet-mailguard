@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 1.7.4
+Stable tag: 1.7.5
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -110,6 +110,16 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 3. Log table with colour-coded status: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
 == Changelog ==
+
+= 1.7.5 =
+* Security: Gemini API key encrypted with AES-256-CBC before database storage
+* Security: API key sent via x-goog-api-key header instead of URL query string
+* Security: API key field shows ******** placeholder — actual key never visible
+* IPv6: DNSBL checks now detect IPv6 and show clear message (only 1 of 9 blacklists supports IPv6)
+* IPv6: WHOIS lookup now supports IPv6 addresses (rdap.org API)
+* IPv6: IP Monitor now accepts IPv6 (PTR/GeoIP/WHOIS work; DNSBL shows informative message)
+* IPv6: IP Analysis tool accepts IPv6 for PTR, GeoIP, WHOIS
+* Added: includes/class-crypto.php — AES-256-CBC encryption helper using WordPress SECURE_AUTH_KEY
 
 = 1.7.4 =
 * New: Export / Support tab — download full diagnostic JSON report for assistance or AI external analysis

@@ -101,7 +101,7 @@ class PN_Mailguard_AI {
         if (defined('PN_MAILGUARD_GEMINI_KEY') && !empty(PN_MAILGUARD_GEMINI_KEY)) {
             return true;
         }
-        $key = get_option('pn_mailguard_gemini_key', '');
+        $key = self::get_api_key();
         return !empty($key);
     }
 
@@ -233,16 +233,43 @@ class PN_Mailguard_AI {
     }
 
     /**
+     * Retrieve the Gemini API key.
+     *
+     * Priority: 1) PN_MAILGUARD_GEMINI_KEY constant, 2) decrypted saved option.
+     *
+     * @return string The API key, or empty string if not configured.
+     */
+    private static function get_api_key(): string {
+        if (defined('PN_MAILGUARD_GEMINI_KEY') && !empty(PN_MAILGUARD_GEMINI_KEY)) {
+            return PN_MAILGUARD_GEMINI_KEY;
+        }
+
+        $saved = get_option('pn_mailguard_gemini_key', '');
+
+        if (empty($saved)) {
+            return '';
+        }
+
+        // If the value looks encrypted, decrypt it.
+        // If not encrypted (legacy plaintext key), encrypt it for the future.
+        if (PN_Mailguard_Crypto::is_encrypted($saved)) {
+            return PN_Mailguard_Crypto::decrypt($saved);
+        }
+
+        // Legacy plaintext key — migrate to encrypted storage
+        $encrypted = PN_Mailguard_Crypto::encrypt($saved);
+        if (!empty($encrypted)) {
+            update_option('pn_mailguard_gemini_key', $encrypted);
+        }
+
+        return $saved;
+    }
+
+    /**
      * Call the Gemini API.
      */
     private static function call_api(string $prompt): array {
-        $api_key = '';
-
-        if (defined('PN_MAILGUARD_GEMINI_KEY')) {
-            $api_key = PN_MAILGUARD_GEMINI_KEY;
-        } else {
-            $api_key = get_option('pn_mailguard_gemini_key', '');
-        }
+        $api_key = self::get_api_key();
 
         if (empty($api_key)) {
             return [
@@ -259,11 +286,12 @@ class PN_Mailguard_AI {
 
         $model = self::get_configured_model();
         $response = wp_remote_post(
-            'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $api_key,
+            'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent',
             [
                 'timeout' => 30,
                 'headers' => [
-                    'Content-Type' => 'application/json',
+                    'Content-Type'  => 'application/json',
+                    'x-goog-api-key' => $api_key,
                 ],
                 'body' => wp_json_encode([
                     'contents' => [
@@ -432,20 +460,20 @@ class PN_Mailguard_AI {
             return $cached;
         }
 
-        $api_key = '';
-        if (defined('PN_MAILGUARD_GEMINI_KEY')) {
-            $api_key = PN_MAILGUARD_GEMINI_KEY;
-        } else {
-            $api_key = get_option('pn_mailguard_gemini_key', '');
-        }
+        $api_key = self::get_api_key();
 
         if (empty($api_key)) {
             return [];
         }
 
         $response = wp_remote_get(
-            'https://generativelanguage.googleapis.com/v1beta/models?key=' . $api_key,
-            ['timeout' => 15]
+            'https://generativelanguage.googleapis.com/v1beta/models',
+            [
+                'timeout' => 15,
+                'headers' => [
+                    'x-goog-api-key' => $api_key,
+                ],
+            ]
         );
 
         if (is_wp_error($response)) {
@@ -520,13 +548,7 @@ class PN_Mailguard_AI {
      * @return string           The model's text response, or an error message.
      */
     public static function chat(string $question, string $domain = '', string $email = '', string $selector = ''): string {
-        $api_key = '';
-
-        if (defined('PN_MAILGUARD_GEMINI_KEY')) {
-            $api_key = PN_MAILGUARD_GEMINI_KEY;
-        } else {
-            $api_key = get_option('pn_mailguard_gemini_key', '');
-        }
+        $api_key = self::get_api_key();
 
         if (empty($api_key)) {
             return __('AI not configured. Add your Gemini API key in Settings.', 'pointnet-mailguard');
@@ -590,11 +612,12 @@ class PN_Mailguard_AI {
         $full_prompt .= $question;
 
         $response = wp_remote_post(
-            'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . $api_key,
+            'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent',
             [
                 'timeout' => 30,
                 'headers' => [
-                    'Content-Type' => 'application/json',
+                    'Content-Type'  => 'application/json',
+                    'x-goog-api-key' => $api_key,
                 ],
                 'body' => wp_json_encode([
                     'contents' => [

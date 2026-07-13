@@ -41,8 +41,8 @@ class PN_Mailguard_Dashboard {
 
         if (isset($_POST['pn_mailguard_check_ip'])) {
             $check_ip = sanitize_text_field($_POST['pn_mailguard_check_ip']);
-            if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                add_settings_error('pn_mailguard_messages', 'invalid_ip', __('Please enter a valid IPv4 address.', 'pointnet-mailguard'), 'error');
+            if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP)) {
+                add_settings_error('pn_mailguard_messages', 'invalid_ip', __('Please enter a valid IPv4 or IPv6 address.', 'pointnet-mailguard'), 'error');
                 return;
             }
             update_option('pn_mailguard_check_ip', $check_ip);
@@ -61,15 +61,33 @@ class PN_Mailguard_Dashboard {
 
         // Save DKIM selector and Gemini config (from onboarding or advanced tab)
         $dkim_selector = isset($_POST['pn_mailguard_dkim_selector']) ? sanitize_text_field($_POST['pn_mailguard_dkim_selector']) : '';
-        $gemini_key    = isset($_POST['pn_mailguard_gemini_key']) ? sanitize_text_field($_POST['pn_mailguard_gemini_key']) : '';
         $gemini_model  = isset($_POST['pn_mailguard_gemini_model']) ? sanitize_text_field($_POST['pn_mailguard_gemini_model']) : '';
         update_option('pn_mailguard_dkim_selector', $dkim_selector);
-        update_option('pn_mailguard_gemini_key', $gemini_key);
+
+        // Encrypt Gemini API key before storing in the database.
+        // The HTML password field shows "********" as placeholder when a key is already saved.
+        // If the submitted value is empty or the placeholder, keep the existing encrypted key.
+        $submitted_key = isset($_POST['pn_mailguard_gemini_key']) ? sanitize_text_field($_POST['pn_mailguard_gemini_key']) : '';
+
+        if (empty($submitted_key)) {
+            // User cleared the field — delete the key
+            delete_option('pn_mailguard_gemini_key');
+        } elseif ($submitted_key === '********') {
+            // User did not change the key — preserve whatever is stored
+            // (no update needed, the existing value remains)
+        } else {
+            // User entered a new key — encrypt and save it
+            $gemini_key = PN_Mailguard_Crypto::encrypt($submitted_key);
+            update_option('pn_mailguard_gemini_key', $gemini_key);
+        }
         update_option('pn_mailguard_gemini_model', $gemini_model);
 
         // Save uninstall cleanup preference
-        // Checkbox not sent when unchecked, so default to '' (disabled)
-        update_option('pn_mailguard_uninstall_cleanup', isset($_POST['pn_mailguard_uninstall_cleanup']) ? '1' : '');
+        // Only update when the field is present in the request (Advanced tab).
+        // Other tabs (Monitors, Onboarding) do not include this field, so the existing value is preserved.
+        if (array_key_exists('pn_mailguard_uninstall_cleanup', $_POST)) {
+            update_option('pn_mailguard_uninstall_cleanup', $_POST['pn_mailguard_uninstall_cleanup'] === '1' ? '1' : '0');
+        }
 
         // Clear models cache when API key changes
         PN_Mailguard_AI::clear_models_cache();
@@ -96,8 +114,8 @@ class PN_Mailguard_Dashboard {
 
         if (isset($_POST['pn_mailguard_check_ip'])) {
             $check_ip = sanitize_text_field($_POST['pn_mailguard_check_ip']);
-            if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                wp_send_json_error(['message' => __('Please enter a valid IPv4 address.', 'pointnet-mailguard')]);
+            if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP)) {
+                wp_send_json_error(['message' => __('Please enter a valid IPv4 or IPv6 address.', 'pointnet-mailguard')]);
             }
             update_option('pn_mailguard_check_ip', $check_ip);
         }
@@ -307,7 +325,7 @@ class PN_Mailguard_Dashboard {
         if ($dmarc_data  && $dmarc_data['status'] !== 'ok') $issues++;
         if ($dkim_data   && $dkim_data['status']  !== 'ok') $issues++;
         $email_active = !empty($check_email) && is_email($check_email);
-        $ip_active    = !empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+        $ip_active    = !empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP);
         if ($email_active && $last_email && in_array($last_email->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true)) $issues++;
         if ($ip_active && $last_ip && in_array($last_ip->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true)) $issues++;
 
@@ -357,7 +375,7 @@ class PN_Mailguard_Dashboard {
                     <?php self::badge('DMARC', $dmarc_data, 'dmarc'); ?>
                     <?php self::badge('DKIM',  $dkim_data,  'dkim'); ?>
                     <?php self::monitor_badge(__('Email', 'pointnet-mailguard'), $last_email, !empty($check_email) && is_email($check_email)); ?>
-                    <?php self::monitor_badge(__('IP',    'pointnet-mailguard'), $last_ip, !empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)); ?>
+                    <?php self::monitor_badge(__('IP',    'pointnet-mailguard'), $last_ip, !empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP)); ?>
                 </div>
             </div>
         </div>
@@ -494,18 +512,28 @@ class PN_Mailguard_Dashboard {
             : __('🌐 Run IP Diagnosis', 'pointnet-mailguard');
         $active   = $is_email
             ? (!empty($value) && is_email($value))
-            : (!empty($value) && filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4));
+            : (!empty($value) && filter_var($value, FILTER_VALIDATE_IP));
         $disabled = !$active;
         $alert_email = get_option('pn_mailguard_email_alert', get_option('admin_email'));
         $tooltip_text = $is_email
             ? __('Auto-detects your mail server IP via MX lookup and runs full checks.', 'pointnet-mailguard')
             : __('Monitors a SEPARATE IP (your mail server is already covered by the email monitor above).', 'pointnet-mailguard');
+        $tooltip_ip = '';
+        if (!$is_email && !empty($value)) {
+            $is_ipv4 = filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false;
+            if ($is_ipv4) {
+                $tooltip_ip = __('IPv4: DNSBL (9 blacklist) + PTR reverse DNS. For GeoIP and WHOIS use the DNS & IP Tools tab.', 'pointnet-mailguard');
+            } else {
+                $tooltip_ip = __('IPv6: PTR reverse DNS only. DNSBL checks are not available (only 1 of 9 blacklists supports IPv6). For GeoIP and WHOIS use the DNS & IP Tools tab.', 'pointnet-mailguard');
+            }
+        }
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; overflow:hidden;">
             <div style="background:#f8f8f8; border-bottom:1px solid #e0e0e0; padding:12px 16px; display:flex; align-items:center; gap:8px;">
                 <span style="font-size:18px;"><?php echo esc_html($icon); ?></span>
                 <span style="font-size:14px; font-weight:600;"><?php echo esc_html($title); ?></span>
-                <span style="font-size:11px; color:#999; cursor:help; position:relative;" title="<?php echo esc_attr($tooltip_text); ?>">ℹ️</span>
+                <span style="font-size:11px; color:#999; cursor:help; position:relative;"
+                    title="<?php echo esc_attr($tooltip_text); ?><?php echo !empty($tooltip_ip) ? "\n\n" . esc_attr($tooltip_ip) : ''; ?>">ℹ️</span>
                 <button type="button" id="<?php echo esc_attr($edit_id); ?>" class="button button-small button-secondary" style="margin-left:auto;" title="<?php esc_attr_e('Edit this monitor', 'pointnet-mailguard'); ?>">
                     ✏️
                 </button>
@@ -848,7 +876,7 @@ class PN_Mailguard_Dashboard {
         <hr style="margin:32px 0 24px;">
         <h2 style="font-size:16px; margin:0 0 8px; color:#1d2327;">🌐 <?php esc_html_e('IP Analysis', 'pointnet-mailguard'); ?></h2>
         <p style="font-size:13px; color:#666; margin:0 0 16px;">
-            <?php esc_html_e('Analyze any IPv4 address with DNSBL, PTR, GeoIP and WHOIS lookups.', 'pointnet-mailguard'); ?>
+            <?php esc_html_e('Analyze any IPv4 or IPv6 address with PTR, GeoIP and WHOIS lookups. DNSBL checks require IPv4 (8 of 9 blacklists do not support IPv6).', 'pointnet-mailguard'); ?>
         </p>
 
         <div style="margin-bottom:20px;">
@@ -1110,23 +1138,34 @@ class PN_Mailguard_Dashboard {
                     if (type === 'dnsbl') {
                         if (d.results) {
                             var anyListed = false;
+                            var ipv6Notice = false;
                             html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
                             $.each(d.results, function(name, status) {
-                                if (status === 'LISTED') anyListed = true;
-                                var dotColor = status === 'LISTED' ? '#d63638' : '#00a32a';
-                                var badgeText = status === 'LISTED' ? '✗ LISTED' : '✓ CLEAN';
-                                var badgeBg = status === 'LISTED' ? '#fbeaea' : '#edfaef';
-                                var badgeColor = status === 'LISTED' ? '#a30000' : '#00a32a';
-                                html += '<tr style="border-top:0.5px solid #e8e8e8;">';
-                                html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
-                                html += '<td style="padding:6px 4px; font-weight:600;">' + escHtml(name) + '</td>';
-                                html += '<td style="padding:6px 4px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
-                                html += '</tr>';
+                                if (name.indexOf('ℹ️') === 0) {
+                                    // Informational message (e.g. IPv6 notice) — show as blue info
+                                    ipv6Notice = true;
+                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
+                                    html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2271b1;"></span></td>';
+                                    html += '<td style="padding:6px 4px; font-weight:600; color:#2271b1;">' + escHtml(name) + '</td>';
+                                    html += '<td style="padding:6px 4px; color:#2271b1; font-size:11px;">' + escHtml(status) + '</td>';
+                                    html += '</tr>';
+                                } else {
+                                    if (status === 'LISTED') anyListed = true;
+                                    var dotColor = status === 'LISTED' ? '#d63638' : '#00a32a';
+                                    var badgeText = status === 'LISTED' ? '✗ LISTED' : '✓ CLEAN';
+                                    var badgeBg = status === 'LISTED' ? '#fbeaea' : '#edfaef';
+                                    var badgeColor = status === 'LISTED' ? '#a30000' : '#00a32a';
+                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
+                                    html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
+                                    html += '<td style="padding:6px 4px; font-weight:600;">' + escHtml(name) + '</td>';
+                                    html += '<td style="padding:6px 4px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
+                                    html += '</tr>';
+                                }
                             });
                             html += '</table>';
                             if (anyListed) {
                                 html += '<p style="font-size:11px; color:#d63638; margin:8px 0 0;">⚠ <?php echo esc_js(__('IP is listed on one or more blacklists!', 'pointnet-mailguard')); ?></p>';
-                            } else {
+                            } else if (!ipv6Notice) {
                                 html += '<p style="font-size:11px; color:#00a32a; margin:8px 0 0;">✅ <?php echo esc_js(__('IP is clean on all checked blacklists.', 'pointnet-mailguard')); ?></p>';
                             }
                         } else {
@@ -1220,7 +1259,9 @@ class PN_Mailguard_Dashboard {
     // -------------------------------------------------------------------------
 
     private static function render_advanced(): void {
-        $gemini_key   = get_option('pn_mailguard_gemini_key', '');
+        $stored_key  = get_option('pn_mailguard_gemini_key', '');
+        // Don't show the actual key (plaintext or encrypted) — display a placeholder if set
+        $gemini_key  = !empty($stored_key) ? '********' : '';
         $gemini_model = get_option('pn_mailguard_gemini_model', '');
         $dkim_sel     = get_option('pn_mailguard_dkim_selector', '');
         ?>

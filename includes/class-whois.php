@@ -35,15 +35,17 @@ class PN_Mailguard_Whois {
      * @return array
      */
     public static function lookup(string $ip): array {
-        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
             return [
                 'status' => 'error',
-                'error'  => sprintf(__('Invalid IPv4 address: %s', 'pointnet-mailguard'), $ip),
+                'error'  => sprintf(__('Invalid IP address: %s', 'pointnet-mailguard'), $ip),
             ];
         }
 
         // Use rdap.org REST API — no API key required
-        $url = 'https://rdap.org/ip/' . urlencode($ip);
+        // urlencode() is intentionally NOT used: IPv6 addresses with %3A cause HTTP 400 on rdap.org.
+        // Dots and colons are valid URL path characters.
+        $url = 'https://rdap.org/ip/' . $ip;
 
         $response = wp_remote_get($url, [
             'timeout' => 15,

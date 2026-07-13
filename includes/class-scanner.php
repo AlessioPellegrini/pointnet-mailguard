@@ -58,13 +58,15 @@ class PN_Mailguard_Scanner {
     }
 
     /**
-     * Run DNSBL + PTR checks directly on a given IPv4 address.
+     * Run DNSBL + PTR checks directly on a given IP address.
+     * Fully supports both IPv4 and IPv6.
+     * Note: DNSBL checks require IPv4 (8 of 9 blacklists do not support IPv6).
      *
      * @param string $ip
      * @return array
      */
     public static function run_ip(string $ip): array {
-        if (!PN_Mailguard_MX::is_valid_ipv4($ip)) {
+        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
             return [
                 'ip'          => $ip,
                 'dnsbl'       => [],
@@ -72,7 +74,7 @@ class PN_Mailguard_Scanner {
                 'ptr'         => '',
                 'ptr_warning' => false,
                 'error'       => sprintf(
-                    __('Invalid IPv4 address: %s', 'pointnet-mailguard'),
+                    __('Invalid IP address: %s', 'pointnet-mailguard'),
                     $ip
                 ),
             ];
@@ -106,7 +108,7 @@ class PN_Mailguard_Scanner {
 
         // IP scan
         $ip = get_option('pn_mailguard_check_ip', '');
-        if (!empty($ip) && PN_Mailguard_MX::is_valid_ipv4($ip)) {
+        if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP)) {
             $data = self::run_ip($ip);
             PN_Mailguard_Logger::save($data, 'ip');
             PN_Mailguard_Mailer::maybe_send($data, 'ip');

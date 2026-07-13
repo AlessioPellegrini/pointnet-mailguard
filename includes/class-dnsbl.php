@@ -42,12 +42,24 @@ class PN_Mailguard_DNSBL {
     ];
 
     /**
-     * Check an IPv4 address against all configured DNSBL zones.
+     * Check an IP address against all configured DNSBL zones.
+     * Currently only IPv4 is supported. IPv6 shows an informational message.
      *
      * @param string $ip
      * @return array
      */
     public static function check($ip): array {
+        // IPv6 is not supported by DNSBL — 8 out of 9 blacklists return NXDOMAIN.
+        // Only SPFBL supports IPv6, and it's not enough to justify the complexity.
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return [
+                'results'  => [
+                    __('ℹ️ IPv6', 'pointnet-mailguard') => __('DNSBL checks are IPv4 only. PTR and other checks are shown below.', 'pointnet-mailguard'),
+                ],
+                'is_alert' => false,
+            ];
+        }
+
         $results  = [];
         $is_alert = false;
 
