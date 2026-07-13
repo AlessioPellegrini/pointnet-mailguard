@@ -1,7 +1,10 @@
+# PointNet Mail Guard — Translation Template
+# Copyright (C) 2026 PointNet
+# This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: PointNet Mail Guard AI 1.0.0\n"
-"POT-Creation-Date: 2026-03-20 00:00+0100\n"
+"Project-Id-Version: PointNet Mail Guard 1.7.4\n"
+"POT-Creation-Date: 2026-07-13 12:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +18,16 @@ msgstr ""
 msgid "Unauthorized"
 msgstr ""
 
-msgid "Next automatic scan scheduled for:"
+msgid "Monitors"
+msgstr ""
+
+msgid "DNS & IP Tools"
+msgstr ""
+
+msgid "Advanced"
+msgstr ""
+
+msgid "Export / Support"
 msgstr ""
 
 msgid "Email Monitor"
@@ -24,10 +36,23 @@ msgstr ""
 msgid "IP Monitor"
 msgstr ""
 
-msgid "Email address to monitor"
+# Onboarding
+msgid "Step 1: Email to monitor"
 msgstr ""
 
-msgid "Enter the email address you send from (e.g. info@yourdomain.com). The plugin will detect your mail server automatically."
+msgid "The email address you send from — we will detect your mail server automatically."
+msgstr ""
+
+msgid "Step 2: Additional IP to monitor"
+msgstr ""
+
+msgid "(optional)"
+msgstr ""
+
+msgid "Your mail server IP is already monitored via the email above. You only need this if you want to monitor a different server — for example your web server, a VPS, or an SMTP relay service."
+msgstr ""
+
+msgid "Leave empty to skip — the email monitor already covers your mail server."
 msgstr ""
 
 msgid "Alert email"
@@ -36,30 +61,154 @@ msgstr ""
 msgid "Where to send alerts when problems are detected."
 msgstr ""
 
+msgid "Step 3: Alert email"
+msgstr ""
+
+msgid "Tip: use a different email from the one you monitor. If your mail server has issues, alerts sent to the same monitored address may not arrive."
+msgstr ""
+
 msgid "Save Settings"
+msgstr ""
+
+msgid "Save & Start Monitoring →"
+msgstr ""
+
+msgid "Settings saved."
+msgstr ""
+
+msgid "Please enter a valid email address to monitor."
+msgstr ""
+
+msgid "Please enter a valid IPv4 address."
+msgstr ""
+
+msgid "Please enter a valid alert email address."
+msgstr ""
+
+msgid "Monitor settings saved."
+msgstr ""
+
+msgid "Save failed."
+msgstr ""
+
+msgid "Saving..."
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Edit monitor settings:"
+msgstr ""
+
+msgid "Edit this monitor"
+msgstr ""
+
+msgid "Not configured. Click ✏️ to set up."
+msgstr ""
+
+msgid "No scan results yet."
 msgstr ""
 
 msgid "Run Diagnosis Now"
 msgstr ""
 
-msgid "Save a valid email address first."
+msgid "📧 Run Email Diagnosis"
 msgstr ""
 
-msgid "Email Monitor — Diagnostic Logs"
+msgid "🌐 Run IP Diagnosis"
 msgstr ""
 
-msgid "IP address to monitor"
+msgid "Auto-detected mail server IP"
 msgstr ""
 
-msgid "Enter any IPv4 address to monitor — your VPS, a mail relay, or any server you manage."
+msgid "Manual IP address"
 msgstr ""
 
-msgid "Save a valid IPv4 address first."
+msgid "Auto-detects your mail server IP via MX lookup and runs full checks."
 msgstr ""
 
-msgid "IP Monitor — Diagnostic Logs"
+msgid "Monitors a SEPARATE IP (your mail server is already covered by the email monitor above)."
 msgstr ""
 
+msgid "Auto-detected from Email Monitor: %s"
+msgstr ""
+
+msgid "Run Scheduled Scan Now"
+msgstr ""
+
+msgid "Scan failed."
+msgstr ""
+
+msgid "Running..."
+msgstr ""
+
+msgid "Next automatic scan:"
+msgstr ""
+
+# Status indicators
+msgid "All good"
+msgstr ""
+
+msgid "Attention needed"
+msgstr ""
+
+msgid "Issues detected"
+msgstr ""
+
+msgid "All checks passed"
+msgstr ""
+
+# DNS Analyzer
+msgid "Not analyzed yet."
+msgstr ""
+
+msgid "Not analyzed yet"
+msgstr ""
+
+msgid "Last scan"
+msgstr ""
+
+msgid "Detected providers:"
+msgstr ""
+
+msgid "DNS Record Status"
+msgstr ""
+
+msgid "SPF"
+msgstr ""
+
+msgid "DMARC"
+msgstr ""
+
+msgid "DKIM"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "IP"
+msgstr ""
+
+msgid "passed"
+msgstr ""
+
+msgid "warnings"
+msgstr ""
+
+msgid "errors"
+msgstr ""
+
+# Recent scans
+msgid "Recent scans"
+msgstr ""
+
+msgid "Last 5 scans"
+msgstr ""
+
+msgid "No scans yet. Click \"Run Diagnosis\" above."
+msgstr ""
+
+# Log table
 msgid "Date"
 msgstr ""
 
@@ -72,34 +221,377 @@ msgstr ""
 msgid "No logs found."
 msgstr ""
 
-msgid "Running..."
+# DNS Tools tab
+msgid "Domain to analyze"
 msgstr ""
 
-msgid "DIAGNOSIS COMPLETE."
+msgid "Enter any domain to check its SPF, DMARC and DKIM records at once."
 msgstr ""
 
-msgid "Settings saved."
+msgid "Analyze All Records"
 msgstr ""
 
-msgid "Please enter a valid alert email address."
+msgid "Analyze"
 msgstr ""
 
-msgid "Please enter a valid email address to monitor."
+msgid "Analyzing..."
 msgstr ""
 
-msgid "Please enter a valid IPv4 address to monitor."
+msgid "Analysis failed."
 msgstr ""
 
-msgid "Please wait 30 seconds before running another scan."
+msgid "Detected providers: %s"
 msgstr ""
 
-msgid "No valid email address configured. Please save your settings first."
+msgid "Optional — if DKIM auto-detection fails, enter your selector manually."
 msgstr ""
 
-msgid "No valid IP address configured. Please save your settings first."
+msgid "DKIM Selector"
 msgstr ""
 
-msgid "PointNet Mail Guard AI — ALERT"
+# IP Analysis section
+msgid "IP Analysis"
+msgstr ""
+
+msgid "Analyze any IPv4 address with DNSBL, PTR, GeoIP and WHOIS lookups."
+msgstr ""
+
+msgid "IP address to analyze"
+msgstr ""
+
+msgid "Enter any IPv4 address to check DNSBL blacklists, PTR record, geolocation and WHOIS info."
+msgstr ""
+
+msgid "Analyze IP"
+msgstr ""
+
+msgid "blacklists checked"
+msgstr ""
+
+msgid "DNSBL"
+msgstr ""
+
+msgid "Reverse DNS"
+msgstr ""
+
+msgid "PTR / Reverse DNS"
+msgstr ""
+
+msgid "Hostname lookup"
+msgstr ""
+
+msgid "GeoIP"
+msgstr ""
+
+msgid "Location & ISP"
+msgstr ""
+
+msgid "WHOIS"
+msgstr ""
+
+msgid "IP block info"
+msgstr ""
+
+msgid "IP is listed on one or more blacklists!"
+msgstr ""
+
+msgid "IP is clean on all checked blacklists."
+msgstr ""
+
+msgid "No DNSBL results."
+msgstr ""
+
+msgid "No PTR record found"
+msgstr ""
+
+msgid "PTR record found"
+msgstr ""
+
+# GeoIP fields
+msgid "Country"
+msgstr ""
+
+msgid "Region"
+msgstr ""
+
+msgid "City"
+msgstr ""
+
+msgid "ISP"
+msgstr ""
+
+msgid "Organization"
+msgstr ""
+
+msgid "ASN"
+msgstr ""
+
+# WHOIS fields
+msgid "IP Range"
+msgstr ""
+
+msgid "Net Name"
+msgstr ""
+
+msgid "Person"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Source"
+msgstr ""
+
+msgid "Network error."
+msgstr ""
+
+msgid "Network error. Please try again."
+msgstr ""
+
+# Advanced tab
+msgid "DKIM Configuration"
+msgstr ""
+
+msgid "The DKIM selector is used to automatically detect your DKIM DNS record. If auto-detection fails, you can set it here."
+msgstr ""
+
+msgid "Optional. If DKIM auto-detection does not find your selector, enter it here. Common examples: google, selector1, mail, dkim."
+msgstr ""
+
+msgid "Leave empty to auto-detect"
+msgstr ""
+
+msgid "AI Configuration (Gemini API)"
+msgstr ""
+
+msgid "Configure your Google Gemini API key and model for AI-powered deliverability analysis."
+msgstr ""
+
+msgid "Gemini API Key"
+msgstr ""
+
+msgid "Get your free API key from"
+msgstr ""
+
+msgid "You can also define"
+msgstr ""
+
+msgid "in wp-config.php."
+msgstr ""
+
+msgid "AI Model"
+msgstr ""
+
+msgid "Default (gemini-3.1-flash-lite)"
+msgstr ""
+
+msgid "Choose a model. You can also set"
+msgstr ""
+
+msgid "Save your AI API key first to see available models."
+msgstr ""
+
+msgid "Fetch Models"
+msgstr ""
+
+msgid "Fetching available models..."
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "Models updated successfully."
+msgstr ""
+
+msgid "No models found. Make sure your API key is valid."
+msgstr ""
+
+msgid "Failed to fetch models. Check your API key."
+msgstr ""
+
+msgid "Uninstall Behavior"
+msgstr ""
+
+msgid "Choose what happens to plugin data when you delete the plugin from the Plugins screen."
+msgstr ""
+
+msgid "Data cleanup"
+msgstr ""
+
+msgid "Delete all data on uninstall"
+msgstr ""
+
+msgid "When enabled, all plugin tables, options and scheduled tasks will be removed when the plugin is deleted. Disable this to keep your data in the database if you plan to reinstall the plugin in the future."
+msgstr ""
+
+# GDPR notice
+msgid "GDPR Notice:"
+msgstr ""
+
+msgid "Domain data (name, IP, DNS records) will be sent to Google Gemini API. By using an API key you accept"
+msgstr ""
+
+msgid "Google's terms"
+msgstr ""
+
+msgid "For full GDPR compliance use a paid Google Cloud account which includes a Data Processing Agreement."
+msgstr ""
+
+# Export / Support tab
+msgid "Export Diagnostic Report"
+msgstr ""
+
+msgid "Download a complete JSON report with all scan data, DNS configuration and settings. Share it with PointNet support or an external AI for troubleshooting."
+msgstr ""
+
+msgid "Privacy notice:"
+msgstr ""
+
+msgid "The report contains your monitored email address and server IPs. Share it only with authorized personnel."
+msgstr ""
+
+msgid "Anonymize email/IP (replace with placeholders)"
+msgstr ""
+
+msgid "Download Report (JSON)"
+msgstr ""
+
+# AI sections
+msgid "AI Deliverability Analysis"
+msgstr ""
+
+msgid "Analyze with AI"
+msgstr ""
+
+msgid "Click \"Analyze with AI\" to get a full deliverability report with recommendations."
+msgstr ""
+
+msgid "Configure an email monitor first to enable AI analysis."
+msgstr ""
+
+msgid "AI report unavailable."
+msgstr ""
+
+msgid "AI analysis failed."
+msgstr ""
+
+msgid "AI not configured. Add your Gemini API key in Settings."
+msgstr ""
+
+msgid "AI returned an empty response."
+msgstr ""
+
+msgid "AI response could not be parsed."
+msgstr ""
+
+msgid "No domain configured. Save an email address in Settings first."
+msgstr ""
+
+msgid "Analyzing email configuration with AI..."
+msgstr ""
+
+msgid "Chat with AI"
+msgstr ""
+
+msgid "Ask anything about email deliverability"
+msgstr ""
+
+msgid "Send"
+msgstr ""
+
+msgid "You"
+msgstr ""
+
+msgid "Failed to get response."
+msgstr ""
+
+msgid "Enter a valid email first (Step 1)."
+msgstr ""
+
+msgid "Detecting DKIM selector..."
+msgstr ""
+
+msgid "Detect"
+msgstr ""
+
+msgid "DKIM selector detected:"
+msgstr ""
+
+msgid "DKIM selector found:"
+msgstr ""
+
+msgid "Could not auto-detect DKIM selector. You can enter it manually if you know it, or leave empty."
+msgstr ""
+
+# Pass / Warning / Error labels
+msgid "Pass"
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+# PointNet promo
+msgid "Need professional help with email deliverability?"
+msgstr ""
+
+msgid "PointNet offers SPF/DMARC/DKIM setup, dedicated mail server configuration and deliverability consulting."
+msgstr ""
+
+msgid "Contact PointNet →"
+msgstr ""
+
+# Scan error strings
+msgid "Invalid email address."
+msgstr ""
+
+msgid "No MX records found for domain: %s"
+msgstr ""
+
+msgid "Could not resolve MX host to IP: %s"
+msgstr ""
+
+msgid "MX host did not resolve to a valid IPv4 address: %s"
+msgstr ""
+
+msgid "Invalid IPv4 address: %s"
+msgstr ""
+
+# API error strings
+msgid "GeoIP lookup failed: %s"
+msgstr ""
+
+msgid "GeoIP lookup returned HTTP %d"
+msgstr ""
+
+msgid "Invalid response from GeoIP service."
+msgstr ""
+
+msgid "IP address not found."
+msgstr ""
+
+msgid "Invalid response from WHOIS service."
+msgstr ""
+
+msgid "WHOIS lookup failed: %s"
+msgstr ""
+
+msgid "WHOIS lookup returned HTTP %d"
+msgstr ""
+
+# Mailer alert strings
+msgid "PointNet Mail Guard — ALERT"
+msgstr ""
+
+msgid "⚠️ PointNet ALERT: scan error for %s"
+msgstr ""
+
+msgid "⚠️ PointNet ALERT: %s — %s"
+msgstr ""
+
+msgid "⚠️ PointNet ALERT: %s — issue detected"
 msgstr ""
 
 msgid "Scan error"
@@ -144,6 +636,12 @@ msgstr ""
 msgid "PTR (reverse DNS) is not configured."
 msgstr ""
 
+msgid "SPF record is missing."
+msgstr ""
+
+msgid "SPF record is invalid."
+msgstr ""
+
 msgid "DNSBL Results"
 msgstr ""
 
@@ -151,24 +649,6 @@ msgid "PTR Check"
 msgstr ""
 
 msgid "WARNING: not configured"
-msgstr ""
-
-msgid "⚠️ PointNet ALERT: scan error for %s"
-msgstr ""
-
-msgid "⚠️ PointNet ALERT: %s — blacklist + PTR issue"
-msgstr ""
-
-msgid "⚠️ PointNet ALERT: %s is listed on a blacklist"
-msgstr ""
-
-msgid "⚠️ PointNet ALERT: %s — PTR (reverse DNS) not configured"
-msgstr ""
-
-msgid "SPF record is missing."
-msgstr ""
-
-msgid "SPF record is invalid."
 msgstr ""
 
 msgid "SPF Check"
@@ -180,174 +660,16 @@ msgstr ""
 msgid "INVALID"
 msgstr ""
 
-msgid "SPF Analyzer"
+# DKIM onboarding strings
+msgid "Step 4: DKIM Selector (optional)"
 msgstr ""
 
-msgid "Enter a domain or email address to run a full SPF record analysis."
+msgid "If known, enter your DKIM selector. Leave empty to auto-detect."
 msgstr ""
 
-msgid "Analyze SPF"
+# Welcome wizard
+msgid "Welcome to PointNet Mail Guard!"
 msgstr ""
 
-msgid "Analyzing..."
-msgstr ""
-
-msgid "Detected senders:"
-msgstr ""
-
-msgid "Check"
-msgstr ""
-
-msgid "Result"
-msgstr ""
-
-msgid "Details"
-msgstr ""
-
-msgid "No SPF record found."
-msgstr ""
-
-msgid "passed"
-msgstr ""
-
-msgid "warnings"
-msgstr ""
-
-msgid "errors"
-msgstr ""
-
-msgid "DNS lookups"
-msgstr ""
-
-msgid "Need help fixing SPF issues? Contact"
-msgstr ""
-
-msgid "email deliverability specialists."
-msgstr ""
-
-msgid "Please enter a domain or email address."
-msgstr ""
-
-msgid "Please wait 30 seconds before running another analysis."
-msgstr ""
-
-msgid "DMARC Analyzer"
-msgstr ""
-
-msgid "Enter a domain or email address to run a full DMARC record analysis."
-msgstr ""
-
-msgid "Analyze DMARC"
-msgstr ""
-
-msgid "No DMARC record found."
-msgstr ""
-
-msgid "Need help configuring DMARC? Contact"
-msgstr ""
-
-msgid "Please wait 30 seconds before running another analysis."
-msgstr ""
-
-msgid "DKIM Analyzer"
-msgstr ""
-
-msgid "Enter a domain or email address. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it."
-msgstr ""
-
-msgid "Selector (e.g. google, mail, 202406)"
-msgstr ""
-
-msgid "Analyze DKIM"
-msgstr ""
-
-msgid "Leave the selector field empty to attempt automatic detection of common selectors."
-msgstr ""
-
-msgid "Selector auto-detected:"
-msgstr ""
-
-msgid "No DKIM record found."
-msgstr ""
-
-msgid "Need help configuring DKIM? Contact"
-msgstr ""
-
-msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually."
-msgstr ""
-
-msgid "%s is a public email provider and does not expose DKIM records in public DNS. Enter your own domain name (e.g. yourdomain.com) instead."
-msgstr ""
-
-msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually — you can find it in your mail server or DNS provider settings."
-msgstr ""
-
-msgid "Enter your domain name or the email address you send from. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it. Public providers like Gmail and Outlook do not expose DKIM records publicly."
-msgstr ""
-
-msgid "Invalid email address."
-msgstr ""
-
-msgid "No MX records found for domain: %s"
-msgstr ""
-
-msgid "Could not resolve MX host to IP: %s"
-msgstr ""
-
-msgid "MX host did not resolve to a valid IPv4 address: %s"
-msgstr ""
-
-msgid "Invalid IPv4 address: %s"
-msgstr ""
-
-# 1.6.3 — AI & Monitors
-msgid "Monitors"
-msgstr ""
-
-msgid "AI Deliverability Analysis"
-msgstr ""
-
-msgid "Analyze with AI"
-msgstr ""
-
-msgid "Click \"Analyze with AI\" to get a full deliverability report with recommendations."
-msgstr ""
-
-msgid "AI report unavailable."
-msgstr ""
-
-msgid "AI analysis failed."
-msgstr ""
-
-msgid "AI not configured. Define PN_MAILGUARD_OPENAI_KEY in wp-config.php."
-msgstr ""
-
-msgid "AI returned an empty response."
-msgstr ""
-
-msgid "AI response could not be parsed."
-msgstr ""
-
-msgid "No domain configured. Save an email address in Settings first."
-msgstr ""
-
-msgid "Analyzing email configuration with AI..."
-msgstr ""
-
-msgid "Last scan"
-msgstr ""
-
-msgid "Not analyzed yet."
-msgstr ""
-
-msgid "Detected providers:"
-msgstr ""
-
-msgid "Strengths"
-msgstr ""
-
-msgid "Next steps"
-msgstr ""
-
-msgid "No domain configured. Save an email address in Settings or enter a domain in DNS Tools first."
+msgid "Set up your first monitor in just 2 minutes. Follow the steps below:"
 msgstr ""
