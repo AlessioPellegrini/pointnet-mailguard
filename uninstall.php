@@ -4,17 +4,19 @@ if (!defined('WP_UNINSTALL_PLUGIN')) exit;
 global $wpdb;
 
 // Check if user opted to preserve data on uninstall
-$cleanup = get_option('pn_mailguard_uninstall_cleanup', '1');
+$pn_mailguard_cleanup = get_option('pn_mailguard_uninstall_cleanup', '1'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 
-if ($cleanup === '1') {
+if ($pn_mailguard_cleanup === '1') {
 
     // 1. Drop all plugin tables
+    // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_log_email");
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_log_ip");
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_ai_results");
+    // phpcs:enable
 
     // 2. Delete all plugin options and transients
-    $options = [
+    $pn_mailguard_options = [ // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
         'pn_mailguard_check_email',
         'pn_mailguard_check_ip',
         'pn_mailguard_email_alert',
@@ -28,11 +30,11 @@ if ($cleanup === '1') {
         'pn_mailguard_uninstall_cleanup',
     ];
 
-    foreach ($options as $option) {
-        delete_option($option);
+    foreach ($pn_mailguard_options as $pn_mailguard_option) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+        delete_option($pn_mailguard_option);
     }
 
-    $transients = [
+    $pn_mailguard_transients = [ // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
         'pn_mailguard_scan_lock',
         'pn_mailguard_spf_lock',
         'pn_mailguard_dmarc_lock',
@@ -40,14 +42,14 @@ if ($cleanup === '1') {
         'pn_mailguard_available_models',
     ];
 
-    foreach ($transients as $transient) {
-        delete_transient($transient);
+    foreach ($pn_mailguard_transients as $pn_mailguard_transient) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+        delete_transient($pn_mailguard_transient);
     }
 
     // 3. Clear the scheduled cron event
-    $timestamp = wp_next_scheduled('pn_mailguard_daily_scan');
-    if ($timestamp) {
-        wp_unschedule_event($timestamp, 'pn_mailguard_daily_scan');
+    $pn_mailguard_timestamp = wp_next_scheduled('pn_mailguard_daily_scan'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+    if ($pn_mailguard_timestamp) {
+        wp_unschedule_event($pn_mailguard_timestamp, 'pn_mailguard_daily_scan');
     }
 
 }

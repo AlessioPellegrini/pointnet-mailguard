@@ -26,7 +26,7 @@ class PN_Mailguard_Dashboard {
     public static function save_settings(): void {
         if (!isset($_POST['pn_mailguard_save_settings'])) return;
         check_admin_referer('pn_mailguard_save_action', 'pn_mailguard_nonce');
-        if (!current_user_can('manage_options')) wp_die(__('Unauthorized', 'pointnet-mailguard'));
+        if (!current_user_can('manage_options')) wp_die(esc_html__('Unauthorized', 'pointnet-mailguard'));
 
         // Save onboarding / monitor fields only if present in the request.
         // This prevents the Advanced tab from clearing monitor data.

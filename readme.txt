@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 1.7.5
+Stable tag: 1.7.6
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -28,7 +28,7 @@ Developed by [PointNet](https://www.pointnet.it/).
 - Two independent monitors — Email and IP — with separate logs
 - Automatic mail server detection from email address via MX lookup
 - Shared vs dedicated server detection (mail and WordPress on same IP)
-- DNSBL checks against 5 blacklists: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL
+- DNSBL checks against 9 blacklists: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL, Abusix, SPFBL, DroneBL, LashBack UBL
 - PTR (reverse DNS) verification with alert on missing record
 - SPF Analyzer — full RFC 7208 analysis, 9 checks, provider detection
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
@@ -85,7 +85,7 @@ If your WordPress site and mail server share the same IP, a yellow notice is sho
 
 = Which DNSBL blacklists are checked? =
 
-SpamCop, Barracuda, SORBS, UCEProtect Level 1 and PSBL. Spamhaus is intentionally excluded — their terms prohibit use in distributed software without a paid license.
+SpamCop, Barracuda, SORBS, UCEProtect Level 1, PSBL, Abusix, SPFBL, DroneBL and LashBack UBL — 9 blacklists in total. Spamhaus is intentionally excluded — their terms prohibit use in distributed software without a paid license.
 
 = Does it work with WP Mail SMTP or other SMTP plugins? =
 
@@ -110,6 +110,11 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 3. Log table with colour-coded status: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
 == Changelog ==
+
+= 1.7.6 =
+* Fixed: WordPress Plugin Check compliance — translators comments, ordered placeholders, escaping, unslash, variable prefixing
+* Fixed: readme.txt — blacklist count updated from 5 to 9
+* Removed: load_plugin_textdomain() manual call (WP handles it automatically since 4.6 for hosted plugins)
 
 = 1.7.5 =
 * Security: Gemini API key encrypted with AES-256-CBC before database storage

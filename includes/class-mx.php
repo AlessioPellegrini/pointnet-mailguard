@@ -56,6 +56,7 @@ class PN_Mailguard_MX {
         // Query MX records for the domain
         $mx_records = dns_get_record($domain, DNS_MX);
         if (empty($mx_records)) {
+            /* translators: %s: domain name */
             $result['error'] = sprintf(
                 __('No MX records found for domain: %s', 'pointnet-mailguard'),
                 $domain
@@ -72,6 +73,7 @@ class PN_Mailguard_MX {
         // Resolve MX hostname to IPv4
         $mx_ip = gethostbyname($mx_host);
         if ($mx_ip === $mx_host) {
+            /* translators: %s: MX hostname */
             $result['error'] = sprintf(
                 __('Could not resolve MX host to IP: %s', 'pointnet-mailguard'),
                 $mx_host
@@ -81,6 +83,7 @@ class PN_Mailguard_MX {
 
         // Validate it resolved to an IPv4
         if (!filter_var($mx_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            /* translators: %s: resolved IP address */
             $result['error'] = sprintf(
                 __('MX host did not resolve to a valid IPv4 address: %s', 'pointnet-mailguard'),
                 $mx_ip

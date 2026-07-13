@@ -37,6 +37,7 @@ class PN_Mailguard_GeoIP {
         if (!filter_var($ip, FILTER_VALIDATE_IP)) {
             return [
                 'status' => 'error',
+                /* translators: %s: IP address */
                 'error'  => sprintf(__('Invalid IP address: %s', 'pointnet-mailguard'), $ip),
             ];
         }
@@ -55,6 +56,7 @@ class PN_Mailguard_GeoIP {
         if (is_wp_error($response)) {
             return [
                 'status' => 'error',
+                /* translators: %s: error message */
                 'error'  => sprintf(
                     __('GeoIP lookup failed: %s', 'pointnet-mailguard'),
                     $response->get_error_message()
@@ -66,6 +68,7 @@ class PN_Mailguard_GeoIP {
         if ($code !== 200) {
             return [
                 'status' => 'error',
+                /* translators: %d: HTTP response code */
                 'error'  => sprintf(
                     __('GeoIP lookup returned HTTP %d', 'pointnet-mailguard'),
                     $code

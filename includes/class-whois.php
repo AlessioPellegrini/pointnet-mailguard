@@ -38,6 +38,7 @@ class PN_Mailguard_Whois {
         if (!filter_var($ip, FILTER_VALIDATE_IP)) {
             return [
                 'status' => 'error',
+                /* translators: %s: IP address */
                 'error'  => sprintf(__('Invalid IP address: %s', 'pointnet-mailguard'), $ip),
             ];
         }
@@ -58,6 +59,7 @@ class PN_Mailguard_Whois {
         if (is_wp_error($response)) {
             return [
                 'status' => 'error',
+                /* translators: %s: error message */
                 'error'  => sprintf(
                     __('WHOIS lookup failed: %s', 'pointnet-mailguard'),
                     $response->get_error_message()
@@ -69,6 +71,7 @@ class PN_Mailguard_Whois {
         if ($code !== 200) {
             return [
                 'status' => 'error',
+                /* translators: %d: HTTP response code */
                 'error'  => sprintf(
                     __('WHOIS lookup returned HTTP %d', 'pointnet-mailguard'),
                     $code

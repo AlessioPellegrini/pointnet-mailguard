@@ -79,6 +79,8 @@ class PN_Mailguard_Loader {
     }
 
     public static function load_textdomain(): void {
+        // WordPress automatically loads translations for plugins hosted on WordPress.org since 4.6.
+        // This is kept as a fallback for manual installs.
         load_plugin_textdomain(
             'pointnet-mailguard',
             false,

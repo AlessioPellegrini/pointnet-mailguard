@@ -73,6 +73,7 @@ class PN_Mailguard_Scanner {
                 'is_alert'    => false,
                 'ptr'         => '',
                 'ptr_warning' => false,
+                /* translators: %s: IP address */
                 'error'       => sprintf(
                     __('Invalid IP address: %s', 'pointnet-mailguard'),
                     $ip

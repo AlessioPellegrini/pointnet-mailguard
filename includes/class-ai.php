@@ -331,7 +331,8 @@ class PN_Mailguard_AI {
         } elseif (isset($body['candidates'][0]['finishReason']) && $body['candidates'][0]['finishReason'] !== 'STOP') {
             return [
                 'error'      => true,
-                'error_msg'  => __('Gemini API error: ' . ($body['candidates'][0]['finishReason'] ?? 'unknown'), 'pointnet-mailguard'),
+                /* translators: %s: Gemini API finish reason */
+                'error_msg'  => sprintf(__('Gemini API error: %s', 'pointnet-mailguard'), $body['candidates'][0]['finishReason'] ?? 'unknown'),
                 'severity'   => 'error',
                 'score'      => 0,
                 'summary_it' => '',
