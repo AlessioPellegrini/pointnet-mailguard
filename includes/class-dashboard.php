@@ -170,7 +170,7 @@ class PN_Mailguard_Dashboard {
     // -------------------------------------------------------------------------
 
     public static function render_page(): void {
-        if (!current_user_can('manage_options')) wp_die(__('Unauthorized', 'pointnet-mailguard'));
+        if (!current_user_can('manage_options')) wp_die(esc_html__('Unauthorized', 'pointnet-mailguard'));
 
         $tabs   = ['monitors', 'dnstools', 'advanced', 'support'];
         $raw    = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';

@@ -2,7 +2,7 @@
 Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 6.7
 Stable tag: 1.7.6
 Requires PHP: 8.3
 License: GPLv2 or later
