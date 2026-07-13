@@ -63,7 +63,10 @@ class PN_Mailguard_DKIM {
     public static function autodetect(string $domain): array {
         foreach (self::$common_selectors as $selector) {
             $host    = $selector . '._domainkey.' . $domain;
-            $records = @dns_get_record($host, DNS_TXT);
+            $records = dns_get_record($host, DNS_TXT);
+            if ($records === false) {
+                $records = [];
+            }
             if (!empty($records)) {
                 foreach ($records as $rec) {
                     if (!empty($rec['txt']) && str_contains($rec['txt'], 'v=DKIM1')) {
@@ -104,7 +107,10 @@ class PN_Mailguard_DKIM {
         }
 
         $host    = $selector . '._domainkey.' . $domain;
-        $records = @dns_get_record($host, DNS_TXT);
+        $records = dns_get_record($host, DNS_TXT);
+        if ($records === false) {
+            $records = [];
+        }
 
         $checks  = [];
         $passed  = $warnings = $errors = 0;

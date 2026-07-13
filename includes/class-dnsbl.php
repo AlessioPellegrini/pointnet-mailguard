@@ -35,6 +35,10 @@ class PN_Mailguard_DNSBL {
         'dnsbl.sorbs.net'        => 'SORBS',
         'dnsbl-1.uceprotect.net' => 'UCEProtect L1',
         'psbl.surriel.com'       => 'PSBL',
+        'combined.abuse.ch'      => 'Abusix',
+        'dnsbl.spfbl.net'        => 'SPFBL',
+        'dnsbl.dronebl.org'      => 'DroneBL',
+        'ubl.lashback.com'       => 'LashBack UBL',
     ];
 
     /**

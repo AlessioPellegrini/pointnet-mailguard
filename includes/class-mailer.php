@@ -37,13 +37,7 @@ class PN_Mailguard_Mailer {
         if ($data['ptr_warning']) $parts[] = 'PTR missing';
         if (!empty($data['spf_warning'])) $parts[] = 'SPF ' . $data['spf_status'];
 
-        if (!empty($data['error'])) {
-            $source = ($type === 'ip') ? $data['ip'] : $data['email'];
-            return sprintf(
-                __('⚠️ PointNet ALERT: scan error for %s', 'pointnet-mailguard'),
-                $source
-            );
-        } elseif (count($parts) >= 2) {
+        if (count($parts) >= 2) {
             return sprintf(
                 __('⚠️ PointNet ALERT: %s — %s', 'pointnet-mailguard'),
                 $label,
@@ -65,7 +59,7 @@ class PN_Mailguard_Mailer {
 
     private static function build_body(array $data, string $type): string {
         $sep  = "======================================\n\n";
-        $body = __('PointNet Mail Guard AI — ALERT', 'pointnet-mailguard') . "\n" . $sep;
+        $body = __('PointNet Mail Guard — ALERT', 'pointnet-mailguard') . "\n" . $sep;
 
         if (!empty($data['error'])) {
             $source = ($type === 'ip') ? $data['ip'] : $data['email'];

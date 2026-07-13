@@ -5,8 +5,8 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Contributors:** pointnet  
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 6.5  
-**Tested up to:** 7.1
-**Stable tag:** 1.7.2  
+**Tested up to:** 7.0
+**Stable tag:** 1.7.3  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -35,9 +35,12 @@ Developed by [PointNet](https://www.pointnet.it/).
 - SPF Analyzer — full RFC 7208 analysis, 9 checks, provider detection
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
+- IP Analysis tool — DNSBL, PTR, GeoIP and WHOIS lookup for any IPv4 address
+- GeoIP lookup — country, region, city, ISP and ASN via ipwhois.app
+- WHOIS lookup — IP block owner, range, organization via RDAP (rdap.org)
 - AI-powered deliverability analysis (Gemini API) — score, severity, issues, strengths, next steps
 - AI Chat — ask free-text questions about email deliverability
-- Gemini AI model selector in Settings
+- Gemini AI model selector in Advanced tab
 - Real-time terminal-style diagnostic console
 - Daily automated scan via WP-Cron
 - Email alerts only on problems — sent via wp_mail()
@@ -59,6 +62,19 @@ Developed by [PointNet](https://www.pointnet.it/).
 
 The plugin will automatically schedule a daily scan via WP-Cron.
 
+## External Services
+
+PointNet Mail Guard makes the following external HTTP requests, all initiated by the WordPress administrator:
+
+- **v4.ident.me** — Automatically at startup. Retrieves the public IPv4 address of your WordPress server to detect shared vs. dedicated mail server setup.
+- **Google Gemini API** (generativelanguage.googleapis.com) — Only when an API key is configured. Provides AI-powered deliverability analysis and chat functionality.
+- **ipwhois.app** (GeoIP) — On-demand when using the IP Analysis tool in the DNS & IP Tools tab. Looks up geolocation data (country, region, city, ISP, ASN). Free tier, no API key required.
+- **rdap.org** (WHOIS) — On-demand when using the IP Analysis tool in the DNS & IP Tools tab. Looks up IP block ownership and registry information. Free REST API, no API key required.
+
+## Multisite Compatibility
+
+This plugin has not been tested with WordPress Multisite. Use on a network installation may produce unexpected results and is not recommended.
+
 ## Frequently Asked Questions
 
 ### Does it require Python or any server-side dependencies?
@@ -77,7 +93,28 @@ SpamCop, Barracuda, SORBS, UCEProtect Level 1 and PSBL. Spamhaus is intentionall
 
 Yes, automatically. Any SMTP plugin hooks into `wp_mail()`. PointNet Mail Guard uses `wp_mail()` for all alerts, so your SMTP configuration is picked up with no extra setup.
 
+### Does the plugin make external API calls?
+
+Yes. See the "External Services" section above for a full list of external services, what they do, and when they are activated.
+
+### Is the plugin compatible with WordPress Multisite?
+
+This plugin has not been tested on WordPress Multisite. Use on a network installation may result in unexpected behaviour.
+
+### What happens to my data when I delete the plugin?
+
+By default, all plugin data (tables, settings, and logs) is removed when you delete the plugin from the Plugins screen. If you want to keep your data in the database — for example if you plan to reinstall the plugin later — go to **Advanced** → **Uninstall Behavior** and uncheck "Delete all data on uninstall" before deleting the plugin.
+
 ## Changelog
+
+### 1.7.3
+- Added: External services section in readme with full disclosure of third-party API calls
+- Added: Multisite disclaimer — plugin not tested on network installations
+- Fixed: DKIM selector detection — removed error suppression operator (@) from DNS query
+- Fixed: AJAX handlers now use wp_die('0', 403) instead of deprecated wp_die(-1)
+- Improved: CSS and JavaScript extracted to external files for better performance and maintainability
+- Improved: Assets are now properly enqueued with versioning and dependency declarations
+- Added: .distignore for clean WordPress.org SVN deployment
 
 ### 1.7.2
 - Fixed: GeoIP lookup — switched from ip-api.com (HTTP 403) to ipwhois.app for reliable geolocation

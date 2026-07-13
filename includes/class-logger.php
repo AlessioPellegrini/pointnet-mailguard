@@ -86,7 +86,7 @@ class PN_Mailguard_Logger {
                 echo '<tr>';
                 echo '<td>' . esc_html($log->scan_date) . '</td>';
                 echo '<td style="color:' . esc_attr($color) . ';font-weight:bold;">' . esc_html($log->status) . '</td>';
-                echo '<td>' . esc_html($log->details) . '</td>';
+                echo '<td style="font-family:monospace; font-size:11px; line-height:1.6;">' . self::format_terminal_details($log->details) . '</td>';
                 echo '</tr>';
             }
         } else {
@@ -146,6 +146,36 @@ class PN_Mailguard_Logger {
         $parts[] = 'PTR: ' . $data['ptr'];
 
         return implode(' | ', $parts);
+    }
+
+    /**
+     * Format pipe-separated details into colored HTML lines (terminal-style).
+     * Each segment gets a color based on its content (CLEAN/OK → green, LISTED/ERROR → red, WARNING/SHARED → yellow).
+     *
+     * @param string $details The pipe-separated details string.
+     * @return string
+     */
+    public static function format_terminal_details(string $details): string {
+        if (empty($details)) {
+            return '';
+        }
+        $lines = explode(' | ', $details);
+        $html = '';
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line)) continue;
+            if (str_contains($line, 'LISTED') || str_contains($line, 'ERROR') || str_contains($line, 'ALERT')) {
+                $color = '#f38ba8';
+            } elseif (str_contains($line, 'WARNING') || str_contains($line, 'SHARED')) {
+                $color = '#f9e2af';
+            } elseif (str_contains($line, 'CLEAN') || str_contains($line, 'OK') || str_contains($line, 'PASS') || str_contains($line, 'SEPARATE')) {
+                $color = '#a6e3a1';
+            } else {
+                $color = '#cdd6f4';
+            }
+            $html .= '<span style="color:' . $color . ';">' . esc_html($line) . '</span><br>';
+        }
+        return $html;
     }
 
     /**

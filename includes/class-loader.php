@@ -13,6 +13,9 @@ class PN_Mailguard_Loader {
         // Translations
         add_action('init', ['PN_Mailguard_Loader', 'load_textdomain']);
 
+        // Admin assets (CSS + JS)
+        add_action('admin_enqueue_scripts', ['PN_Mailguard_Loader', 'enqueue_admin_assets']);
+
         // Installation
         register_activation_hook(PN_MAILGUARD_PLUGIN_FILE,   ['PN_Mailguard_Installer', 'activate']);
         register_deactivation_hook(PN_MAILGUARD_PLUGIN_FILE, ['PN_Mailguard_Installer', 'deactivate']);
@@ -65,6 +68,9 @@ class PN_Mailguard_Loader {
         // AJAX — Save monitor settings (inline edit)
         add_action('wp_ajax_pn_mailguard_save_monitor',        ['PN_Mailguard_Dashboard', 'ajax_save_monitor']);
 
+        // AJAX — Export report
+        add_action('wp_ajax_pn_mailguard_export_report',       ['PN_Mailguard_Dashboard', 'ajax_export_report']);
+
         // AJAX — IP Analysis tools (DNS & IP Tools tab)
         add_action('wp_ajax_pn_mailguard_ip_dnsbl',            ['PN_Mailguard_Dashboard', 'ajax_ip_dnsbl']);
         add_action('wp_ajax_pn_mailguard_ip_ptr',              ['PN_Mailguard_Dashboard', 'ajax_ip_ptr']);
@@ -78,5 +84,90 @@ class PN_Mailguard_Loader {
             false,
             dirname(plugin_basename(PN_MAILGUARD_PLUGIN_FILE)) . '/languages'
         );
+    }
+
+    /**
+     * Enqueue admin CSS and JavaScript, and localize JS strings.
+     */
+    public static function enqueue_admin_assets(): void {
+        $screen = get_current_screen();
+        // Only load on our plugin page
+        if (!$screen || $screen->id !== 'toplevel_page_pn-mailguard') {
+            return;
+        }
+
+        // CSS
+        wp_enqueue_style(
+            'pn-mailguard-admin',
+            PN_MAILGUARD_PLUGIN_URL . 'assets/admin.css',
+            [],
+            PN_MAILGUARD_VERSION
+        );
+
+        // JavaScript
+        wp_enqueue_script(
+            'pn-mailguard-admin',
+            PN_MAILGUARD_PLUGIN_URL . 'assets/admin.js',
+            ['jquery'],
+            PN_MAILGUARD_VERSION,
+            true // load in footer
+        );
+
+        // Localized strings and data for JS
+        wp_localize_script('pn-mailguard-admin', 'pnMailguard', [
+            'nonce'              => wp_create_nonce('pn_mailguard_ajax_nonce'),
+            'running'            => __('Running...', 'pointnet-mailguard'),
+            'runScheduled'       => __('Run Scheduled Scan Now', 'pointnet-mailguard'),
+            'scanFailed'         => __('Scan failed.', 'pointnet-mailguard'),
+            'runEmailDiagnosis'  => __('📧 Run Email Diagnosis', 'pointnet-mailguard'),
+            'runIpDiagnosis'     => __('🌐 Run IP Diagnosis', 'pointnet-mailguard'),
+            'analyzing'          => __('Analyzing...', 'pointnet-mailguard'),
+            'analyzingEmail'     => __('Analyzing email configuration with AI...', 'pointnet-mailguard'),
+            'analyzeWithAi'      => __('Analyze with AI', 'pointnet-mailguard'),
+            'aiAnalysisFailed'   => __('AI analysis failed.', 'pointnet-mailguard'),
+            'you'                => __('You', 'pointnet-mailguard'),
+            'send'               => __('Send', 'pointnet-mailguard'),
+            'chatFailed'         => __('Failed to get response.', 'pointnet-mailguard'),
+            'networkError'       => __('Network error. Please try again.', 'pointnet-mailguard'),
+            'enterEmailFirst'    => __('Enter a valid email first (Step 1).', 'pointnet-mailguard'),
+            'detectingDkim'      => __('Detecting DKIM selector...', 'pointnet-mailguard'),
+            'detect'             => __('Detect', 'pointnet-mailguard'),
+            'dkimDetected'       => __('DKIM selector detected:', 'pointnet-mailguard'),
+            'dkimFound'          => __('DKIM selector found:', 'pointnet-mailguard'),
+            'dkimNotDetected'    => __('Could not auto-detect DKIM selector. You can enter it manually if you know it, or leave empty.', 'pointnet-mailguard'),
+            'saveFailed'         => __('Save failed.', 'pointnet-mailguard'),
+            'analysisFailed'     => __('Analysis failed.', 'pointnet-mailguard'),
+            'passed'             => __('passed', 'pointnet-mailguard'),
+            'warnings'           => __('warnings', 'pointnet-mailguard'),
+            'errors'             => __('errors', 'pointnet-mailguard'),
+            'pass'               => __('Pass', 'pointnet-mailguard'),
+            'warning'            => __('Warning', 'pointnet-mailguard'),
+            'analyzeAllRecords'  => __('Analyze All Records', 'pointnet-mailguard'),
+            'detectedProviders'  => __('Detected providers:', 'pointnet-mailguard'),
+            'analyzeIp'          => __('Analyze IP', 'pointnet-mailguard'),
+            'ipListed'           => __('IP is listed on one or more blacklists!', 'pointnet-mailguard'),
+            'ipClean'            => __('IP is clean on all checked blacklists.', 'pointnet-mailguard'),
+            'noDnsblResults'     => __('No DNSBL results.', 'pointnet-mailguard'),
+            'noPtrRecord'        => __('No PTR record found', 'pointnet-mailguard'),
+            'ptrFound'           => __('PTR record found', 'pointnet-mailguard'),
+            'ip'                 => __('IP', 'pointnet-mailguard'),
+            'country'            => __('Country', 'pointnet-mailguard'),
+            'region'             => __('Region', 'pointnet-mailguard'),
+            'city'               => __('City', 'pointnet-mailguard'),
+            'isp'                => __('ISP', 'pointnet-mailguard'),
+            'organization'       => __('Organization', 'pointnet-mailguard'),
+            'asn'                => __('ASN', 'pointnet-mailguard'),
+            'ipRange'            => __('IP Range', 'pointnet-mailguard'),
+            'netName'            => __('Net Name', 'pointnet-mailguard'),
+            'person'             => __('Person', 'pointnet-mailguard'),
+            'email'              => __('Email', 'pointnet-mailguard'),
+            'source'             => __('Source', 'pointnet-mailguard'),
+            'loading'            => __('Loading...', 'pointnet-mailguard'),
+            'fetchingModels'     => __('Fetching available models...', 'pointnet-mailguard'),
+            'fetchModels'        => __('Fetch Models', 'pointnet-mailguard'),
+            'modelsUpdated'      => __('Models updated successfully.', 'pointnet-mailguard'),
+            'noModelsFound'      => __('No models found. Make sure your API key is valid.', 'pointnet-mailguard'),
+            'fetchModelsFailed'  => __('Failed to fetch models. Check your API key.', 'pointnet-mailguard'),
+        ]);
     }
 }
