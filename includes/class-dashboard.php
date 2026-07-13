@@ -200,7 +200,7 @@ class PN_Mailguard_Dashboard {
                 ];
                 foreach ($tab_labels as $key => $label) {
                     $active = $tab === $key ? 'nav-tab-active' : '';
-                    echo '<a href="' . esc_url($base . '&tab=' . $key) . '" class="nav-tab ' . $active . '">' . esc_html($label) . '</a>';
+                    echo '<a href="' . esc_url($base . '&tab=' . $key) . '" class="nav-tab ' . esc_attr($active) . '">' . esc_html($label) . '</a>';
                 }
                 ?>
             </nav>
