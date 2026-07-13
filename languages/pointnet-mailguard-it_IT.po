@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PointNet Mail Guard AI 1.0.0\n"
-"POT-Creation-Date: 2026-03-20 00:00+0100\n"
-"PO-Revision-Date: 2026-03-20 00:00+0100\n"
+"Project-Id-Version: PointNet Mail Guard 1.7.4\n"
+"POT-Creation-Date: 2026-07-13 12:00+0200\n"
+"PO-Revision-Date: 2026-07-13 12:00+0200\n"
 "Last-Translator: PointNet Lab\n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: custom\n"
 
 msgid "Settings"
 msgstr "Impostazioni"
@@ -17,8 +17,17 @@ msgstr "Impostazioni"
 msgid "Unauthorized"
 msgstr "Non autorizzato"
 
-msgid "Next automatic scan scheduled for:"
-msgstr "Prossima scansione automatica prevista per:"
+msgid "Monitors"
+msgstr "Monitor"
+
+msgid "DNS & IP Tools"
+msgstr "DNS e Strumenti IP"
+
+msgid "Advanced"
+msgstr "Avanzate"
+
+msgid "Export / Support"
+msgstr "Esporta / Supporto"
 
 msgid "Email Monitor"
 msgstr "Monitor Email"
@@ -26,11 +35,24 @@ msgstr "Monitor Email"
 msgid "IP Monitor"
 msgstr "Monitor IP"
 
-msgid "Email address to monitor"
-msgstr "Indirizzo email da monitorare"
+# Onboarding
+msgid "Step 1: Email to monitor"
+msgstr "Passo 1: Email da monitorare"
 
-msgid "Enter the email address you send from (e.g. info@yourdomain.com). The plugin will detect your mail server automatically."
-msgstr "Inserisci l'indirizzo email da cui invii (es. info@tuodominio.it). Il plugin rileverà automaticamente il tuo server di posta."
+msgid "The email address you send from — we will detect your mail server automatically."
+msgstr "L'indirizzo email da cui invii — rileveremo automaticamente il tuo server di posta."
+
+msgid "Step 2: Additional IP to monitor"
+msgstr "Passo 2: IP aggiuntivo da monitorare"
+
+msgid "(optional)"
+msgstr "(opzionale)"
+
+msgid "Your mail server IP is already monitored via the email above. You only need this if you want to monitor a different server — for example your web server, a VPS, or an SMTP relay service."
+msgstr "Il tuo server di posta è già monitorato tramite l'email qui sopra. Serve solo se vuoi monitorare un server diverso — ad esempio il tuo server web, un VPS o un servizio SMTP relay."
+
+msgid "Leave empty to skip — the email monitor already covers your mail server."
+msgstr "Lascia vuoto per saltare — il monitor email copre già il tuo server di posta."
 
 msgid "Alert email"
 msgstr "Email per gli avvisi"
@@ -38,30 +60,154 @@ msgstr "Email per gli avvisi"
 msgid "Where to send alerts when problems are detected."
 msgstr "Dove inviare gli avvisi quando vengono rilevati problemi."
 
+msgid "Step 3: Alert email"
+msgstr "Passo 3: Email per gli avvisi"
+
+msgid "Tip: use a different email from the one you monitor. If your mail server has issues, alerts sent to the same monitored address may not arrive."
+msgstr "Consiglio: usa un'email diversa da quella che monitori. Se il server di posta ha problemi, gli avvisi inviati alla stessa email monitorata potrebbero non arrivare."
+
 msgid "Save Settings"
 msgstr "Salva Impostazioni"
+
+msgid "Save & Start Monitoring →"
+msgstr "Salva e Avvia Monitoraggio →"
+
+msgid "Settings saved."
+msgstr "Impostazioni salvate."
+
+msgid "Please enter a valid email address to monitor."
+msgstr "Inserisci un indirizzo email valido da monitorare."
+
+msgid "Please enter a valid IPv4 address."
+msgstr "Inserisci un indirizzo IPv4 valido."
+
+msgid "Please enter a valid alert email address."
+msgstr "Inserisci un indirizzo email valido per gli avvisi."
+
+msgid "Monitor settings saved."
+msgstr "Impostazioni monitor salvate."
+
+msgid "Save failed."
+msgstr "Salvataggio fallito."
+
+msgid "Saving..."
+msgstr "Salvataggio in corso..."
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "Edit monitor settings:"
+msgstr "Modifica impostazioni monitor:"
+
+msgid "Edit this monitor"
+msgstr "Modifica questo monitor"
+
+msgid "Not configured. Click ✏️ to set up."
+msgstr "Non configurato. Clicca ✏️ per impostare."
+
+msgid "No scan results yet."
+msgstr "Nessun risultato di scansione ancora."
 
 msgid "Run Diagnosis Now"
 msgstr "Esegui Diagnosi Ora"
 
-msgid "Save a valid email address first."
-msgstr "Salva prima un indirizzo email valido."
+msgid "📧 Run Email Diagnosis"
+msgstr "📧 Esegui Diagnosi Email"
 
-msgid "Email Monitor — Diagnostic Logs"
-msgstr "Monitor Email — Log Diagnostici"
+msgid "🌐 Run IP Diagnosis"
+msgstr "🌐 Esegui Diagnosi IP"
 
-msgid "IP address to monitor"
-msgstr "Indirizzo IP da monitorare"
+msgid "Auto-detected mail server IP"
+msgstr "IP server di posta rilevato automaticamente"
 
-msgid "Enter any IPv4 address to monitor — your VPS, a mail relay, or any server you manage."
-msgstr "Inserisci qualsiasi indirizzo IPv4 da monitorare — il tuo VPS, un mail relay o qualsiasi server che gestisci."
+msgid "Manual IP address"
+msgstr "Indirizzo IP manuale"
 
-msgid "Save a valid IPv4 address first."
-msgstr "Salva prima un indirizzo IPv4 valido."
+msgid "Auto-detects your mail server IP via MX lookup and runs full checks."
+msgstr "Rileva automaticamente l'IP del server di posta tramite MX lookup ed esegue tutti i controlli."
 
-msgid "IP Monitor — Diagnostic Logs"
-msgstr "Monitor IP — Log Diagnostici"
+msgid "Monitors a SEPARATE IP (your mail server is already covered by the email monitor above)."
+msgstr "Monitora un IP SEPARATO (il tuo server di posta è già coperto dal monitor email qui sopra)."
 
+msgid "Auto-detected from Email Monitor: %s"
+msgstr "Rilevato automaticamente dal Monitor Email: %s"
+
+msgid "Run Scheduled Scan Now"
+msgstr "Esegui Scansione Programmata Ora"
+
+msgid "Scan failed."
+msgstr "Scansione fallita."
+
+msgid "Running..."
+msgstr "Analisi in corso..."
+
+msgid "Next automatic scan:"
+msgstr "Prossima scansione automatica:"
+
+# Status indicators
+msgid "All good"
+msgstr "Tutto ok"
+
+msgid "Attention needed"
+msgstr "Attenzione necessaria"
+
+msgid "Issues detected"
+msgstr "Problemi rilevati"
+
+msgid "All checks passed"
+msgstr "Tutti i controlli superati"
+
+# DNS Analyzer
+msgid "Not analyzed yet."
+msgstr "Non ancora analizzato."
+
+msgid "Not analyzed yet"
+msgstr "Non ancora analizzato"
+
+msgid "Last scan"
+msgstr "Ultima scansione"
+
+msgid "Detected providers:"
+msgstr "Provider rilevati:"
+
+msgid "DNS Record Status"
+msgstr "Stato Record DNS"
+
+msgid "SPF"
+msgstr "SPF"
+
+msgid "DMARC"
+msgstr "DMARC"
+
+msgid "DKIM"
+msgstr "DKIM"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "passed"
+msgstr "superati"
+
+msgid "warnings"
+msgstr "avvisi"
+
+msgid "errors"
+msgstr "errori"
+
+# Recent scans
+msgid "Recent scans"
+msgstr "Scansioni recenti"
+
+msgid "Last 5 scans"
+msgstr "Ultime 5 scansioni"
+
+msgid "No scans yet. Click \"Run Diagnosis\" above."
+msgstr "Nessuna scansione ancora. Clicca \"Esegui Diagnosi\" qui sopra."
+
+# Log table
 msgid "Date"
 msgstr "Data"
 
@@ -74,35 +220,378 @@ msgstr "Dettagli Tecnici"
 msgid "No logs found."
 msgstr "Nessun log trovato."
 
-msgid "Running..."
+# DNS Tools tab
+msgid "Domain to analyze"
+msgstr "Dominio da analizzare"
+
+msgid "Enter any domain to check its SPF, DMARC and DKIM records at once."
+msgstr "Inserisci un dominio per controllare i record SPF, DMARC e DKIM in una volta sola."
+
+msgid "Analyze All Records"
+msgstr "Analizza Tutti i Record"
+
+msgid "Analyze"
+msgstr "Analizza"
+
+msgid "Analyzing..."
 msgstr "Analisi in corso..."
 
-msgid "DIAGNOSIS COMPLETE."
-msgstr "DIAGNOSI COMPLETATA."
+msgid "Analysis failed."
+msgstr "Analisi fallita."
 
-msgid "Settings saved."
-msgstr "Impostazioni salvate."
+msgid "Detected providers: %s"
+msgstr "Provider rilevati: %s"
 
-msgid "Please enter a valid alert email address."
-msgstr "Inserisci un indirizzo email valido per gli avvisi."
+msgid "Optional — if DKIM auto-detection fails, enter your selector manually."
+msgstr "Opzionale — se il rilevamento automatico DKIM fallisce, inserisci manualmente il selettore."
 
-msgid "Please enter a valid email address to monitor."
-msgstr "Inserisci un indirizzo email valido da monitorare."
+msgid "DKIM Selector"
+msgstr "Selettore DKIM"
 
-msgid "Please enter a valid IPv4 address to monitor."
-msgstr "Inserisci un indirizzo IPv4 valido da monitorare."
+# IP Analysis section
+msgid "IP Analysis"
+msgstr "Analisi IP"
 
-msgid "Please wait 30 seconds before running another scan."
-msgstr "Attendi 30 secondi prima di eseguire un'altra scansione."
+msgid "Analyze any IPv4 address with DNSBL, PTR, GeoIP and WHOIS lookups."
+msgstr "Analizza qualsiasi indirizzo IPv4 con ricerche DNSBL, PTR, GeoIP e WHOIS."
 
-msgid "No valid email address configured. Please save your settings first."
-msgstr "Nessun indirizzo email valido configurato. Salva prima le impostazioni."
+msgid "IP address to analyze"
+msgstr "Indirizzo IP da analizzare"
 
-msgid "No valid IP address configured. Please save your settings first."
-msgstr "Nessun indirizzo IP valido configurato. Salva prima le impostazioni."
+msgid "Enter any IPv4 address to check DNSBL blacklists, PTR record, geolocation and WHOIS info."
+msgstr "Inserisci un indirizzo IPv4 per controllare blacklist DNSBL, record PTR, geolocalizzazione e informazioni WHOIS."
 
-msgid "PointNet Mail Guard AI — ALERT"
-msgstr "PointNet Mail Guard AI — AVVISO"
+msgid "Analyze IP"
+msgstr "Analizza IP"
+
+msgid "blacklists checked"
+msgstr "blacklist controllate"
+
+msgid "DNSBL"
+msgstr "DNSBL"
+
+msgid "Reverse DNS"
+msgstr "DNS inverso"
+
+msgid "PTR / Reverse DNS"
+msgstr "PTR / DNS inverso"
+
+msgid "Hostname lookup"
+msgstr "Ricerca hostname"
+
+msgid "GeoIP"
+msgstr "GeoIP"
+
+msgid "Location & ISP"
+msgstr "Posizione e ISP"
+
+msgid "WHOIS"
+msgstr "WHOIS"
+
+msgid "IP block info"
+msgstr "Info blocco IP"
+
+msgid "IP is listed on one or more blacklists!"
+msgstr "L'IP è presente in una o più blacklist!"
+
+msgid "IP is clean on all checked blacklists."
+msgstr "L'IP è pulito su tutte le blacklist controllate."
+
+msgid "No DNSBL results."
+msgstr "Nessun risultato DNSBL."
+
+msgid "No PTR record found"
+msgstr "Nessun record PTR trovato"
+
+msgid "PTR record found"
+msgstr "Record PTR trovato"
+
+# GeoIP fields
+msgid "Country"
+msgstr "Paese"
+
+msgid "Region"
+msgstr "Regione"
+
+msgid "City"
+msgstr "Città"
+
+msgid "ISP"
+msgstr "ISP"
+
+msgid "Organization"
+msgstr "Organizzazione"
+
+msgid "ASN"
+msgstr "ASN"
+
+# WHOIS fields
+msgid "IP Range"
+msgstr "Intervallo IP"
+
+msgid "Net Name"
+msgstr "Nome Rete"
+
+msgid "Person"
+msgstr "Persona"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Source"
+msgstr "Fonte"
+
+msgid "Network error."
+msgstr "Errore di rete."
+
+msgid "Network error. Please try again."
+msgstr "Errore di rete. Riprova."
+
+# Advanced tab
+msgid "DKIM Configuration"
+msgstr "Configurazione DKIM"
+
+msgid "The DKIM selector is used to automatically detect your DKIM DNS record. If auto-detection fails, you can set it here."
+msgstr "Il selettore DKIM viene usato per rilevare automaticamente il record DKIM. Se il rilevamento automatico fallisce, puoi impostarlo qui."
+
+msgid "Optional. If DKIM auto-detection does not find your selector, enter it here. Common examples: google, selector1, mail, dkim."
+msgstr "Opzionale. Se il rilevamento automatico DKIM non trova il selettore, inseriscilo qui. Esempi comuni: google, selector1, mail, dkim."
+
+msgid "Leave empty to auto-detect"
+msgstr "Lascia vuoto per rilevamento automatico"
+
+msgid "AI Configuration (Gemini API)"
+msgstr "Configurazione AI (API Gemini)"
+
+msgid "Configure your Google Gemini API key and model for AI-powered deliverability analysis."
+msgstr "Configura la tua chiave API Gemini per l'analisi AI della deliverability."
+
+msgid "Gemini API Key"
+msgstr "Chiave API Gemini"
+
+msgid "Get your free API key from"
+msgstr "Ottieni la tua chiave API gratuita da"
+
+msgid "You can also define"
+msgstr "Puoi anche definire"
+
+msgid "in wp-config.php."
+msgstr "in wp-config.php."
+
+msgid "AI Model"
+msgstr "Modello AI"
+
+msgid "Default (gemini-3.1-flash-lite)"
+msgstr "Predefinito (gemini-3.1-flash-lite)"
+
+msgid "Choose a model. You can also set"
+msgstr "Scegli un modello. Puoi anche impostare"
+
+msgid "Save your AI API key first to see available models."
+msgstr "Salva prima la chiave API AI per vedere i modelli disponibili."
+
+msgid "Fetch Models"
+msgstr "Carica Modelli"
+
+msgid "Fetching available models..."
+msgstr "Caricamento modelli disponibili..."
+
+msgid "Loading..."
+msgstr "Caricamento in corso..."
+
+msgid "Models updated successfully."
+msgstr "Modelli aggiornati con successo."
+
+msgid "No models found. Make sure your API key is valid."
+msgstr "Nessun modello trovato. Assicurati che la chiave API sia valida."
+
+msgid "Failed to fetch models. Check your API key."
+msgstr "Caricamento modelli fallito. Controlla la chiave API."
+
+msgid "Uninstall Behavior"
+msgstr "Comportamento alla Disinstallazione"
+
+msgid "Choose what happens to plugin data when you delete the plugin from the Plugins screen."
+msgstr "Scegli cosa succede ai dati del plugin quando elimini il plugin dalla schermata Plugin."
+
+msgid "Data cleanup"
+msgstr "Pulizia dati"
+
+msgid "Delete all data on uninstall"
+msgstr "Elimina tutti i dati alla disinstallazione"
+
+msgid "When enabled, all plugin tables, options and scheduled tasks will be removed when the plugin is deleted. Disable this to keep your data in the database if you plan to reinstall the plugin in the future."
+msgstr "Quando abilitato, tutte le tabelle, opzioni e attività programmate verranno rimosse. Disabilita per mantenere i dati se pensi di reinstallare il plugin in futuro."
+
+# GDPR notice
+msgid "GDPR Notice:"
+msgstr "Avviso GDPR:"
+
+msgid "Domain data (name, IP, DNS records) will be sent to Google Gemini API. By using an API key you accept"
+msgstr "I dati del dominio (nome, IP, record DNS) verranno inviati all'API Google Gemini. Usando una chiave API accetti"
+
+msgid "Google's terms"
+msgstr "i termini di Google"
+
+msgid "For full GDPR compliance use a paid Google Cloud account which includes a Data Processing Agreement."
+msgstr "Per la piena conformità GDPR utilizza un account Google Cloud a pagamento che include un Data Processing Agreement."
+
+# Export / Support tab
+msgid "Export Diagnostic Report"
+msgstr "Esporta Report Diagnostico"
+
+msgid "Download a complete JSON report with all scan data, DNS configuration and settings. Share it with PointNet support or an external AI for troubleshooting."
+msgstr "Scarica un report JSON completo con tutti i dati di scansione, configurazione DNS e impostazioni. Condividilo con il supporto PointNet o un'AI esterna per il troubleshooting."
+
+msgid "Privacy notice:"
+msgstr "Avviso privacy:"
+
+msgid "The report contains your monitored email address and server IPs. Share it only with authorized personnel."
+msgstr "Il report contiene l'indirizzo email monitorato e gli IP dei server. Condividilo solo con personale autorizzato."
+
+msgid "Anonymize email/IP (replace with placeholders)"
+msgstr "Anonimizza email/IP (sostituisci con placeholder)"
+
+msgid "Download Report (JSON)"
+msgstr "Scarica Report (JSON)"
+
+# AI sections
+msgid "AI Deliverability Analysis"
+msgstr "Analisi AI della Deliverability"
+
+msgid "Analyze with AI"
+msgstr "Analizza con AI"
+
+msgid "Click \"Analyze with AI\" to get a full deliverability report with recommendations."
+msgstr "Clicca \"Analizza con AI\" per ottenere un report completo di deliverability con raccomandazioni."
+
+msgid "Configure an email monitor first to enable AI analysis."
+msgstr "Configura prima un monitor email per abilitare l'analisi AI."
+
+msgid "AI report unavailable."
+msgstr "Report AI non disponibile."
+
+msgid "AI analysis failed."
+msgstr "Analisi AI fallita."
+
+msgid "AI not configured. Add your Gemini API key in Settings."
+msgstr "AI non configurata. Aggiungi la tua chiave API Gemini nelle Impostazioni."
+
+msgid "AI returned an empty response."
+msgstr "L'AI ha restituito una risposta vuota."
+
+msgid "AI response could not be parsed."
+msgstr "Impossibile analizzare la risposta dell'AI."
+
+msgid "No domain configured. Save an email address in Settings first."
+msgstr "Nessun dominio configurato. Salva prima un indirizzo email."
+
+msgid "Analyzing email configuration with AI..."
+msgstr "Analisi configurazione email con AI in corso..."
+
+msgid "Chat with AI"
+msgstr "Chatta con AI"
+
+msgid "Ask anything about email deliverability"
+msgstr "Chiedi qualsiasi cosa sulla deliverability delle email"
+
+msgid "Send"
+msgstr "Invia"
+
+msgid "You"
+msgstr "Tu"
+
+msgid "Failed to get response."
+msgstr "Impossibile ottenere risposta."
+
+msgid "Enter a valid email first (Step 1)."
+msgstr "Inserisci prima un'email valida (Passo 1)."
+
+msgid "Detecting DKIM selector..."
+msgstr "Rilevamento selettore DKIM in corso..."
+
+msgid "Detect"
+msgstr "Rileva"
+
+msgid "DKIM selector detected:"
+msgstr "Selettore DKIM rilevato:"
+
+msgid "DKIM selector found:"
+msgstr "Selettore DKIM trovato:"
+
+msgid "Could not auto-detect DKIM selector. You can enter it manually if you know it, or leave empty."
+msgstr "Impossibile rilevare automaticamente il selettore DKIM. Puoi inserirlo manualmente se lo conosci, o lasciarlo vuoto."
+
+# Pass / Warning / Error labels
+msgid "Pass"
+msgstr "Superato"
+
+msgid "Warning"
+msgstr "Avviso"
+
+msgid "Error"
+msgstr "Errore"
+
+# PointNet promo
+msgid "Need professional help with email deliverability?"
+msgstr "Hai bisogno di aiuto professionale con la deliverability?"
+
+msgid "PointNet offers SPF/DMARC/DKIM setup, dedicated mail server configuration and deliverability consulting."
+msgstr "PointNet offre configurazione SPF/DMARC/DKIM, server di posta dedicato e consulenza sulla deliverability."
+
+msgid "Contact PointNet →"
+msgstr "Contatta PointNet →"
+
+# Scan error strings
+msgid "Invalid email address."
+msgstr "Indirizzo email non valido."
+
+msgid "No MX records found for domain: %s"
+msgstr "Nessun record MX trovato per il dominio: %s"
+
+msgid "Could not resolve MX host to IP: %s"
+msgstr "Impossibile risolvere l'host MX in IP: %s"
+
+msgid "MX host did not resolve to a valid IPv4 address: %s"
+msgstr "L'host MX non ha risolto in un indirizzo IPv4 valido: %s"
+
+msgid "Invalid IPv4 address: %s"
+msgstr "Indirizzo IPv4 non valido: %s"
+
+# API error strings
+msgid "GeoIP lookup failed: %s"
+msgstr "GeoIP lookup fallito: %s"
+
+msgid "GeoIP lookup returned HTTP %d"
+msgstr "GeoIP lookup ha restituito HTTP %d"
+
+msgid "Invalid response from GeoIP service."
+msgstr "Risposta non valida dal servizio GeoIP."
+
+msgid "IP address not found."
+msgstr "Indirizzo IP non trovato."
+
+msgid "Invalid response from WHOIS service."
+msgstr "Risposta non valida dal servizio WHOIS."
+
+msgid "WHOIS lookup failed: %s"
+msgstr "WHOIS lookup fallito: %s"
+
+msgid "WHOIS lookup returned HTTP %d"
+msgstr "WHOIS lookup ha restituito HTTP %d"
+
+# Mailer alert strings
+msgid "PointNet Mail Guard — ALERT"
+msgstr "PointNet Mail Guard — AVVISO"
+
+msgid "⚠️ PointNet ALERT: scan error for %s"
+msgstr "⚠️ PointNet AVVISO: errore di scansione per %s"
+
+msgid "⚠️ PointNet ALERT: %s — %s"
+msgstr "⚠️ PointNet AVVISO: %s — %s"
+
+msgid "⚠️ PointNet ALERT: %s — issue detected"
+msgstr "⚠️ PointNet AVVISO: %s — problema rilevato"
 
 msgid "Scan error"
 msgstr "Errore di scansione"
@@ -146,6 +635,12 @@ msgstr "L'IP è presente in una o più blacklist."
 msgid "PTR (reverse DNS) is not configured."
 msgstr "Il PTR (reverse DNS) non è configurato."
 
+msgid "SPF record is missing."
+msgstr "Il record SPF è assente."
+
+msgid "SPF record is invalid."
+msgstr "Il record SPF non è valido."
+
 msgid "DNSBL Results"
 msgstr "Risultati DNSBL"
 
@@ -154,24 +649,6 @@ msgstr "Verifica PTR"
 
 msgid "WARNING: not configured"
 msgstr "ATTENZIONE: non configurato"
-
-msgid "⚠️ PointNet ALERT: scan error for %s"
-msgstr "⚠️ PointNet AVVISO: errore di scansione per %s"
-
-msgid "⚠️ PointNet ALERT: %s — blacklist + PTR issue"
-msgstr "⚠️ PointNet AVVISO: %s — problema blacklist + PTR"
-
-msgid "⚠️ PointNet ALERT: %s is listed on a blacklist"
-msgstr "⚠️ PointNet AVVISO: %s è presente in una blacklist"
-
-msgid "⚠️ PointNet ALERT: %s — PTR (reverse DNS) not configured"
-msgstr "⚠️ PointNet AVVISO: %s — PTR (reverse DNS) non configurato"
-
-msgid "SPF record is missing."
-msgstr "Il record SPF è assente."
-
-msgid "SPF record is invalid."
-msgstr "Il record SPF non è valido."
 
 msgid "SPF Check"
 msgstr "Verifica SPF"
@@ -182,175 +659,22 @@ msgstr "ASSENTE — nessun record SPF trovato"
 msgid "INVALID"
 msgstr "NON VALIDO"
 
-msgid "SPF Analyzer"
-msgstr "Analizzatore SPF"
+# DKIM onboarding strings
+msgid "Step 4: DKIM Selector (optional)"
+msgstr "Passo 4: Selettore DKIM (opzionale)"
 
-msgid "Enter a domain or email address to run a full SPF record analysis."
-msgstr "Inserisci un dominio o un indirizzo email per avviare un'analisi completa del record SPF."
+msgid "If known, enter your DKIM selector. Leave empty to auto-detect."
+msgstr "Se lo conosci, inserisci il selettore DKIM. Lascia vuoto per rilevamento automatico."
 
-msgid "Analyze SPF"
-msgstr "Analizza SPF"
+# Welcome wizard
+msgid "Welcome to PointNet Mail Guard!"
+msgstr "Benvenuto in PointNet Mail Guard!"
 
-msgid "Analyzing..."
-msgstr "Analisi in corso..."
+msgid "Set up your first monitor in just 2 minutes. Follow the steps below:"
+msgstr "Configura il primo monitor in soli 2 minuti. Segui i passaggi qui sotto:"
 
-msgid "Detected senders:"
-msgstr "Mittenti rilevati:"
+msgid "Need professional help with email deliverability?"
+msgstr "Hai bisogno di aiuto professionale con la deliverability delle email?"
 
-msgid "Check"
-msgstr "Controllo"
-
-msgid "Result"
-msgstr "Risultato"
-
-msgid "Details"
-msgstr "Dettagli"
-
-msgid "No SPF record found."
-msgstr "Nessun record SPF trovato."
-
-msgid "passed"
-msgstr "superati"
-
-msgid "warnings"
-msgstr "avvisi"
-
-msgid "errors"
-msgstr "errori"
-
-msgid "DNS lookups"
-msgstr "DNS lookup"
-
-msgid "Need help fixing SPF issues? Contact"
-msgstr "Hai bisogno di aiuto con i problemi SPF? Contatta"
-
-msgid "email deliverability specialists."
-msgstr "specialisti in email deliverability."
-
-msgid "Please enter a domain or email address."
-msgstr "Inserisci un dominio o un indirizzo email."
-
-msgid "Please wait 30 seconds before running another analysis."
-msgstr "Attendi 30 secondi prima di eseguire un'altra analisi."
-
-msgid "DMARC Analyzer"
-msgstr "Analizzatore DMARC"
-
-msgid "Enter a domain or email address to run a full DMARC record analysis."
-msgstr "Inserisci un dominio o un indirizzo email per avviare un'analisi completa del record DMARC."
-
-msgid "Analyze DMARC"
-msgstr "Analizza DMARC"
-
-msgid "No DMARC record found."
-msgstr "Nessun record DMARC trovato."
-
-msgid "Need help configuring DMARC? Contact"
-msgstr "Hai bisogno di aiuto per configurare DMARC? Contatta"
-
-msgid "Please wait 30 seconds before running another analysis."
-msgstr "Attendi 30 secondi prima di eseguire un'altra analisi."
-
-msgid "DKIM Analyzer"
-msgstr "Analizzatore DKIM"
-
-msgid "Enter a domain or email address. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it."
-msgstr "Inserisci un dominio o un indirizzo email. Il plugin tenterà di rilevare automaticamente il selettore DKIM — oppure inseriscilo manualmente se lo conosci."
-
-msgid "Selector (e.g. google, mail, 202406)"
-msgstr "Selettore (es. google, mail, 202406)"
-
-msgid "Analyze DKIM"
-msgstr "Analizza DKIM"
-
-msgid "Leave the selector field empty to attempt automatic detection of common selectors."
-msgstr "Lascia il campo selettore vuoto per tentare il rilevamento automatico dei selettori comuni."
-
-msgid "Selector auto-detected:"
-msgstr "Selettore rilevato automaticamente:"
-
-msgid "No DKIM record found."
-msgstr "Nessun record DKIM trovato."
-
-msgid "Need help configuring DKIM? Contact"
-msgstr "Hai bisogno di aiuto per configurare DKIM? Contatta"
-
-msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually."
-msgstr "Impossibile rilevare automaticamente il selettore DKIM. Inseriscilo manualmente."
-
-msgid "%s is a public email provider and does not expose DKIM records in public DNS. Enter your own domain name (e.g. yourdomain.com) instead."
-msgstr "%s è un provider email pubblico e non espone i record DKIM nel DNS pubblico. Inserisci il tuo dominio personalizzato (es. tuodominio.it)."
-
-msgid "Could not auto-detect a DKIM selector for this domain. Please enter the selector manually — you can find it in your mail server or DNS provider settings."
-msgstr "Impossibile rilevare automaticamente il selettore DKIM. Inseriscilo manualmente — puoi trovarlo nelle impostazioni del tuo server email o del provider DNS."
-
-msgid "Enter your domain name or the email address you send from. The plugin will try to detect your DKIM selector automatically — or enter it manually if you know it. Public providers like Gmail and Outlook do not expose DKIM records publicly."
-msgstr "Inserisci il tuo dominio o l'indirizzo email da cui invii. Il plugin tenterà di rilevare automaticamente il selettore DKIM — oppure inseriscilo manualmente se lo conosci. Provider pubblici come Gmail e Outlook non espongono i record DKIM pubblicamente."
-
-# 1.6.2 — new translatable error strings
-msgid "Invalid email address."
-msgstr "Indirizzo email non valido."
-
-msgid "No MX records found for domain: %s"
-msgstr "Nessun record MX trovato per il dominio: %s"
-
-msgid "Could not resolve MX host to IP: %s"
-msgstr "Impossibile risolvere l'host MX in IP: %s"
-
-msgid "MX host did not resolve to a valid IPv4 address: %s"
-msgstr "L'host MX non ha risolto in un indirizzo IPv4 valido: %s"
-
-msgid "Invalid IPv4 address: %s"
-msgstr "Indirizzo IPv4 non valido: %s"
-
-# 1.6.3 — AI & Monitors
-msgid "Monitors"
-msgstr "Monitor"
-
-msgid "AI Deliverability Analysis"
-msgstr "Analisi AI della Deliverability"
-
-msgid "Analyze with AI"
-msgstr "Analizza con AI"
-
-msgid "Click \"Analyze with AI\" to get a full deliverability report with recommendations."
-msgstr "Clicca \"Analizza con AI\" per ottenere un report completo di deliverability con raccomandazioni."
-
-msgid "AI report unavailable."
-msgstr "Report AI non disponibile."
-
-msgid "AI analysis failed."
-msgstr "Analisi AI fallita."
-
-msgid "AI not configured. Define PN_MAILGUARD_OPENAI_KEY in wp-config.php."
-msgstr "AI non configurata. Definisci PN_MAILGUARD_OPENAI_KEY in wp-config.php."
-
-msgid "AI returned an empty response."
-msgstr "L'AI ha restituito una risposta vuota."
-
-msgid "AI response could not be parsed."
-msgstr "Impossibile analizzare la risposta dell'AI."
-
-msgid "No domain configured. Save an email address in Settings first."
-msgstr "Nessun dominio configurato. Salva prima un indirizzo email nelle Impostazioni."
-
-msgid "Analyzing email configuration with AI..."
-msgstr "Analisi configurazione email con AI in corso..."
-
-msgid "Last scan"
-msgstr "Ultima scansione"
-
-msgid "Not analyzed yet."
-msgstr "Non ancora analizzato."
-
-msgid "Detected providers:"
-msgstr "Provider rilevati:"
-
-msgid "Strengths"
-msgstr "Punti di forza"
-
-msgid "Next steps"
-msgstr "Prossimi passi"
-
-msgid "No domain configured. Save an email address in Settings or enter a domain in DNS Tools first."
-msgstr "Nessun dominio configurato. Salva un indirizzo email nelle Impostazioni o inserisci un dominio in DNS Tools."
+msgid "PointNet offers SPF/DMARC/DKIM setup, dedicated mail server configuration and deliverability consulting."
+msgstr "PointNet offre configurazione SPF/DMARC/DKIM, server di posta dedicato e consulenza sulla deliverability."
