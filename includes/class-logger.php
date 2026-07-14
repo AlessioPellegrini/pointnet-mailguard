@@ -113,6 +113,26 @@ class PN_Mailguard_Logger {
         if (!empty($data['spf_warning'])) {
             $status = ($status === 'CLEAN') ? 'SPF WARNING' : $status . ' + SPF';
         }
+        // DMARC check
+        $dmarc_status = $data['dmarc_status'] ?? '';
+        if ($dmarc_status === 'error') {
+            $status = (str_contains($status, 'CLEAN')) ? 'DMARC ERROR' : $status . ' + DMARC';
+        } elseif ($dmarc_status === 'warning') {
+            if ($status === 'CLEAN') {
+                $status = 'DMARC WARNING';
+            } else {
+                $status = $status . ' + DMARC';
+            }
+        }
+        // DKIM check
+        $dkim_status = $data['dkim_status'] ?? '';
+        if ($dkim_status === 'error') {
+            $status = (str_contains($status, 'CLEAN') ? 'DKIM ERROR' : $status . ' + DKIM');
+        } elseif ($dkim_status === 'warning' && $status === 'CLEAN') {
+            $status = 'DKIM WARNING';
+        } elseif ($dkim_status === 'warning') {
+            $status = $status . ' + DKIM';
+        }
         return $status;
     }
 
@@ -137,6 +157,16 @@ class PN_Mailguard_Logger {
             $parts[] = 'Server: ' . ($data['shared_server'] ? 'SHARED' : 'SEPARATE');
             $parts[] = 'SPF: ' . strtoupper($data['spf_status'])
                 . (!empty($data['spf_record']) ? ' (' . $data['spf_record'] . ')' : '');
+            // DMARC status
+            $dmarc_s = $data['dmarc_status'] ?? '';
+            if (!empty($dmarc_s)) {
+                $parts[] = 'DMARC: ' . strtoupper($dmarc_s);
+            }
+            // DKIM status
+            $dkim_s = $data['dkim_status'] ?? '';
+            if (!empty($dkim_s)) {
+                $parts[] = 'DKIM: ' . strtoupper($dkim_s);
+            }
         } else {
             $parts[] = 'IP: ' . $data['ip'];
         }

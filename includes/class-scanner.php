@@ -39,21 +39,51 @@ class PN_Mailguard_Scanner {
         $ptr   = PN_Mailguard_PTR::check($ip);
         $spf   = PN_Mailguard_SPF::check($mx['domain']);
 
+        // DMARC quick check
+        $dmarc_data = PN_Mailguard_DMARC::analyze($mx['domain']);
+        $dmarc_status = $dmarc_data['status'] ?? 'missing';
+        $dmarc_errors = $dmarc_data['errors'] ?? 0;
+        $dmarc_warnings = $dmarc_data['warnings'] ?? 0;
+
+        // DKIM quick check
+        $dkim_sel = get_option('pn_mailguard_dkim_selector', '');
+        if (empty($dkim_sel)) {
+            $d = PN_Mailguard_DKIM::autodetect($mx['domain']);
+            if (!empty($d['selector'])) {
+                $dkim_sel = $d['selector'];
+            }
+        }
+        $dkim_status = 'missing';
+        $dkim_errors = 0;
+        $dkim_warnings = 0;
+        if (!empty($dkim_sel)) {
+            $dkim_data = PN_Mailguard_DKIM::analyze($mx['domain'], $dkim_sel);
+            $dkim_status    = $dkim_data['status'] ?? 'missing';
+            $dkim_errors    = $dkim_data['errors'] ?? 0;
+            $dkim_warnings  = $dkim_data['warnings'] ?? 0;
+        }
+
         return [
-            'email'         => $mx['email'],
-            'domain'        => $mx['domain'],
-            'mx_host'       => $mx['mx_host'],
-            'mx_ip'         => $ip,
-            'wp_ip'         => $mx['wp_ip'],
-            'shared_server' => $mx['shared_server'],
-            'dnsbl'         => $dnsbl['results'],
-            'is_alert'      => $dnsbl['is_alert'],
-            'ptr'           => $ptr['ptr'],
-            'ptr_warning'   => $ptr['ptr_warning'],
-            'spf_record'    => $spf['spf_record'],
-            'spf_status'    => $spf['spf_status'],
-            'spf_warning'   => $spf['spf_warning'],
-            'error'         => '',
+            'email'          => $mx['email'],
+            'domain'         => $mx['domain'],
+            'mx_host'        => $mx['mx_host'],
+            'mx_ip'          => $ip,
+            'wp_ip'          => $mx['wp_ip'],
+            'shared_server'  => $mx['shared_server'],
+            'dnsbl'          => $dnsbl['results'],
+            'is_alert'       => $dnsbl['is_alert'],
+            'ptr'            => $ptr['ptr'],
+            'ptr_warning'    => $ptr['ptr_warning'],
+            'spf_record'     => $spf['spf_record'],
+            'spf_status'     => $spf['spf_status'],
+            'spf_warning'    => $spf['spf_warning'],
+            'dmarc_status'   => $dmarc_status,
+            'dmarc_errors'   => $dmarc_errors,
+            'dmarc_warnings' => $dmarc_warnings,
+            'dkim_status'    => $dkim_status,
+            'dkim_errors'    => $dkim_errors,
+            'dkim_warnings'  => $dkim_warnings,
+            'error'          => '',
         ];
     }
 

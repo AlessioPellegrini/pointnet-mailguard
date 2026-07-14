@@ -545,6 +545,7 @@ class PN_Mailguard_Dashboard {
         global $wpdb;
         $table = $wpdb->prefix . ($type === 'ip' ? PN_Mailguard_Installer::TABLE_IP : PN_Mailguard_Installer::TABLE_EMAIL);
         $logs  = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY scan_date DESC LIMIT %d", $table, 5));
+        $is_email = ($type === 'email');
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
@@ -554,12 +555,86 @@ class PN_Mailguard_Dashboard {
                 </span>
             </div>
             <?php if ($logs): ?>
-                <?php foreach ($logs as $log): ?>
-                    <?php $color = PN_Mailguard_Logger::status_color($log->status); ?>
-                    <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:0.5px solid #f0f0f0;">
-                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:<?php echo esc_attr($color); ?>; flex-shrink:0;"></span>
-                        <span style="font-size:12px; color:#666; flex:1;"><?php echo esc_html($log->scan_date); ?></span>
-                        <span style="font-size:12px; font-weight:600; color:<?php echo esc_attr($color); ?>;"><?php echo esc_html($log->status); ?></span>
+                <?php foreach ($logs as $log):
+                    $overall_color = PN_Mailguard_Logger::status_color($log->status);
+                    // Parse details into individual check badges
+                    $badges_html = '';
+                    if (!empty($log->details)) {
+                        $details_parts = explode(' | ', $log->details);
+                        $dnsbl_badges = [];
+                        foreach ($details_parts as $part) {
+                            $part = trim($part);
+                            // SPF: "SPF: OK (record)" or "SPF: WARNING" or "SPF: ERROR"
+                            if (preg_match('/^SPF:\s*(OK|WARNING|ERROR)/i', $part, $m)) {
+                                $s = strtoupper($m[1]);
+                                if ($s === 'OK') { $bg = '#edfaef'; $txt = '#00a32a'; $label = 'SPF'; }
+                                elseif ($s === 'WARNING') { $bg = '#fff8e5'; $txt = '#996800'; $label = 'SPF'; }
+                                else { $bg = '#fbeaea'; $txt = '#a30000'; $label = 'SPF'; }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">' . esc_html($label) . '</span> ';
+                            }
+                            // DMARC
+                            elseif (preg_match('/^DMARC:\s*(OK|WARNING|ERROR)/i', $part, $m)) {
+                                $s = strtoupper($m[1]);
+                                if ($s === 'OK') { $bg = '#edfaef'; $txt = '#00a32a'; }
+                                elseif ($s === 'WARNING') { $bg = '#fff8e5'; $txt = '#996800'; }
+                                else { $bg = '#fbeaea'; $txt = '#a30000'; }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">DMARC</span> ';
+                            }
+                            // DKIM
+                            elseif (preg_match('/^DKIM:\s*(OK|WARNING|ERROR)/i', $part, $m)) {
+                                $s = strtoupper($m[1]);
+                                if ($s === 'OK') { $bg = '#edfaef'; $txt = '#00a32a'; }
+                                elseif ($s === 'WARNING') { $bg = '#fff8e5'; $txt = '#996800'; }
+                                else { $bg = '#fbeaea'; $txt = '#a30000'; }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">DKIM</span> ';
+                            }
+                            // Server
+                            elseif (preg_match('/^Server:\s*(SHARED|SEPARATE)/i', $part, $m)) {
+                                $s = strtoupper($m[1]);
+                                if ($s === 'SEPARATE') { $bg = '#edfaef'; $txt = '#00a32a'; }
+                                else { $bg = '#fff8e5'; $txt = '#996800'; }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">' . ($is_email ? 'SERVER' : '') . '</span> ';
+                            }
+                            // PTR: can be "PTR: host.eu" or "PTR: WARNING"
+                            elseif (str_starts_with($part, 'PTR:')) {
+                                $ptr_val = trim(substr($part, 4));
+                                if (str_contains($ptr_val, 'WARNING') || empty($ptr_val)) {
+                                    $bg = '#fff8e5'; $txt = '#996800'; $label = 'PTR';
+                                } else {
+                                    $bg = '#edfaef'; $txt = '#00a32a'; $label = 'PTR';
+                                }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">PTR</span> ';
+                            }
+                            // DNSBL results like "SpamCop: CLEAN" or "Barracuda: LISTED" — collect them
+                            elseif (preg_match('/^[A-Za-z0-9\s]+:\s*(CLEAN|LISTED)$/', $part, $m)) {
+                                $s = $m[1];
+                                // Use the DNSBL name as key
+                                $dnsbl_name = trim(substr($part, 0, strpos($part, ':')));
+                                if (!isset($dnsbl_badges['has_listed'])) {
+                                    $dnsbl_badges['has_listed'] = false;
+                                }
+                                if ($s === 'LISTED') {
+                                    $dnsbl_badges['has_listed'] = true;
+                                }
+                            }
+                        }
+                        // Add DNSBL overall badge
+                        $has_listed = $dnsbl_badges['has_listed'] ?? false;
+                        if ($has_listed) {
+                            $badges_html .= '<span style="background:#fbeaea;color:#a30000;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">DNSBL ✗</span> ';
+                        } else {
+                            $badges_html .= '<span style="background:#edfaef;color:#00a32a;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">DNSBL</span> ';
+                        }
+                    }
+                    ?>
+                    <div style="padding:6px 0; border-bottom:0.5px solid #f0f0f0;">
+                        <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:<?php echo esc_attr($overall_color); ?>; flex-shrink:0;"></span>
+                            <span style="font-size:11px; color:#666;"><?php echo esc_html($log->scan_date); ?></span>
+                        </div>
+                        <div style="margin-left:14px; display:flex; flex-wrap:wrap; gap:3px;">
+                            <?php echo $badges_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- all content is hardcoded or escaped above ?>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
