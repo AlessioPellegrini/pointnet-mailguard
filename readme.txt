@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 1.7.6
+Stable tag: 1.7.7
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -110,6 +110,15 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 3. Log table with colour-coded status: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
 == Changelog ==
+
+= 1.7.7 =
+* Added: DNSBL Blacklist Check section shown as colour-coded badge grid on Monitors tab
+* Added: IP Monitor now appears conditionally — placeholder with "Add IP" button when not configured
+* Added: Auto-fill alert email from monitored email during onboarding wizard
+* Improved: Monitors tab layout — Email Monitor full-width, IP Monitor below DNSBL
+* Fixed: WordPress Plugin Check compliance — %i placeholders for table names, unified prepared statements
+* Fixed: PHPCS warnings — interpolated table names, load_plugin_textdomain removed
+* Updated: Italian translation (.pot/.po) for v1.7.7
 
 = 1.7.6 =
 * Fixed: WordPress Plugin Check compliance — translators comments, ordered placeholders, escaping, unslash, variable prefixing
