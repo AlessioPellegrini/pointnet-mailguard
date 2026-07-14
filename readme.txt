@@ -120,6 +120,8 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 * New: IP Monitor placeholder with "Add IP" button when not configured
 * New: Auto-fill alert email from monitored email during onboarding wizard
 * Fixed: DMARC warning/error e DKIM warning/error ora influenzano lo status delle scansioni
+* Fixed: Uninstall checkbox now correctly saves unchecked state
+* Changed: Tabs renamed to "Email & MX Monitor" and "Custom IP Monitor"
 * Fixed: WordPress Plugin Check compliance — %i placeholders for table names, unified prepared statements
 * Fixed: PHPCS warnings — interpolated table names, load_plugin_textdomain removed
 * Updated: Italian translation (.pot/.po) for v1.7.7

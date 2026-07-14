@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 6.5  
 **Tested up to:** 7.0  
-**Stable tag:** 1.7.5  
+**Stable tag:** 1.7.7  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -18,8 +18,8 @@ PointNet Mail Guard is a complete email deliverability monitoring system for Wor
 
 The plugin offers **two independent monitors** in a tabbed admin interface:
 
-- **Email Monitor** — enter your sender email, the plugin detects your mail server automatically via MX lookup and runs a full deliverability check.
-- **IP Monitor** — enter any IPv4 or IPv6 address to monitor your VPS, mail relay or any server independently.
+- **Email & MX Monitor** — enter your sender email, the plugin detects your mail server automatically via MX lookup and runs a full deliverability check.
+- **Custom IP Monitor** — enter any IPv4 or IPv6 address to monitor your VPS, mail relay or any server independently.
 
 Both monitors run daily via WP-Cron, keep separate logs, and send email alerts only when problems are detected.
 
@@ -49,14 +49,18 @@ Developed by [PointNet](https://www.pointnet.it/).
 
 ## Features
 
-- Two independent monitors — Email and IP — with separate logs
+- Two independent monitors — Email & MX (auto-detected) and Custom IP (manual)
+- Separate tabs: "Email & MX Monitor" and "Custom IP Monitor"
 - Automatic mail server detection from email address via MX lookup
 - Shared vs dedicated server detection (mail and WordPress on same IP)
 - DNSBL checks against 9 blacklists: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL, Abusix, SPFBL, DroneBL, LashBack UBL
+- DNSBL results shown as colour-coded badge grid on Monitors tab
 - PTR (reverse DNS) verification with alert on missing record
 - SPF Analyzer — full RFC 7208 analysis, 9 checks, provider detection
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
+- DMARC and DKIM quick check integrated into Email Monitor scanner
+- Recent scans with colour-coded badges for SPF, DMARC, DKIM, PTR, SERVER, DNSBL
 - IP Analysis tool — DNSBL, PTR, GeoIP and WHOIS lookup for any IPv4 address
 - GeoIP lookup — country, region, city, ISP and ASN via ipwhois.app
 - WHOIS lookup — IP block owner, range, organization via RDAP (rdap.org)
@@ -64,11 +68,13 @@ Developed by [PointNet](https://www.pointnet.it/).
 - AI Chat — ask free-text questions about email deliverability
 - Gemini AI model selector in Advanced tab
 - Export / Support tab — download full diagnostic JSON report for assistance
-- Real-time terminal-style diagnostic console with coloured log details
+- Real-time terminal-style diagnostic console with colour-coded log details
+- Auto-fill alert email from monitored email during onboarding wizard
 - Daily automated scan via WP-Cron
 - Email alerts only on problems — sent via wp_mail()
 - Compatible with WP Mail SMTP, FluentSMTP, Easy WP SMTP and any SMTP plugin
 - Automatic log cleanup after 30 days
+- Uninstall data cleanup preference (keep or delete data)
 - Full Italian translation included
 
 ## Requirements
@@ -130,6 +136,26 @@ This plugin has not been tested on WordPress Multisite. Use on a network install
 By default, all plugin data (tables, settings, and logs) is removed when you delete the plugin from the Plugins screen. If you want to keep your data in the database — for example if you plan to reinstall the plugin later — go to **Advanced** → **Uninstall Behavior** and uncheck "Delete all data on uninstall" before deleting the plugin.
 
 ## Changelog
+
+### 1.7.7
+* New: Separato tab "Custom IP" dal tab Monitors — IP manuale in scheda dedicata
+* New: Recent scans ora mostra badge colorati per ogni check: SPF, DMARC, DKIM, PTR, SERVER, DNSBL
+* New: DMARC e DKIM quick check integrati nello scanner Email Monitor
+* New: IP auto-rilevato via MX lookup mostrato nella card Email Monitor
+* New: DNSBL Blacklist Check section shown as colour-coded badge grid on Monitors tab
+* New: IP Monitor placeholder with "Add IP" button when not configured
+* New: Auto-fill alert email from monitored email during onboarding wizard
+* Fixed: DMARC warning/error e DKIM warning/error ora influenzano lo status delle scansioni
+* Fixed: Uninstall checkbox now correctly saves unchecked state
+* Changed: Tabs renamed to "Email & MX Monitor" and "Custom IP Monitor"
+* Fixed: WordPress Plugin Check compliance — %i placeholders for table names, unified prepared statements
+* Fixed: PHPCS warnings — interpolated table names, load_plugin_textdomain removed
+* Updated: Italian translation (.pot/.po) for v1.7.7
+
+### 1.7.6
+* Fixed: WordPress Plugin Check compliance — translators comments, ordered placeholders, escaping, unslash, variable prefixing
+* Fixed: readme.txt — blacklist count updated from 5 to 9
+* Removed: load_plugin_textdomain() manual call (WP handles it automatically since 4.6 for hosted plugins)
 
 ### 1.7.5
 * **Security**: Gemini API key encrypted with AES-256-CBC before database storage
