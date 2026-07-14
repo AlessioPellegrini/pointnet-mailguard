@@ -193,8 +193,8 @@ class PN_Mailguard_Dashboard {
             <nav class="nav-tab-wrapper" style="margin-bottom:20px;">
                 <?php
                 $tab_labels = [
-                    'monitors'  => '📊 ' . __('Monitors',    'pointnet-mailguard'),
-                    'customip'  => '🌐 ' . __('Custom IP',   'pointnet-mailguard'),
+                    'monitors'  => '📧 ' . __('Email & MX Monitor',    'pointnet-mailguard'),
+                    'customip'  => '🌐 ' . __('Custom IP Monitor',   'pointnet-mailguard'),
                     'dnstools'  => '🔬 ' . __('DNS & IP Tools',   'pointnet-mailguard'),
                     'advanced'  => '⚙️ '  . __('Advanced',    'pointnet-mailguard'),
                     'support'   => '📤 '  . __('Export / Support', 'pointnet-mailguard'),
