@@ -112,10 +112,14 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 == Changelog ==
 
 = 1.7.7 =
-* Added: DNSBL Blacklist Check section shown as colour-coded badge grid on Monitors tab
-* Added: IP Monitor now appears conditionally — placeholder with "Add IP" button when not configured
-* Added: Auto-fill alert email from monitored email during onboarding wizard
-* Improved: Monitors tab layout — Email Monitor full-width, IP Monitor below DNSBL
+* New: Separato tab "Custom IP" dal tab Monitors — IP manuale in scheda dedicata
+* New: Recent scans ora mostra badge colorati per ogni check: SPF, DMARC, DKIM, PTR, SERVER, DNSBL
+* New: DMARC e DKIM quick check integrati nello scanner Email Monitor
+* New: IP auto-rilevato via MX lookup mostrato nella card Email Monitor
+* New: DNSBL Blacklist Check section shown as colour-coded badge grid on Monitors tab
+* New: IP Monitor placeholder with "Add IP" button when not configured
+* New: Auto-fill alert email from monitored email during onboarding wizard
+* Fixed: DMARC warning/error e DKIM warning/error ora influenzano lo status delle scansioni
 * Fixed: WordPress Plugin Check compliance — %i placeholders for table names, unified prepared statements
 * Fixed: PHPCS warnings — interpolated table names, load_plugin_textdomain removed
 * Updated: Italian translation (.pot/.po) for v1.7.7
