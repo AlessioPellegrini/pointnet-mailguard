@@ -112,14 +112,14 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 == Changelog ==
 
 = 1.7.7 =
-* New: Separato tab "Custom IP" dal tab Monitors — IP manuale in scheda dedicata
-* New: Recent scans ora mostra badge colorati per ogni check: SPF, DMARC, DKIM, PTR, SERVER, DNSBL
-* New: DMARC e DKIM quick check integrati nello scanner Email Monitor
-* New: IP auto-rilevato via MX lookup mostrato nella card Email Monitor
+* New: Custom IP tab separated from Monitors — IP monitor in dedicated tab
+* New: Recent scans now show colour-coded badges for each check: SPF, DMARC, DKIM, PTR, SERVER, DNSBL
+* New: DMARC and DKIM quick check integrated into Email Monitor scanner
+* New: Auto-detected MX IP shown in Email Monitor card
 * New: DNSBL Blacklist Check section shown as colour-coded badge grid on Monitors tab
 * New: IP Monitor placeholder with "Add IP" button when not configured
 * New: Auto-fill alert email from monitored email during onboarding wizard
-* Fixed: DMARC warning/error e DKIM warning/error ora influenzano lo status delle scansioni
+* Fixed: DMARC warning/error and DKIM warning/error now affect scan status
 * Fixed: Uninstall checkbox now correctly saves unchecked state
 * Changed: Tabs renamed to "Email & MX Monitor" and "Custom IP Monitor"
 * Fixed: WordPress Plugin Check compliance — %i placeholders for table names, unified prepared statements
