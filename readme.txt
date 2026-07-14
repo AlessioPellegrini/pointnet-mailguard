@@ -1,7 +1,7 @@
 === PointNet Mail Guard ===
 Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
-Requires at least: 6.5
+Requires at least: 7.0
 Tested up to: 7.0
 Stable tag: 1.7.8
 Requires PHP: 8.3
@@ -48,7 +48,7 @@ Developed by [PointNet](https://www.pointnet.it/).
 
 == Requirements ==
 
-- WordPress 6.5+
+- WordPress 7.0+
 - PHP 8.3+
 
 == Installation ==
