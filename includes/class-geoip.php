@@ -56,8 +56,8 @@ class PN_Mailguard_GeoIP {
         if (is_wp_error($response)) {
             return [
                 'status' => 'error',
-                /* translators: %s: error message */
                 'error'  => sprintf(
+                    /* translators: %s: error message */
                     __('GeoIP lookup failed: %s', 'pointnet-mailguard'),
                     $response->get_error_message()
                 ),
@@ -68,8 +68,8 @@ class PN_Mailguard_GeoIP {
         if ($code !== 200) {
             return [
                 'status' => 'error',
-                /* translators: %d: HTTP response code */
                 'error'  => sprintf(
+                    /* translators: %d: HTTP response code */
                     __('GeoIP lookup returned HTTP %d', 'pointnet-mailguard'),
                     $code
                 ),

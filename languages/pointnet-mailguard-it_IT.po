@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PointNet Mail Guard 1.7.4\n"
-"POT-Creation-Date: 2026-07-13 12:00+0200\n"
-"PO-Revision-Date: 2026-07-13 12:00+0200\n"
+"Project-Id-Version: PointNet Mail Guard 1.7.6\n"
+"POT-Creation-Date: 2026-07-13 22:00+0200\n"
+"PO-Revision-Date: 2026-07-13 22:00+0200\n"
 "Last-Translator: PointNet Lab\n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -78,8 +78,8 @@ msgstr "Impostazioni salvate."
 msgid "Please enter a valid email address to monitor."
 msgstr "Inserisci un indirizzo email valido da monitorare."
 
-msgid "Please enter a valid IPv4 address."
-msgstr "Inserisci un indirizzo IPv4 valido."
+msgid "Please enter a valid IPv4 or IPv6 address."
+msgstr "Inserisci un indirizzo IPv4 o IPv6 valido."
 
 msgid "Please enter a valid alert email address."
 msgstr "Inserisci un indirizzo email valido per gli avvisi."
@@ -252,8 +252,8 @@ msgstr "Selettore DKIM"
 msgid "IP Analysis"
 msgstr "Analisi IP"
 
-msgid "Analyze any IPv4 address with DNSBL, PTR, GeoIP and WHOIS lookups."
-msgstr "Analizza qualsiasi indirizzo IPv4 con ricerche DNSBL, PTR, GeoIP e WHOIS."
+msgid "Analyze any IPv4 or IPv6 address with PTR, GeoIP and WHOIS lookups. DNSBL checks require IPv4 (8 of 9 blacklists do not support IPv6)."
+msgstr "Analizza qualsiasi indirizzo IPv4 o IPv6 con ricerche PTR, GeoIP e WHOIS. I controlli DNSBL richiedono IPv4 (8 blacklist su 9 non supportano IPv6)."
 
 msgid "IP address to analyze"
 msgstr "Indirizzo IP da analizzare"
@@ -305,6 +305,13 @@ msgstr "Nessun record PTR trovato"
 
 msgid "PTR record found"
 msgstr "Record PTR trovato"
+
+# IPv4/IPv6 tooltips
+msgid "IPv4: DNSBL (9 blacklist) + PTR reverse DNS. For GeoIP and WHOIS use the DNS & IP Tools tab."
+msgstr "IPv4: DNSBL (9 blacklist) + PTR reverse DNS. Per GeoIP e WHOIS usa la scheda DNS e Strumenti IP."
+
+msgid "IPv6: PTR reverse DNS only. DNSBL checks are not available (only 1 of 9 blacklists supports IPv6). For GeoIP and WHOIS use the DNS & IP Tools tab."
+msgstr "IPv6: solo PTR reverse DNS. I controlli DNSBL non sono disponibili (solo 1 blacklist su 9 supporta IPv6). Per GeoIP e WHOIS usa la scheda DNS e Strumenti IP."
 
 # GeoIP fields
 msgid "Country"
@@ -672,9 +679,3 @@ msgstr "Benvenuto in PointNet Mail Guard!"
 
 msgid "Set up your first monitor in just 2 minutes. Follow the steps below:"
 msgstr "Configura il primo monitor in soli 2 minuti. Segui i passaggi qui sotto:"
-
-msgid "Need professional help with email deliverability?"
-msgstr "Hai bisogno di aiuto professionale con la deliverability delle email?"
-
-msgid "PointNet offers SPF/DMARC/DKIM setup, dedicated mail server configuration and deliverability consulting."
-msgstr "PointNet offre configurazione SPF/DMARC/DKIM, server di posta dedicato e consulenza sulla deliverability."

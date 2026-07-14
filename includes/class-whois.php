@@ -59,8 +59,8 @@ class PN_Mailguard_Whois {
         if (is_wp_error($response)) {
             return [
                 'status' => 'error',
-                /* translators: %s: error message */
                 'error'  => sprintf(
+                    /* translators: %s: error message */
                     __('WHOIS lookup failed: %s', 'pointnet-mailguard'),
                     $response->get_error_message()
                 ),
@@ -71,8 +71,8 @@ class PN_Mailguard_Whois {
         if ($code !== 200) {
             return [
                 'status' => 'error',
-                /* translators: %d: HTTP response code */
                 'error'  => sprintf(
+                    /* translators: %d: HTTP response code */
                     __('WHOIS lookup returned HTTP %d', 'pointnet-mailguard'),
                     $code
                 ),

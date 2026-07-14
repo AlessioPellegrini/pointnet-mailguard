@@ -3,8 +3,8 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: PointNet Mail Guard 1.7.4\n"
-"POT-Creation-Date: 2026-07-13 12:00+0200\n"
+"Project-Id-Version: PointNet Mail Guard 1.7.6\n"
+"POT-Creation-Date: 2026-07-13 22:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,7 +79,7 @@ msgstr ""
 msgid "Please enter a valid email address to monitor."
 msgstr ""
 
-msgid "Please enter a valid IPv4 address."
+msgid "Please enter a valid IPv4 or IPv6 address."
 msgstr ""
 
 msgid "Please enter a valid alert email address."
@@ -253,7 +253,7 @@ msgstr ""
 msgid "IP Analysis"
 msgstr ""
 
-msgid "Analyze any IPv4 address with DNSBL, PTR, GeoIP and WHOIS lookups."
+msgid "Analyze any IPv4 or IPv6 address with PTR, GeoIP and WHOIS lookups. DNSBL checks require IPv4 (8 of 9 blacklists do not support IPv6)."
 msgstr ""
 
 msgid "IP address to analyze"
@@ -305,6 +305,13 @@ msgid "No PTR record found"
 msgstr ""
 
 msgid "PTR record found"
+msgstr ""
+
+# IPv4/IPv6 tooltips
+msgid "IPv4: DNSBL (9 blacklist) + PTR reverse DNS. For GeoIP and WHOIS use the DNS & IP Tools tab."
+msgstr ""
+
+msgid "IPv6: PTR reverse DNS only. DNSBL checks are not available (only 1 of 9 blacklists supports IPv6). For GeoIP and WHOIS use the DNS & IP Tools tab."
 msgstr ""
 
 # GeoIP fields

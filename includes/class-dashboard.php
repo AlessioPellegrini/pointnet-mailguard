@@ -31,7 +31,7 @@ class PN_Mailguard_Dashboard {
         // Save onboarding / monitor fields only if present in the request.
         // This prevents the Advanced tab from clearing monitor data.
         if (isset($_POST['pn_mailguard_check_email'])) {
-            $check_email = sanitize_email($_POST['pn_mailguard_check_email']);
+            $check_email = sanitize_email(wp_unslash($_POST['pn_mailguard_check_email']));
             if (!empty($check_email) && !is_email($check_email)) {
                 add_settings_error('pn_mailguard_messages', 'invalid_email', __('Please enter a valid email address to monitor.', 'pointnet-mailguard'), 'error');
                 return;
@@ -40,7 +40,7 @@ class PN_Mailguard_Dashboard {
         }
 
         if (isset($_POST['pn_mailguard_check_ip'])) {
-            $check_ip = sanitize_text_field($_POST['pn_mailguard_check_ip']);
+            $check_ip = sanitize_text_field(wp_unslash($_POST['pn_mailguard_check_ip']));
             if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP)) {
                 add_settings_error('pn_mailguard_messages', 'invalid_ip', __('Please enter a valid IPv4 or IPv6 address.', 'pointnet-mailguard'), 'error');
                 return;
@@ -49,7 +49,7 @@ class PN_Mailguard_Dashboard {
         }
 
         if (isset($_POST['pn_mailguard_email_alert'])) {
-            $alert_email = sanitize_email($_POST['pn_mailguard_email_alert']);
+            $alert_email = sanitize_email(wp_unslash($_POST['pn_mailguard_email_alert']));
             if (!empty($alert_email) && !is_email($alert_email)) {
                 add_settings_error('pn_mailguard_messages', 'invalid_alert_email', __('Please enter a valid alert email address.', 'pointnet-mailguard'), 'error');
                 return;
@@ -60,14 +60,14 @@ class PN_Mailguard_Dashboard {
         }
 
         // Save DKIM selector and Gemini config (from onboarding or advanced tab)
-        $dkim_selector = isset($_POST['pn_mailguard_dkim_selector']) ? sanitize_text_field($_POST['pn_mailguard_dkim_selector']) : '';
-        $gemini_model  = isset($_POST['pn_mailguard_gemini_model']) ? sanitize_text_field($_POST['pn_mailguard_gemini_model']) : '';
+        $dkim_selector = isset($_POST['pn_mailguard_dkim_selector']) ? sanitize_text_field(wp_unslash($_POST['pn_mailguard_dkim_selector'])) : '';
+        $gemini_model  = isset($_POST['pn_mailguard_gemini_model']) ? sanitize_text_field(wp_unslash($_POST['pn_mailguard_gemini_model'])) : '';
         update_option('pn_mailguard_dkim_selector', $dkim_selector);
 
         // Encrypt Gemini API key before storing in the database.
         // The HTML password field shows "********" as placeholder when a key is already saved.
         // If the submitted value is empty or the placeholder, keep the existing encrypted key.
-        $submitted_key = isset($_POST['pn_mailguard_gemini_key']) ? sanitize_text_field($_POST['pn_mailguard_gemini_key']) : '';
+        $submitted_key = isset($_POST['pn_mailguard_gemini_key']) ? sanitize_text_field(wp_unslash($_POST['pn_mailguard_gemini_key'])) : '';
 
         if (empty($submitted_key)) {
             // User cleared the field — delete the key
@@ -105,7 +105,7 @@ class PN_Mailguard_Dashboard {
         // Only save fields that were actually sent in the request.
         // This prevents overwriting the other monitor with an empty string.
         if (isset($_POST['pn_mailguard_check_email'])) {
-            $check_email = sanitize_email($_POST['pn_mailguard_check_email']);
+            $check_email = sanitize_email(wp_unslash($_POST['pn_mailguard_check_email']));
             if (!empty($check_email) && !is_email($check_email)) {
                 wp_send_json_error(['message' => __('Please enter a valid email address to monitor.', 'pointnet-mailguard')]);
             }
@@ -113,7 +113,7 @@ class PN_Mailguard_Dashboard {
         }
 
         if (isset($_POST['pn_mailguard_check_ip'])) {
-            $check_ip = sanitize_text_field($_POST['pn_mailguard_check_ip']);
+            $check_ip = sanitize_text_field(wp_unslash($_POST['pn_mailguard_check_ip']));
             if (!empty($check_ip) && !filter_var($check_ip, FILTER_VALIDATE_IP)) {
                 wp_send_json_error(['message' => __('Please enter a valid IPv4 or IPv6 address.', 'pointnet-mailguard')]);
             }
@@ -121,7 +121,7 @@ class PN_Mailguard_Dashboard {
         }
 
         if (isset($_POST['pn_mailguard_email_alert'])) {
-            $alert_email = sanitize_email($_POST['pn_mailguard_email_alert']);
+            $alert_email = sanitize_email(wp_unslash($_POST['pn_mailguard_email_alert']));
             if (!empty($alert_email) && !is_email($alert_email)) {
                 wp_send_json_error(['message' => __('Please enter a valid alert email address.', 'pointnet-mailguard')]);
             }
@@ -173,7 +173,7 @@ class PN_Mailguard_Dashboard {
         if (!current_user_can('manage_options')) wp_die(esc_html__('Unauthorized', 'pointnet-mailguard'));
 
         $tabs   = ['monitors', 'dnstools', 'advanced', 'support'];
-        $raw    = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : '';
+        $raw    = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : '';
         $tab    = in_array($raw, $tabs, true) ? $raw : 'monitors';
         $base   = admin_url('admin.php?page=pn-mailguard');
 
@@ -447,7 +447,7 @@ class PN_Mailguard_Dashboard {
     private static function monitor_card(string $type, string $label, string $icon): void {
         global $wpdb;
         $table = $wpdb->prefix . ($type === 'ip' ? PN_Mailguard_Installer::TABLE_IP : PN_Mailguard_Installer::TABLE_EMAIL);
-        $logs  = $wpdb->get_results($wpdb->prepare("SELECT * FROM `{$table}` ORDER BY scan_date DESC LIMIT %d", 5));
+        $logs  = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY scan_date DESC LIMIT %d", $table, 5));
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
@@ -477,18 +477,18 @@ class PN_Mailguard_Dashboard {
         if (!$data) {
             $bg = '#f8f8f8'; $border = '#e0e0e0'; $status_html = '<span style="font-size:12px; color:#999;">' . esc_html__('Not analyzed yet', 'pointnet-mailguard') . '</span>';
         } else {
-            [$bg, $border, $status_html] = match ($data['status']) {
-                'ok'      => ['#f6fff8', '#b8e6c1', '<span style="font-size:12px; font-weight:600; color:#00a32a;">✓ ' . esc_html__('All checks passed', 'pointnet-mailguard') . '</span>'],
-                'warning' => ['#fffdf0', '#f0d080', '<span style="font-size:12px; font-weight:600; color:#996800;">⚠ ' . $data['warnings'] . ' ' . esc_html__('warnings', 'pointnet-mailguard') . '</span>'],
-                default   => ['#fff8f8', '#f0b8b8', '<span style="font-size:12px; font-weight:600; color:#a30000;">✗ ' . $data['errors'] . ' ' . esc_html__('errors', 'pointnet-mailguard') . '</span>'],
-            };
+        [$bg, $border, $status_html] = match ($data['status']) {
+            'ok'      => ['#f6fff8', '#b8e6c1', '<span style="font-size:12px; font-weight:600; color:#00a32a;">✓ ' . esc_html__('All checks passed', 'pointnet-mailguard') . '</span>'],
+            'warning' => ['#fffdf0', '#f0d080', '<span style="font-size:12px; font-weight:600; color:#996800;">⚠ ' . esc_html($data['warnings']) . ' ' . esc_html__('warnings', 'pointnet-mailguard') . '</span>'],
+            default   => ['#fff8f8', '#f0b8b8', '<span style="font-size:12px; font-weight:600; color:#a30000;">✗ ' . esc_html($data['errors']) . ' ' . esc_html__('errors', 'pointnet-mailguard') . '</span>'],
+        };
         }
         ?>
         <a href="<?php echo esc_url($base_url); ?>" style="text-decoration:none;">
             <div style="background:<?php echo esc_attr($bg); ?>; border:1px solid <?php echo esc_attr($border); ?>; border-radius:8px; padding:16px; cursor:pointer; transition:border-color 0.15s;">
                 <div style="font-size:24px; margin-bottom:8px;"><?php echo esc_html($icon); ?></div>
                 <p style="font-size:14px; font-weight:600; margin:0 0 6px; color:#1e1e1e;"><?php echo esc_html($name . ' Analyzer'); ?></p>
-                <?php echo $status_html; ?>
+                <?php echo wp_kses($status_html, ['span' => ['style' => []]]); ?>
             </div>
         </a>
         <?php
@@ -592,7 +592,7 @@ class PN_Mailguard_Dashboard {
                         <span style="color:#6c7086; margin-left:auto; font-size:10px;"><?php echo esc_html($last_log->scan_date); ?></span>
                     </div>
                     <div>
-                        <?php echo PN_Mailguard_Logger::format_terminal_details($last_log->details); ?>
+                        <?php echo wp_kses_post(PN_Mailguard_Logger::format_terminal_details($last_log->details)); ?>
                     </div>
                 </div>
                 <?php elseif ($active): ?>
@@ -614,7 +614,8 @@ class PN_Mailguard_Dashboard {
         $table = $wpdb->prefix . ($type === 'ip' ? PN_Mailguard_Installer::TABLE_IP : PN_Mailguard_Installer::TABLE_EMAIL);
         return $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT * FROM `{$table}` ORDER BY scan_date DESC LIMIT %d",
+                "SELECT * FROM %i ORDER BY scan_date DESC LIMIT %d",
+                $table,
                 1
             )
         );
@@ -840,7 +841,11 @@ class PN_Mailguard_Dashboard {
                 <p class="description" style="margin:6px 0 0;">
                     <?php esc_html_e('Enter any domain to check its SPF, DMARC and DKIM records at once.', 'pointnet-mailguard'); ?>
                     <?php if (!empty($domain)): ?>
-                    <br><em><?php echo esc_html(sprintf(__('Auto-detected from Email Monitor: %s', 'pointnet-mailguard'), $domain)); ?></em>
+                    <br><em><?php echo esc_html(sprintf(
+                        /* translators: %s: domain name */
+                        __('Auto-detected from Email Monitor: %s', 'pointnet-mailguard'),
+                        $domain
+                    )); ?></em>
                     <?php endif; ?>
                 </p>
             </div>
@@ -1318,8 +1323,7 @@ class PN_Mailguard_Dashboard {
                                     <?php
                                     $available = PN_Mailguard_AI::fetch_available_models();
                                     foreach ($available as $id => $display) {
-                                        $selected = selected($id, $gemini_model, false);
-                                        echo '<option value="' . esc_attr($id) . '" ' . $selected . '>' . esc_html($display . ' (' . $id . ')') . '</option>';
+                                        echo '<option value="' . esc_attr($id) . '" ' . selected($id, $gemini_model, false) . '>' . esc_html($display . ' (' . $id . ')') . '</option>';
                                     }
                                     ?>
                                 </select>
@@ -1685,7 +1689,7 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $domain = isset($_POST['domain']) ? sanitize_text_field($_POST['domain']) : '';
+        $domain = isset($_POST['domain']) ? sanitize_text_field(wp_unslash($_POST['domain'])) : '';
         if (empty($domain)) {
             wp_send_json_error(['message' => 'Domain is required.']);
         }
@@ -1698,7 +1702,7 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $domain = isset($_POST['domain']) ? sanitize_text_field($_POST['domain']) : '';
+        $domain = isset($_POST['domain']) ? sanitize_text_field(wp_unslash($_POST['domain'])) : '';
         if (empty($domain)) {
             wp_send_json_error(['message' => 'Domain is required.']);
         }
@@ -1711,8 +1715,8 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $domain   = isset($_POST['domain']) ? sanitize_text_field($_POST['domain']) : '';
-        $selector = isset($_POST['selector']) ? sanitize_text_field($_POST['selector']) : '';
+        $domain   = isset($_POST['domain']) ? sanitize_text_field(wp_unslash($_POST['domain'])) : '';
+        $selector = isset($_POST['selector']) ? sanitize_text_field(wp_unslash($_POST['selector'])) : '';
 
         if (empty($domain)) {
             wp_send_json_error(['message' => 'Domain is required.']);
@@ -1752,7 +1756,7 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $question = isset($_POST['question']) ? sanitize_text_field($_POST['question']) : '';
+        $question = isset($_POST['question']) ? sanitize_text_field(wp_unslash($_POST['question'])) : '';
         if (empty($question)) {
             wp_send_json_error(['message' => 'Question is required.']);
         }
@@ -1799,7 +1803,7 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        $ip = isset($_POST['ip']) ? sanitize_text_field(wp_unslash($_POST['ip'])) : '';
         if (empty($ip)) {
             wp_send_json_error(['message' => 'IP address is required.']);
         }
@@ -1812,7 +1816,7 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        $ip = isset($_POST['ip']) ? sanitize_text_field(wp_unslash($_POST['ip'])) : '';
         if (empty($ip)) {
             wp_send_json_error(['message' => 'IP address is required.']);
         }
@@ -1825,7 +1829,7 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        $ip = isset($_POST['ip']) ? sanitize_text_field(wp_unslash($_POST['ip'])) : '';
         if (empty($ip)) {
             wp_send_json_error(['message' => 'IP address is required.']);
         }
@@ -1838,7 +1842,7 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        $ip = isset($_POST['ip']) ? sanitize_text_field($_POST['ip']) : '';
+        $ip = isset($_POST['ip']) ? sanitize_text_field(wp_unslash($_POST['ip'])) : '';
         if (empty($ip)) {
             wp_send_json_error(['message' => 'IP address is required.']);
         }

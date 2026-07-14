@@ -439,12 +439,22 @@ class PN_Mailguard_AI {
         global $wpdb;
         $table = $wpdb->prefix . self::TABLE_AI;
 
-        $where = '';
         if (!empty($domain)) {
-            $where = $wpdb->prepare(' WHERE domain = %s', $domain);
+            return $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM %i WHERE domain = %s ORDER BY created_at DESC LIMIT 1",
+                    $table,
+                    $domain
+                )
+            );
         }
 
-        return $wpdb->get_row("SELECT * FROM `{$table}`{$where} ORDER BY created_at DESC LIMIT 1");
+        return $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM %i ORDER BY created_at DESC LIMIT 1",
+                $table
+            )
+        );
     }
 
     /**

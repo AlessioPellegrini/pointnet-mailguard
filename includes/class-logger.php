@@ -49,7 +49,8 @@ class PN_Mailguard_Logger {
         // Automatic cleanup: remove entries older than 30 days
         $wpdb->query(
             $wpdb->prepare(
-                "DELETE FROM `{$table_name}` WHERE scan_date < %s",
+                "DELETE FROM %i WHERE scan_date < %s",
+                $table_name,
                 gmdate('Y-m-d H:i:s', strtotime('-30 days'))
             )
         );
@@ -67,7 +68,8 @@ class PN_Mailguard_Logger {
         $table_name = self::table($type);
         return $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM `{$table_name}` ORDER BY scan_date DESC LIMIT %d",
+                "SELECT * FROM %i ORDER BY scan_date DESC LIMIT %d",
+                $table_name,
                 $limit
             )
         );

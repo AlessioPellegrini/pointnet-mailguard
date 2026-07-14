@@ -26,8 +26,8 @@ class PN_Mailguard_Mailer {
 
         if (!empty($data['error'])) {
             $source = ($type === 'ip') ? $data['ip'] : $data['email'];
-            /* translators: %s: source email or IP that had the error */
             return sprintf(
+                /* translators: %s: source email or IP that had the error */
                 __('⚠️ PointNet ALERT: scan error for %s', 'pointnet-mailguard'),
                 $source
             );
@@ -39,23 +39,23 @@ class PN_Mailguard_Mailer {
         if (!empty($data['spf_warning'])) $parts[] = 'SPF ' . $data['spf_status'];
 
         if (count($parts) >= 2) {
-            /* translators: 1: IP address, 2: space-separated list of issues (blacklist, PTR, SPF) */
             return sprintf(
+                /* translators: 1: IP address, 2: space-separated list of issues (blacklist, PTR, SPF) */
                 __('⚠️ PointNet ALERT: %1$s — %2$s', 'pointnet-mailguard'),
                 $label,
                 implode(' + ', $parts)
             );
         } elseif (!empty($parts[0])) {
-            /* translators: 1: IP address, 2: issue description */
             return sprintf(
+                /* translators: 1: IP address, 2: issue description */
                 __('⚠️ PointNet ALERT: %1$s — %2$s', 'pointnet-mailguard'),
                 $label,
                 $parts[0]
             );
         }
 
-        /* translators: %s: IP address with detected issue */
         return sprintf(
+            /* translators: %s: IP address with detected issue */
             __('⚠️ PointNet ALERT: %s — issue detected', 'pointnet-mailguard'),
             $label
         );
