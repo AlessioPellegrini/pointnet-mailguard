@@ -678,5 +678,23 @@ msgstr ""
 msgid "Welcome to PointNet Mail Guard!"
 msgstr ""
 
+msgid "Email da monitorare"
+msgstr ""
+
+msgid "Email address to receive alerts when problems are detected."
+msgstr ""
+
+msgid "Alert Email"
+msgstr ""
+
+msgid "Alert Configuration"
+msgstr ""
+
+msgid "Where to send email alerts when the monitors detect issues. This is a global setting shared by both Email and IP monitors."
+msgstr ""
+
+msgid "Currently using the WordPress admin email. You can change it to any email address."
+msgstr ""
+
 msgid "Set up your first monitor in just 2 minutes. Follow the steps below:"
 msgstr ""

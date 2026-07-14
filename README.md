@@ -145,6 +145,9 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 * Changed: AI language detection — no longer hardcoded to Italian; responds in WordPress locale language, or in the same language as the user's question for chat
 * Added: Recent scans cards now show the monitored email/IP in a header chip for clear context
 * Improved: DNSBL Blacklist Check title now displays the scanned IP address
+* Added: Custom IP Monitor scan history now shows the historical IP address next to each scan date (terminal-style dark badge)
+* Changed: Removed duplicate "Alert email" field from inline edit forms (Email Monitor and Custom IP Monitor) — now configurable only in Onboarding and Advanced tab
+* Changed: Email Monitor inline edit label "Email" improved to "Email da monitorare" for clarity
 
 ### 1.7.7
 * New: Custom IP tab separated from Monitors — IP monitor in dedicated tab

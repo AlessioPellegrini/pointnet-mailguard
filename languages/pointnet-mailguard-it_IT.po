@@ -677,5 +677,23 @@ msgstr "Se lo conosci, inserisci il selettore DKIM. Lascia vuoto per rilevamento
 msgid "Welcome to PointNet Mail Guard!"
 msgstr "Benvenuto in PointNet Mail Guard!"
 
+msgid "Email da monitorare"
+msgstr "Email da monitorare"
+
+msgid "Email address to receive alerts when problems are detected."
+msgstr "Indirizzo email per ricevere gli avvisi quando vengono rilevati problemi."
+
+msgid "Alert Email"
+msgstr "Email per gli avvisi"
+
+msgid "Alert Configuration"
+msgstr "Configurazione Avvisi"
+
+msgid "Where to send email alerts when the monitors detect issues. This is a global setting shared by both Email and IP monitors."
+msgstr "Dove inviare gli avvisi email quando i monitor rilevano problemi. Questa è un'impostazione globale condivisa da entrambi i monitor (Email e IP)."
+
+msgid "Currently using the WordPress admin email. You can change it to any email address."
+msgstr "Attualmente stai usando l'email amministrativa di WordPress. Puoi cambiarla con qualsiasi indirizzo email."
+
 msgid "Set up your first monitor in just 2 minutes. Follow the steps below:"
 msgstr "Configura il primo monitor in soli 2 minuti. Segui i passaggi qui sotto:"

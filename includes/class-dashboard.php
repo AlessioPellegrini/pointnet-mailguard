@@ -512,8 +512,6 @@ class PN_Mailguard_Dashboard {
                     </p>
                     <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">🌐 <?php esc_html_e('IP Address', 'pointnet-mailguard'); ?></label>
                     <input type="text" class="pn-edit-ip" value="" placeholder="1.2.3.4" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:8px;">
-                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📬 <?php esc_html_e('Alert email', 'pointnet-mailguard'); ?></label>
-                    <input type="email" class="pn-edit-alert" value="<?php echo esc_attr(get_option('pn_mailguard_email_alert', '')); ?>" placeholder="admin@yourdomain.com" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:10px;">
                     <div style="display:flex; gap:6px;">
                         <button type="button" class="button button-primary button-small pn-edit-save" data-type="ip">
                             <?php esc_html_e('Save', 'pointnet-mailguard'); ?>
@@ -650,7 +648,10 @@ class PN_Mailguard_Dashboard {
                     <div style="padding:6px 0; border-bottom:0.5px solid #f0f0f0;">
                         <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
                             <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:<?php echo esc_attr($overall_color); ?>; flex-shrink:0;"></span>
-                            <span style="font-size:11px; color:#666;"><?php echo esc_html($log->scan_date); ?></span>
+                        <span style="font-size:11px; color:#666;"><?php echo esc_html($log->scan_date); ?></span>
+                        <?php if (!$is_email && !empty($log->ip_address)): ?>
+                        <span style="font-size:10px; color:#a6e3a1; margin-left:auto; background:#1e1e2e; padding:1px 6px; border-radius:3px; font-family:monospace; border:1px solid #45475a;"><?php echo esc_html($log->ip_address); ?></span>
+                        <?php endif; ?>
                         </div>
                         <div style="margin-left:14px; display:flex; flex-wrap:wrap; gap:3px;">
                             <?php echo $badges_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- all content is hardcoded or escaped above ?>
@@ -737,14 +738,12 @@ class PN_Mailguard_Dashboard {
                         <?php esc_html_e('Edit monitor settings:', 'pointnet-mailguard'); ?>
                     </p>
                     <?php if ($is_email): ?>
-                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📧 <?php esc_html_e('Email', 'pointnet-mailguard'); ?></label>
+                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📧 <?php esc_html_e('Email da monitorare', 'pointnet-mailguard'); ?></label>
                     <input type="email" class="pn-edit-email" value="<?php echo esc_attr($value); ?>" placeholder="info@yourdomain.com" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:8px;">
                     <?php else: ?>
                     <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">🌐 <?php esc_html_e('IP Address', 'pointnet-mailguard'); ?></label>
                     <input type="text" class="pn-edit-ip" value="<?php echo esc_attr($value); ?>" placeholder="1.2.3.4" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:8px;">
                     <?php endif; ?>
-                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📬 <?php esc_html_e('Alert email', 'pointnet-mailguard'); ?></label>
-                    <input type="email" class="pn-edit-alert" value="<?php echo esc_attr($alert_email); ?>" placeholder="admin@yourdomain.com" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:10px;">
                     <div style="display:flex; gap:6px;">
                         <button type="button" class="button button-primary button-small pn-edit-save" data-type="<?php echo esc_attr($type); ?>">
                             <?php esc_html_e('Save', 'pointnet-mailguard'); ?>
@@ -1477,6 +1476,7 @@ class PN_Mailguard_Dashboard {
         $gemini_key  = !empty($stored_key) ? '********' : '';
         $gemini_model = get_option('pn_mailguard_gemini_model', '');
         $dkim_sel     = get_option('pn_mailguard_dkim_selector', '');
+        $alert_email = get_option('pn_mailguard_email_alert', get_option('admin_email'));
         ?>
         <div class="card" style="padding:16px; max-width:800px;">
             <h2 style="margin-top:0;">🔑 <?php esc_html_e('DKIM Configuration', 'pointnet-mailguard'); ?></h2>
@@ -1492,6 +1492,27 @@ class PN_Mailguard_Dashboard {
                             <input type="text" name="pn_mailguard_dkim_selector" id="pn_mailguard_dkim_selector"
                                 value="<?php echo esc_attr($dkim_sel); ?>" class="regular-text" placeholder="<?php esc_attr_e('Leave empty to auto-detect', 'pointnet-mailguard'); ?>">
                             <p class="description"><?php esc_html_e('Optional. If DKIM auto-detection does not find your selector, enter it here. Common examples: google, selector1, mail, dkim.', 'pointnet-mailguard'); ?></p>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr>
+
+                <h2>📬 <?php esc_html_e('Alert Configuration', 'pointnet-mailguard'); ?></h2>
+                <p><?php esc_html_e('Email address to receive alerts when problems are detected.', 'pointnet-mailguard'); ?></p>
+
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><label for="pn_mailguard_email_alert">📬 <?php esc_html_e('Alert Email', 'pointnet-mailguard'); ?></label></th>
+                        <td>
+                            <input type="email" name="pn_mailguard_email_alert" id="pn_mailguard_email_alert"
+                                value="<?php echo esc_attr($alert_email); ?>" class="regular-text" placeholder="admin@yourdomain.com">
+                            <p class="description">
+                                <?php esc_html_e('Where to send email alerts when the monitors detect issues. This is a global setting shared by both Email and IP monitors.', 'pointnet-mailguard'); ?>
+                                <?php if ($alert_email === get_option('admin_email')): ?>
+                                <br><em><?php esc_html_e('Currently using the WordPress admin email. You can change it to any email address.', 'pointnet-mailguard'); ?></em>
+                                <?php endif; ?>
+                            </p>
                         </td>
                     </tr>
                 </table>
