@@ -83,11 +83,8 @@ class PN_Mailguard_Dashboard {
         update_option('pn_mailguard_gemini_model', $gemini_model);
 
         // Save uninstall cleanup preference
-        // Only update when the field is present in the request (Advanced tab).
-        // Other tabs (Monitors, Onboarding) do not include this field, so the existing value is preserved.
-        if (array_key_exists('pn_mailguard_uninstall_cleanup', $_POST)) {
-            update_option('pn_mailguard_uninstall_cleanup', $_POST['pn_mailguard_uninstall_cleanup'] === '1' ? '1' : '0');
-        }
+        // HTML checkboxes send no value when unchecked — treat missing as '0'.
+        update_option('pn_mailguard_uninstall_cleanup', empty($_POST['pn_mailguard_uninstall_cleanup']) ? '0' : '1');
 
         // Clear models cache when API key changes
         PN_Mailguard_AI::clear_models_cache();
