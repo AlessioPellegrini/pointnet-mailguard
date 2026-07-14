@@ -650,12 +650,28 @@ class PN_Mailguard_Dashboard {
                 </div>
 
                 <?php if ($active): ?>
-                <div class="pn-monitor-value" style="font-size:14px; color:#2271b1; font-weight:600; margin-bottom:10px;">
+                <div class="pn-monitor-value" style="font-size:14px; color:#2271b1; font-weight:600; margin-bottom:6px;">
                     <?php echo esc_html($value); ?>
                     <?php if ($domain && $is_email): ?>
                     <span style="font-size:12px; color:#666; font-weight:400;">→ <?php echo esc_html($domain); ?></span>
                     <?php endif; ?>
                 </div>
+                <?php if ($is_email && $last_log && !empty($last_log->details)):
+                    // Extract MX host and IP from log details
+                    $mx_match = [];
+                    preg_match('/MX:\s*([^\s]+)\s*\(([^)]+)\)/', $last_log->details, $mx_match);
+                    if (!empty($mx_match[2])):
+                ?>
+                <div style="font-size:12px; color:#50575e; margin-bottom:10px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                    <span style="font-weight:600;">🔍 <?php esc_html_e('Auto-detected IP:', 'pointnet-mailguard'); ?></span>
+                    <span style="font-family:monospace; background:#f0f0f1; padding:1px 6px; border-radius:3px; font-size:11px;"><?php echo esc_html($mx_match[2]); ?></span>
+                    <span style="color:#999; font-size:11px;">
+                        (<?php echo esc_html($mx_match[1]); ?> <?php esc_html_e('via MX lookup', 'pointnet-mailguard'); ?>)
+                    </span>
+                </div>
+                <?php
+                    endif;
+                endif; ?>
                 <?php else: ?>
                 <p class="pn-monitor-value" style="font-size:13px; color:#999; margin:0 0 10px;">
                     <?php esc_html_e('Not configured. Click ✏️ to set up.', 'pointnet-mailguard'); ?>
