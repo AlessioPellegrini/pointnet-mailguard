@@ -172,7 +172,7 @@ class PN_Mailguard_Dashboard {
     public static function render_page(): void {
         if (!current_user_can('manage_options')) wp_die(esc_html__('Unauthorized', 'pointnet-mailguard'));
 
-        $tabs   = ['monitors', 'dnstools', 'advanced', 'support'];
+        $tabs   = ['monitors', 'customip', 'dnstools', 'advanced', 'support'];
         $raw    = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : '';
         $tab    = in_array($raw, $tabs, true) ? $raw : 'monitors';
         $base   = admin_url('admin.php?page=pn-mailguard');
@@ -194,9 +194,10 @@ class PN_Mailguard_Dashboard {
                 <?php
                 $tab_labels = [
                     'monitors'  => '📊 ' . __('Monitors',    'pointnet-mailguard'),
+                    'customip'  => '🌐 ' . __('Custom IP',   'pointnet-mailguard'),
                     'dnstools'  => '🔬 ' . __('DNS & IP Tools',   'pointnet-mailguard'),
-            'advanced'  => '⚙️ '  . __('Advanced',    'pointnet-mailguard'),
-            'support'   => '📤 '  . __('Export / Support', 'pointnet-mailguard'),
+                    'advanced'  => '⚙️ '  . __('Advanced',    'pointnet-mailguard'),
+                    'support'   => '📤 '  . __('Export / Support', 'pointnet-mailguard'),
                 ];
                 foreach ($tab_labels as $key => $label) {
                     $active = $tab === $key ? 'nav-tab-active' : '';
@@ -208,6 +209,7 @@ class PN_Mailguard_Dashboard {
             <?php
             switch ($tab) {
                 case 'monitors': self::render_monitors($check_email, $check_ip); break;
+                case 'customip': self::render_custom_ip($check_ip); break;
                 case 'dnstools': self::render_dnstools(); break;
                 case 'advanced': self::render_advanced(); break;
                 case 'support':  self::render_support(); break;
@@ -442,50 +444,10 @@ class PN_Mailguard_Dashboard {
         </div>
         <?php endif; ?>
 
-        <!-- IP Monitor section (conditional) -->
-        <?php if (!empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP)): ?>
-        <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🌐 <?php esc_html_e('IP Monitor', 'pointnet-mailguard'); ?></h2>
-        <?php self::monitor_card_v2('ip', $check_ip, $last_ip, null); ?>
-        <?php else: ?>
-        <!-- IP Monitor placeholder — cliccabile per aggiungere IP -->
-        <div style="background:#fff; border:1px dashed #c0c0c0; border-radius:8px; padding:16px; margin-bottom:24px; text-align:center;">
-            <span style="font-size:24px;">🌐</span>
-            <p style="font-size:14px; font-weight:600; margin:8px 0 4px; color:#666;">
-                <?php esc_html_e('IP Monitor not configured', 'pointnet-mailguard'); ?>
-            </p>
-            <p style="font-size:12px; color:#999; margin:0 0 12px;">
-                <?php esc_html_e('Monitor a separate IP (e.g. your VPS, SMTP relay or web server). Your mail server is already covered by the email monitor above.', 'pointnet-mailguard'); ?>
-            </p>
-            <button type="button" id="pn-dash-ip-edit" class="button button-secondary">
-                ➕ <?php esc_html_e('Add IP to Monitor', 'pointnet-mailguard'); ?>
-            </button>
-            <div id="pn-dash-ip-edit-form" style="display:none; margin-top:12px; text-align:left; background:#f8f8f8; border:1px solid #e0e0e0; border-radius:6px; padding:12px; max-width:400px; margin-left:auto; margin-right:auto;">
-                <p style="font-size:12px; font-weight:600; margin:0 0 8px; color:#333;">
-                    <?php esc_html_e('Configure IP monitor:', 'pointnet-mailguard'); ?>
-                </p>
-                <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">🌐 <?php esc_html_e('IP Address', 'pointnet-mailguard'); ?></label>
-                <input type="text" class="pn-edit-ip" value="" placeholder="1.2.3.4" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:8px;">
-                <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📬 <?php esc_html_e('Alert email', 'pointnet-mailguard'); ?></label>
-                <input type="email" class="pn-edit-alert" value="<?php echo esc_attr(get_option('pn_mailguard_email_alert', '')); ?>" placeholder="admin@yourdomain.com" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:10px;">
-                <div style="display:flex; gap:6px;">
-                    <button type="button" class="button button-primary button-small pn-edit-save" data-type="ip">
-                        <?php esc_html_e('Save', 'pointnet-mailguard'); ?>
-                    </button>
-                    <button type="button" class="button button-secondary button-small pn-edit-cancel">
-                        <?php esc_html_e('Cancel', 'pointnet-mailguard'); ?>
-                    </button>
-                    <span class="pn-edit-spinner" style="display:none; font-size:11px; color:#999; align-self:center;">⏳ <?php esc_html_e('Saving...', 'pointnet-mailguard'); ?></span>
-                </div>
-                <div class="pn-edit-msg" style="display:none; margin-top:6px; font-size:11px;"></div>
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <!-- Recent logs compact -->
+        <!-- Recent scans compact (email only) -->
         <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">📋 <?php esc_html_e('Recent scans', 'pointnet-mailguard'); ?></h2>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px; margin-bottom:24px;">
+        <div style="margin-bottom:24px;">
             <?php self::monitor_card('email', __('Email Monitor', 'pointnet-mailguard'), '📧'); ?>
-            <?php self::monitor_card('ip',    __('IP Monitor',    'pointnet-mailguard'), '🌐'); ?>
         </div>
 
         <?php self::render_dashboard_js(); ?>
@@ -510,6 +472,57 @@ class PN_Mailguard_Dashboard {
         } else {
             echo '<a href="' . esc_url($base_url) . '" style="text-decoration:none;"><span style="background:#fff8e5; color:#996800; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;">⚠ ' . esc_html($label) . '</span></a>';
         }
+    }
+
+    /**
+     * Render the Custom IP Monitor tab (separate from Email Monitor).
+     */
+    private static function render_custom_ip(string $check_ip): void {
+        $last_ip = self::get_last_log('ip');
+        ?>
+        <div style="margin-bottom:24px;">
+            <?php if (!empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP)): ?>
+                <?php self::monitor_card_v2('ip', $check_ip, $last_ip, null); ?>
+            <?php else: ?>
+            <div style="background:#fff; border:1px dashed #c0c0c0; border-radius:8px; padding:16px; text-align:center;">
+                <span style="font-size:24px;">🌐</span>
+                <p style="font-size:14px; font-weight:600; margin:8px 0 4px; color:#666;">
+                    <?php esc_html_e('Custom IP Monitor not configured', 'pointnet-mailguard'); ?>
+                </p>
+                <p style="font-size:12px; color:#999; margin:0 0 12px;">
+                    <?php esc_html_e('Monitor a separate IP (e.g. your VPS, SMTP relay or web server). This is independent from your email monitor.', 'pointnet-mailguard'); ?>
+                </p>
+                <button type="button" id="pn-dash-ip-edit" class="button button-secondary">
+                    ➕ <?php esc_html_e('Add IP to Monitor', 'pointnet-mailguard'); ?>
+                </button>
+                <div id="pn-dash-ip-edit-form" style="display:none; margin-top:12px; text-align:left; background:#f8f8f8; border:1px solid #e0e0e0; border-radius:6px; padding:12px; max-width:400px; margin-left:auto; margin-right:auto;">
+                    <p style="font-size:12px; font-weight:600; margin:0 0 8px; color:#333;">
+                        <?php esc_html_e('Configure IP monitor:', 'pointnet-mailguard'); ?>
+                    </p>
+                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">🌐 <?php esc_html_e('IP Address', 'pointnet-mailguard'); ?></label>
+                    <input type="text" class="pn-edit-ip" value="" placeholder="1.2.3.4" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:8px;">
+                    <label style="font-size:11px; font-weight:600; display:block; margin-bottom:2px;">📬 <?php esc_html_e('Alert email', 'pointnet-mailguard'); ?></label>
+                    <input type="email" class="pn-edit-alert" value="<?php echo esc_attr(get_option('pn_mailguard_email_alert', '')); ?>" placeholder="admin@yourdomain.com" style="width:100%; padding:6px 8px; font-size:12px; margin-bottom:10px;">
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="button button-primary button-small pn-edit-save" data-type="ip">
+                            <?php esc_html_e('Save', 'pointnet-mailguard'); ?>
+                        </button>
+                        <button type="button" class="button button-secondary button-small pn-edit-cancel">
+                            <?php esc_html_e('Cancel', 'pointnet-mailguard'); ?>
+                        </button>
+                        <span class="pn-edit-spinner" style="display:none; font-size:11px; color:#999; align-self:center;">⏳ <?php esc_html_e('Saving...', 'pointnet-mailguard'); ?></span>
+                    </div>
+                    <div class="pn-edit-msg" style="display:none; margin-top:6px; font-size:11px;"></div>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">📋 <?php esc_html_e('Recent scans', 'pointnet-mailguard'); ?></h2>
+        <div style="margin-bottom:24px;">
+            <?php self::monitor_card('ip', __('Custom IP Monitor', 'pointnet-mailguard'), '🌐'); ?>
+        </div>
+        <?php
     }
 
     private static function monitor_badge(string $label, $log, bool $active): void {
