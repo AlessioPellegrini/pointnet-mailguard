@@ -424,9 +424,21 @@ class PN_Mailguard_Dashboard {
         <?php endif; ?>
 
         <!-- DNSBL check results -->
-        <?php if (!empty($dnsbl_results)): ?>
+        <?php if (!empty($dnsbl_results)):
+            $dnsbl_ip = '';
+            if ($last_email && !empty($last_email->details)) {
+                preg_match('/MX:\s*[^\s]+\s*\(([^)]+)\)/', $last_email->details, $mx_match);
+                if (!empty($mx_match[1])) {
+                    $dnsbl_ip = $mx_match[1];
+                }
+            }
+        ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; margin-bottom:24px;">
-            <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🚫 <?php esc_html_e('DNSBL Blacklist Check', 'pointnet-mailguard'); ?></h2>
+            <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🚫 <?php esc_html_e('DNSBL Blacklist Check', 'pointnet-mailguard'); ?>
+                <?php if (!empty($dnsbl_ip)): ?>
+                <span style="font-size:12px; color:#666; font-weight:400;"> — <?php echo esc_html($dnsbl_ip); ?></span>
+                <?php endif; ?>
+            </h2>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
                 <?php foreach ($dnsbl_results as $dnsbl_name => $dnsbl_status): ?>
                     <?php
@@ -446,7 +458,7 @@ class PN_Mailguard_Dashboard {
         <!-- Recent scans compact (email only) -->
         <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">📋 <?php esc_html_e('Recent scans', 'pointnet-mailguard'); ?></h2>
         <div style="margin-bottom:24px;">
-            <?php self::monitor_card('email', __('Email Monitor', 'pointnet-mailguard'), '📧'); ?>
+            <?php self::monitor_card('email', __('Email Monitor', 'pointnet-mailguard'), '📧', $check_email); ?>
         </div>
 
         <?php self::render_dashboard_js(); ?>
@@ -519,7 +531,7 @@ class PN_Mailguard_Dashboard {
 
         <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">📋 <?php esc_html_e('Recent scans', 'pointnet-mailguard'); ?></h2>
         <div style="margin-bottom:24px;">
-            <?php self::monitor_card('ip', __('Custom IP Monitor', 'pointnet-mailguard'), '🌐'); ?>
+            <?php self::monitor_card('ip', __('Custom IP Monitor', 'pointnet-mailguard'), '🌐', $check_ip); ?>
         </div>
         <?php
     }
@@ -540,7 +552,7 @@ class PN_Mailguard_Dashboard {
         }
     }
 
-    private static function monitor_card(string $type, string $label, string $icon): void {
+    private static function monitor_card(string $type, string $label, string $icon, string $monitored_value = ''): void {
         global $wpdb;
         $table = $wpdb->prefix . ($type === 'ip' ? PN_Mailguard_Installer::TABLE_IP : PN_Mailguard_Installer::TABLE_EMAIL);
         $logs  = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY scan_date DESC LIMIT %d", $table, 5));
@@ -553,6 +565,15 @@ class PN_Mailguard_Dashboard {
                     <?php esc_html_e('Last 5 scans', 'pointnet-mailguard'); ?>
                 </span>
             </div>
+            <?php if (!empty($monitored_value)): ?>
+            <div style="font-size:11px; color:#50575e; margin-bottom:10px; padding:4px 8px; background:#f0f6ff; border-radius:3px; display:inline-block;">
+                <?php if ($is_email): ?>
+                    📧 <?php echo esc_html($monitored_value); ?>
+                <?php else: ?>
+                    🌐 <?php echo esc_html($monitored_value); ?>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
             <?php if ($logs): ?>
                 <?php foreach ($logs as $log):
                     $overall_color = PN_Mailguard_Logger::status_color($log->status);
