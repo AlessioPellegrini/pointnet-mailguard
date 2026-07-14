@@ -141,6 +141,8 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 * Improved: DNSBL Blacklist Check section now uses consistent white background card matching other sections
 * Changed: Export / Support tab — removed promotional box, replaced with simple "by PointNet" credit link
 * Added: AI sections show a warning and disable buttons when Gemini API key is missing, with direct link to Advanced tab
+* Improved: AI prompt updated — DNSBL count corrected from 5 to 9, IPv6 support added, new features documented (GeoIP, WHOIS, Export)
+* Changed: AI language detection — no longer hardcoded to Italian; responds in WordPress locale language, or in the same language as the user's question for chat
 
 ### 1.7.7
 * New: Custom IP tab separated from Monitors — IP monitor in dedicated tab

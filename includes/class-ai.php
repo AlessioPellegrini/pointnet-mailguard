@@ -39,21 +39,28 @@ class PN_Mailguard_AI {
     const string PLUGIN_CONTEXT = "Sei l'assistente AI integrato nel plugin WordPress \"PointNet Mail Guard\". "
         . "Il plugin monitora la deliverability delle email con due monitor indipendenti:\n"
         . "- Email Monitor: rileva automaticamente il server di posta tramite lookup MX\n"
-        . "- IP Monitor: monitoraggio diretto di un indirizzo IPv4\n\n"
+        . "- IP Monitor: monitoraggio diretto di un indirizzo IPv4 o IPv6\n\n"
         . "Il plugin esegue GIÀ automaticamente i seguenti controlli:\n"
-        . "- DNSBL: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL\n"
+        . "- DNSBL: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL, Abusix, SPFBL, DroneBL, LashBack UBL (9 blacklist)\n"
         . "- PTR (reverse DNS) con alert su record mancante\n"
         . "- SPF: analisi RFC 7208 completa (9 controlli, rilevamento provider)\n"
         . "- DMARC: analisi RFC 7489 (policy strength, correlazione SPF)\n"
         . "- DKIM: auto-rilevamento selettore, tipo/lunghezza chiave, test mode, hash\n"
-        . "- Rilevamento server condiviso vs dedicato\n\n"
+        . "- Rilevamento server condiviso vs dedicato\n"
+        . "- GeoIP: paese, regione, città, ISP e ASN via ipwhois.app\n"
+        . "- WHOIS: proprietario blocco IP, range, organizzazione via RDAP\n"
+        . "- IP Analysis tool: analisi DNSBL + PTR + GeoIP + WHOIS per qualsiasi IPv4\n\n"
+        . "Il plugin offre inoltre:\n"
+        . "- Analisi AI della deliverability (questo stesso assistente)\n"
+        . "- Chat AI per domande sulla deliverability\n"
+        . "- Export report JSON completo per supporto o analisi esterna\n\n"
         . "Il plugin NON invia email (usa wp_mail(), compatibile con WP Mail SMTP, FluentSMTP, Easy WP SMTP)\n"
         . "Il plugin NON modifica record DNS\n"
         . "Il plugin NON fornisce servizi SMTP relay\n"
         . "Il plugin NON fa warm-up IP\n\n"
-        . "NON suggerire servizi esterni o tool che duplicano i controlli già integrati (SPF, DMARC, DKIM, DNSBL, PTR sono già coperti dal plugin).\n"
+        . "NON suggerire servizi esterni o tool che duplicano i controlli già integrati (SPF, DMARC, DKIM, DNSBL, PTR, GeoIP, WHOIS sono già coperti dal plugin).\n"
         . "Se l'utente chiede servizi professionali di deliverability oltre a quanto già offerto dal plugin, suggerisci di contattare gli sviluppatori: PointNet (https://www.pointnet.it/).\n"
-        . "Rispondi SEMPRE in italiano, sii conciso e pertinente allo specifico contesto del plugin e del dominio monitorato.\n";
+        . "Sii conciso e pertinente allo specifico contesto del plugin e del dominio monitorato.\n";
 
     /**
      * Analyse the full deliverability status for the given email domain.
@@ -132,15 +139,37 @@ class PN_Mailguard_AI {
     }
 
     /**
+     * Get the preferred language name for the AI based on WordPress locale.
+     */
+    private static function get_ai_language(): string {
+        $locale = get_locale();
+        $lang = substr($locale, 0, 2);
+        $lang_map = [
+            'it' => 'italiano',
+            'en' => 'English',
+            'fr' => 'français',
+            'de' => 'Deutsch',
+            'es' => 'español',
+            'pt' => 'português',
+            'nl' => 'Nederlands',
+            'pl' => 'polski',
+            'ru' => 'русский',
+        ];
+        return $lang_map[$lang] ?? 'English';
+    }
+
+    /**
      * Build a structured prompt for the AI.
      */
     private static function build_prompt(array $scan, $spf, $dmarc, $dkim, string $domain): string {
+        $language = self::get_ai_language();
         $lines = [];
 
         $lines[] = self::PLUGIN_CONTEXT;
         $lines[] = '';
         $lines[] = "Procedi con l'analisi dei dati seguenti e produci un report JSON valido.";
         $lines[] = "Rispondi SOLO con JSON, nient'altro.";
+        $lines[] = "Il campo summary_it deve essere scritto in {$language}.";
         $lines[] = '';
 
         $lines[] = '=== MONITOR SCAN ===';
@@ -615,7 +644,9 @@ class PN_Mailguard_AI {
             }
         }
 
+        $language = self::get_ai_language();
         $full_prompt = self::PLUGIN_CONTEXT . "\n\n";
+        $full_prompt .= "Rispondi in {$language}. Se la domanda dell'utente è in una lingua diversa, rispondi nella stessa lingua della domanda.\n\n";
         if (!empty($context_parts)) {
             $full_prompt .= implode("\n", $context_parts) . "\n\n---\n\n";
         }
