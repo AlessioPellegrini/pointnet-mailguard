@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 6.5
 Tested up to: 7.0
-Stable tag: 1.7.7
+Stable tag: 1.7.8
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -110,6 +110,11 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 3. Log table with colour-coded status: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
 == Changelog ==
+
+= 1.7.8 =
+* Improved: DNSBL Blacklist Check section now uses consistent white background card matching other sections
+* Changed: Export / Support tab — removed promotional box, replaced with simple "by PointNet" credit link
+* Added: AI sections show a warning and disable buttons when Gemini API key is missing, with direct link to Advanced tab
 
 = 1.7.7 =
 * New: Custom IP tab separated from Monitors — IP monitor in dedicated tab

@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 6.5  
 **Tested up to:** 7.0  
-**Stable tag:** 1.7.7  
+**Stable tag:** 1.7.8  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -136,6 +136,11 @@ This plugin has not been tested on WordPress Multisite. Use on a network install
 By default, all plugin data (tables, settings, and logs) is removed when you delete the plugin from the Plugins screen. If you want to keep your data in the database — for example if you plan to reinstall the plugin later — go to **Advanced** → **Uninstall Behavior** and uncheck "Delete all data on uninstall" before deleting the plugin.
 
 ## Changelog
+
+### 1.7.8
+* Improved: DNSBL Blacklist Check section now uses consistent white background card matching other sections
+* Changed: Export / Support tab — removed promotional box, replaced with simple "by PointNet" credit link
+* Added: AI sections show a warning and disable buttons when Gemini API key is missing, with direct link to Advanced tab
 
 ### 1.7.7
 * New: Custom IP tab separated from Monitors — IP monitor in dedicated tab

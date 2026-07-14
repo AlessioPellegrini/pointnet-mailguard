@@ -425,19 +425,21 @@ class PN_Mailguard_Dashboard {
 
         <!-- DNSBL check results -->
         <?php if (!empty($dnsbl_results)): ?>
-        <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🚫 <?php esc_html_e('DNSBL Blacklist Check', 'pointnet-mailguard'); ?></h2>
-        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px;">
-            <?php foreach ($dnsbl_results as $dnsbl_name => $dnsbl_status): ?>
-                <?php
-                $is_clean = ($dnsbl_status === 'CLEAN');
-                $bg   = $is_clean ? '#edfaef' : '#fbeaea';
-                $text = $is_clean ? '#00a32a' : '#a30000';
-                ?>
-                <span style="background:<?php echo esc_attr($bg); ?>; color:<?php echo esc_attr($text); ?>; font-size:11px; font-weight:600; padding:4px 10px; border-radius:4px; white-space:nowrap;">
-                    <?php echo $is_clean ? '✓' : '✗'; ?>
-                    <?php echo esc_html($dnsbl_name); ?>
-                </span>
-            <?php endforeach; ?>
+        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; margin-bottom:24px;">
+            <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🚫 <?php esc_html_e('DNSBL Blacklist Check', 'pointnet-mailguard'); ?></h2>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <?php foreach ($dnsbl_results as $dnsbl_name => $dnsbl_status): ?>
+                    <?php
+                    $is_clean = ($dnsbl_status === 'CLEAN');
+                    $bg   = $is_clean ? '#edfaef' : '#fbeaea';
+                    $text = $is_clean ? '#00a32a' : '#a30000';
+                    ?>
+                    <span style="background:<?php echo esc_attr($bg); ?>; color:<?php echo esc_attr($text); ?>; font-size:11px; font-weight:600; padding:4px 10px; border-radius:4px; white-space:nowrap;">
+                        <?php echo $is_clean ? '✓' : '✗'; ?>
+                        <?php echo esc_html($dnsbl_name); ?>
+                    </span>
+                <?php endforeach; ?>
+            </div>
         </div>
         <?php endif; ?>
 
@@ -1611,11 +1613,25 @@ class PN_Mailguard_Dashboard {
             echo '<p style="font-size:13px; color:#999; margin:0;">' . esc_html__('Configure an email monitor first to enable AI analysis.', 'pointnet-mailguard') . '</p>';
             return;
         }
+
+        $gemini_key = get_option('pn_mailguard_gemini_key', '');
+        $key_missing = empty($gemini_key);
+        $advanced_url = admin_url('admin.php?page=pn-mailguard&tab=advanced');
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px;">
+            <?php if ($key_missing): ?>
+            <div style="color:#dba617; background:#fff8e5; border-left:3px solid #dba617; padding:10px 12px; margin-bottom:12px; font-size:12px; border-radius:3px;">
+                ⚠️ <?php echo wp_kses(sprintf(
+                    /* translators: %s: link to Advanced tab */
+                    __('AI analysis requires a Gemini API key. Configure it in the <a href="%s" style="color:#2271b1; text-decoration:underline;">Advanced tab</a>.', 'pointnet-mailguard'),
+                    esc_url($advanced_url)
+                ), ['a' => ['href' => [], 'style' => [], 'target' => []]]); ?>
+            </div>
+            <?php endif; ?>
+
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
                 <span style="font-size:14px; font-weight:600;">🤖 <?php esc_html_e('AI Deliverability Analysis', 'pointnet-mailguard'); ?></span>
-                <button type="button" id="pn-ai-analyze-btn" class="button button-primary">
+                <button type="button" id="pn-ai-analyze-btn" class="button button-primary" <?php disabled($key_missing); ?>>
                     🤖 <?php esc_html_e('Analyze with AI', 'pointnet-mailguard'); ?>
                 </button>
             </div>
@@ -1637,8 +1653,21 @@ class PN_Mailguard_Dashboard {
      * Render the AI Chat section (chat messages + input).
      */
     private static function render_ai_chat_section(): void {
+        $gemini_key = get_option('pn_mailguard_gemini_key', '');
+        $key_missing = empty($gemini_key);
+        $advanced_url = admin_url('admin.php?page=pn-mailguard&tab=advanced');
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px;">
+            <?php if ($key_missing): ?>
+            <div style="color:#dba617; background:#fff8e5; border-left:3px solid #dba617; padding:10px 12px; margin-bottom:12px; font-size:12px; border-radius:3px;">
+                ⚠️ <?php echo wp_kses(sprintf(
+                    /* translators: %s: link to Advanced tab */
+                    __('AI chat requires a Gemini API key. Configure it in the <a href="%s" style="color:#2271b1; text-decoration:underline;">Advanced tab</a>.', 'pointnet-mailguard'),
+                    esc_url($advanced_url)
+                ), ['a' => ['href' => [], 'style' => [], 'target' => []]]); ?>
+            </div>
+            <?php endif; ?>
+
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
                 <span style="font-size:16px;">💬</span>
                 <span style="font-size:14px; font-weight:600;"><?php esc_html_e('Chat with AI', 'pointnet-mailguard'); ?></span>
@@ -1648,8 +1677,8 @@ class PN_Mailguard_Dashboard {
                 <p style="color:#999; margin:0; text-align:center;"><?php esc_html_e('Ask a question below to get started.', 'pointnet-mailguard'); ?></p>
             </div>
             <div style="display:flex; gap:8px;">
-                <textarea class="pn-chat-input" style="flex:1; padding:8px 10px; font-size:13px; border:1px solid #dcdcde; border-radius:4px; resize:vertical; min-height:40px; max-height:120px;" placeholder="<?php esc_attr_e('e.g. Come posso configurare SPF per il mio dominio?', 'pointnet-mailguard'); ?>"></textarea>
-                <button type="button" class="button button-primary pn-chat-send-btn" style="align-self:flex-end;">
+                <textarea class="pn-chat-input" style="flex:1; padding:8px 10px; font-size:13px; border:1px solid #dcdcde; border-radius:4px; resize:vertical; min-height:40px; max-height:120px;" placeholder="<?php esc_attr_e('e.g. Come posso configurare SPF per il mio dominio?', 'pointnet-mailguard'); ?>" <?php disabled($key_missing); ?>></textarea>
+                <button type="button" class="button button-primary pn-chat-send-btn" style="align-self:flex-end;" <?php disabled($key_missing); ?>>
                     <?php esc_html_e('Send', 'pointnet-mailguard'); ?>
                 </button>
             </div>
@@ -1704,15 +1733,10 @@ class PN_Mailguard_Dashboard {
             <?php self::render_ai_chat_section(); ?>
         </div>
 
-        <!-- PointNet promo -->
-        <div style="background:#f8f8f8; border:1px solid #e0e0e0; border-radius:8px; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-            <div>
-                <p style="font-size:14px; font-weight:600; margin:0 0 4px;"><?php esc_html_e('Need professional help with email deliverability?', 'pointnet-mailguard'); ?></p>
-                <p style="font-size:13px; color:#666; margin:0;"><?php esc_html_e('PointNet offers SPF/DMARC/DKIM setup, dedicated mail server configuration and deliverability consulting.', 'pointnet-mailguard'); ?></p>
-            </div>
-            <a href="https://www.pointnet.it/" target="_blank" class="button button-secondary" style="white-space:nowrap;">
-                <?php esc_html_e('Contact PointNet →', 'pointnet-mailguard'); ?>
-            </a>
+        <!-- PointNet credit -->
+        <div style="text-align:center; font-size:12px; color:#999; padding:12px;">
+            <?php esc_html_e('by', 'pointnet-mailguard'); ?>
+            <a href="https://www.pointnet.it/" target="_blank" style="color:#2271b1; text-decoration:none; font-weight:600;">PointNet</a>
         </div>
 
         <?php
