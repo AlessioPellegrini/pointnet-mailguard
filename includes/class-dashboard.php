@@ -241,7 +241,7 @@ class PN_Mailguard_Dashboard {
                     <div style="font-size:24px; margin-bottom:8px;">📧</div>
                     <p style="font-weight:600; margin:0 0 4px;"><?php esc_html_e('Step 1: Email to monitor', 'pointnet-mailguard'); ?></p>
                     <p style="font-size:12px; color:#666; margin:0 0 10px;">
-                        <?php esc_html_e('The email address you send from — we will detect your mail server automatically.', 'pointnet-mailguard'); ?>
+                        <?php esc_html_e('The email address you send from — we will detect your mail server IP automatically via MX lookup.', 'pointnet-mailguard'); ?>
                     </p>
                     <input type="email" id="onboarding-email" name="pn_mailguard_check_email" value="" class="regular-text" placeholder="info@yourdomain.com" style="width:100%;">
                 </div>
@@ -265,7 +265,7 @@ class PN_Mailguard_Dashboard {
                     <p style="font-size:12px; color:#666; margin:0 0 10px;">
                         <?php esc_html_e('Where to receive alerts when problems are detected.', 'pointnet-mailguard'); ?>
                     </p>
-                    <input type="email" name="pn_mailguard_email_alert" value="<?php echo esc_attr(get_option('admin_email')); ?>" class="regular-text" style="width:100%;">
+                    <input type="email" name="pn_mailguard_email_alert" id="onboarding-alert-email" value="<?php echo esc_attr(get_option('admin_email')); ?>" class="regular-text" style="width:100%;">
                     <p style="font-size:11px; color:#dba617; margin:6px 0 0; background:#fff8e5; padding:6px 8px; border-radius:3px;">
                         💡 <?php esc_html_e('Tip: use a different email from the one you monitor. If your mail server has issues, alerts sent to the same monitored address may not arrive.', 'pointnet-mailguard'); ?>
                     </p>
@@ -294,6 +294,19 @@ class PN_Mailguard_Dashboard {
                 </div>
             </form>
         </div>
+
+        <script>
+        // Auto-fill alert email from monitored email step
+        document.getElementById('onboarding-email').addEventListener('input', function() {
+            var alertField = document.getElementById('onboarding-alert-email');
+            if (alertField && !alertField._userEdited) {
+                alertField.value = this.value;
+            }
+        });
+        document.getElementById('onboarding-alert-email').addEventListener('input', function() {
+            this._userEdited = true;
+        });
+        </script>
 
         <?php
     }
