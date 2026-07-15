@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 7.0  
 **Tested up to:** 7.0  
-**Stable tag:** 1.7.8  
+**Stable tag:** 1.7.9  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -153,6 +153,12 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 * Changed: Global status bar IP badge now shows MX-resolved mail server IP from last email scan instead of Custom IP Monitor status
 * Changed: WordPress Required at least updated from 6.5 to 7.0
 * Fixed: PHPCS error — esc_attr/esc_html escaping on IP MX badge output
+* New: MTA-STS Analyzer (RFC 8461) — DNS record, policy file, mode, MX list, max_age validation
+* New: MTA-STS badge in global status bar (Email & MX Monitor tab)
+* New: MTA-STS section in DNS Record Status cards and DNS & IP Tools tab
+* New: MTA-STS quick check integrated into Email Monitor scanner
+* Changed: AI prompt updated to include MTA-STS in plugin checks
+* Added: Italian translations for MTA-STS related strings
 
 ### 1.7.7
 * New: Custom IP tab separated from Monitors — IP monitor in dedicated tab

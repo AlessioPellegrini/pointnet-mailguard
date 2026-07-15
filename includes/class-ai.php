@@ -46,6 +46,7 @@ class PN_Mailguard_AI {
         . "- SPF: analisi RFC 7208 completa (9 controlli, rilevamento provider)\n"
         . "- DMARC: analisi RFC 7489 (policy strength, correlazione SPF)\n"
         . "- DKIM: auto-rilevamento selettore, tipo/lunghezza chiave, test mode, hash\n"
+        . "- MTA-STS: analisi RFC 8461 (record DNS _mta-sts, policy JSON, modalità enforce/testing/none, MX list, max_age)\n"
         . "- Rilevamento server condiviso vs dedicato\n"
         . "- GeoIP: paese, regione, città, ISP e ASN via ipwhois.app\n"
         . "- WHOIS: proprietario blocco IP, range, organizzazione via RDAP\n"

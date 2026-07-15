@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.0
-Stable tag: 1.7.8
+Stable tag: 1.7.9
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -110,6 +110,14 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 3. Log table with colour-coded status: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
 == Changelog ==
+
+= 1.7.9 =
+* New: MTA-STS Analyzer (RFC 8461) — DNS record, policy file, mode, MX list, max_age validation
+* New: MTA-STS badge in global status bar (Email & MX Monitor tab)
+* New: MTA-STS section in DNS Record Status cards and DNS & IP Tools tab
+* New: MTA-STS quick check integrated into Email Monitor scanner
+* Changed: AI prompt updated to include MTA-STS in plugin checks
+* Added: Italian translations for MTA-STS related strings
 
 = 1.7.8 =
 * Improved: DNSBL Blacklist Check section now uses consistent white background card matching other sections

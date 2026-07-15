@@ -324,10 +324,11 @@ class PN_Mailguard_Dashboard {
             return;
         }
 
-        $spf_data   = $domain ? PN_Mailguard_SPF::analyze($domain) : null;
-        $dmarc_data = $domain ? PN_Mailguard_DMARC::analyze($domain) : null;
-        $dkim_sel   = get_option('pn_mailguard_dkim_selector', '');
-        $dkim_data  = ($domain && $dkim_sel) ? PN_Mailguard_DKIM::analyze($domain, $dkim_sel) : null;
+        $spf_data    = $domain ? PN_Mailguard_SPF::analyze($domain) : null;
+        $dmarc_data  = $domain ? PN_Mailguard_DMARC::analyze($domain) : null;
+        $dkim_sel    = get_option('pn_mailguard_dkim_selector', '');
+        $dkim_data   = ($domain && $dkim_sel) ? PN_Mailguard_DKIM::analyze($domain, $dkim_sel) : null;
+        $mtasts_data = $domain ? PN_Mailguard_MTA_STS::analyze($domain) : null;
 
         $last_email = self::get_last_log('email');
         $last_ip    = self::get_last_log('ip');
@@ -399,9 +400,10 @@ class PN_Mailguard_Dashboard {
                     <?php echo esc_html($light_label); ?>
                 </p>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <?php self::badge('SPF',   $spf_data,   'spf'); ?>
-                    <?php self::badge('DMARC', $dmarc_data, 'dmarc'); ?>
-                    <?php self::badge('DKIM',  $dkim_data,  'dkim'); ?>
+                    <?php self::badge('SPF',   $spf_data,    'spf'); ?>
+                    <?php self::badge('DMARC', $dmarc_data,  'dmarc'); ?>
+                    <?php self::badge('DKIM',  $dkim_data,   'dkim'); ?>
+                    <?php self::badge('MTA-STS', $mtasts_data, 'mtasts'); ?>
                     <?php self::monitor_badge(__('Email', 'pointnet-mailguard'), $last_email, !empty($check_email) && is_email($check_email)); ?>
                     <?php
                     // Show MX-resolved IP from last email log instead of Custom IP Monitor
@@ -442,6 +444,7 @@ class PN_Mailguard_Dashboard {
             <?php self::render_analyzer_section('spf',   '🔐', 'SPF',   $spf_data, $domain); ?>
             <?php self::render_analyzer_section('dmarc', '📋', 'DMARC', $dmarc_data, $domain); ?>
             <?php self::render_analyzer_section('dkim',  '🔑', 'DKIM',  $dkim_data, $domain); ?>
+            <?php self::render_analyzer_section('mtasts', '🛡️', 'MTA-STS', $mtasts_data, $domain); ?>
         </div>
         <?php endif; ?>
 
@@ -1102,6 +1105,7 @@ class PN_Mailguard_Dashboard {
                 self::render_dns_section('spf',   '🔐', 'SPF',   $nonce, $dns_domain);
                 self::render_dns_section('dmarc', '📋', 'DMARC', $nonce, $dns_domain);
                 self::render_dns_section('dkim',  '🔑', 'DKIM',  $nonce, $dns_domain);
+                self::render_dns_section('mtasts', '🛡️', 'MTA-STS', $nonce, $dns_domain);
                 ?>
             </div>
         </div>
@@ -1221,8 +1225,10 @@ class PN_Mailguard_Dashboard {
                 runSingle('spf', domain, null, function() {
                     runSingle('dmarc', domain, null, function() {
                         runSingle('dkim', domain, getSelector(), function() {
-                            isAnalyzing = false;
-                            $('#pn-dns-analyze-all').prop('disabled', false).text('🔬 <?php echo esc_js(__('Analyze All Records', 'pointnet-mailguard')); ?>');
+                            runSingle('mtasts', domain, null, function() {
+                                isAnalyzing = false;
+                                $('#pn-dns-analyze-all').prop('disabled', false).text('🔬 <?php echo esc_js(__('Analyze All Records', 'pointnet-mailguard')); ?>');
+                            });
                         });
                     });
                 });
@@ -1231,7 +1237,8 @@ class PN_Mailguard_Dashboard {
             function runSingle(type, domain, selector, callback) {
                 var action = type === 'spf' ? 'pn_mailguard_analyze_spf'
                           : type === 'dmarc' ? 'pn_mailguard_analyze_dmarc'
-                          : 'pn_mailguard_analyze_dkim';
+                          : type === 'dkim' ? 'pn_mailguard_analyze_dkim'
+                          : 'pn_mailguard_analyze_mtasts';
 
                 var $body = $('#pn-dns-' + type + '-body');
                 $body.html('<p style="color:#999;">⏳ <?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?></p>');
@@ -2012,6 +2019,19 @@ class PN_Mailguard_Dashboard {
         $result = PN_Mailguard_DKIM::analyze($domain, $selector);
         $result['autodetected'] = $autodetected;
 
+        wp_send_json_success($result);
+    }
+
+    public static function ajax_analyze_mtasts(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $domain = isset($_POST['domain']) ? sanitize_text_field(wp_unslash($_POST['domain'])) : '';
+        if (empty($domain)) {
+            wp_send_json_error(['message' => 'Domain is required.']);
+        }
+
+        $result = PN_Mailguard_MTA_STS::analyze($domain);
         wp_send_json_success($result);
     }
 

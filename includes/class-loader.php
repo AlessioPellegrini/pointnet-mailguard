@@ -56,6 +56,9 @@ class PN_Mailguard_Loader {
         // AJAX — DKIM Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_dkim',        ['PN_Mailguard_Dashboard', 'ajax_analyze_dkim']);
 
+        // AJAX — MTA-STS Analyzer tab
+        add_action('wp_ajax_pn_mailguard_analyze_mtasts',      ['PN_Mailguard_Dashboard', 'ajax_analyze_mtasts']);
+
         // AJAX — Fetch available models
         add_action('wp_ajax_pn_mailguard_fetch_models',        ['PN_Mailguard_Dashboard', 'ajax_fetch_models']);
 
