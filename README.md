@@ -136,6 +136,17 @@ This plugin has not been tested on WordPress Multisite. Use on a network install
 
 By default, all plugin data (tables, settings, and logs) is removed when you delete the plugin from the Plugins screen. If you want to keep your data in the database — for example if you plan to reinstall the plugin later — go to **Advanced** → **Uninstall Behavior** and uncheck "Delete all data on uninstall" before deleting the plugin.
 
+## Next Features
+
+Planned improvements for upcoming releases:
+
+- **MTA-STS: Multiple Records check** — detect duplicate `v=STSv1` DNS records
+- **MTA-STS: HTTPS Certificate validation** — verify the policy file certificate chain and expiry
+- **MTA-STS: MX Host Validation** — compare MX hosts in the policy file against actual DNS MX records
+- **MTA-STS Analyzer section in Email Monitor card** — show MTA-STS status alongside SPF/DMARC/DKIM in scan terminal
+- **BIMI Analyzer** — Brand Indicators for Message Identification (logo verification in email clients)
+- **Dashboard Widget** — monitor status on the WordPress admin dashboard
+
 ## Changelog
 
 ### 1.7.9

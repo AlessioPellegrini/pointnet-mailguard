@@ -110,6 +110,17 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 2. IP Monitor tab — direct IPv4 input and scan results.
 3. Log table with colour-coded status: CLEAN (green), ALERT (red), PTR WARNING (orange).
 
+== Next Features ==
+
+Planned improvements for upcoming releases:
+
+- MTA-STS: Multiple Records check — detect duplicate v=STSv1 DNS records
+- MTA-STS: HTTPS Certificate validation — verify the policy file certificate chain and expiry
+- MTA-STS: MX Host Validation — compare MX hosts in the policy file against actual DNS MX records
+- MTA-STS Analyzer section in Email Monitor card — show MTA-STS status alongside SPF/DMARC/DKIM in scan terminal
+- BIMI Analyzer — Brand Indicators for Message Identification (logo verification in email clients)
+- Dashboard Widget — monitor status on the WordPress admin dashboard
+
 == Changelog ==
 
 = 1.7.9 =
