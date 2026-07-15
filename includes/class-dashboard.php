@@ -403,7 +403,29 @@ class PN_Mailguard_Dashboard {
                     <?php self::badge('DMARC', $dmarc_data, 'dmarc'); ?>
                     <?php self::badge('DKIM',  $dkim_data,  'dkim'); ?>
                     <?php self::monitor_badge(__('Email', 'pointnet-mailguard'), $last_email, !empty($check_email) && is_email($check_email)); ?>
-                    <?php self::monitor_badge(__('IP',    'pointnet-mailguard'), $last_ip, !empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP)); ?>
+                    <?php
+                    // Show MX-resolved IP from last email log instead of Custom IP Monitor
+                    $mx_ip_label = '';
+                    $mx_ip_alert = false;
+                    $mx_ip_warn  = false;
+                    if ($last_email && !empty($last_email->details)) {
+                        preg_match('/MX:\s*[^\s]+\s*\(([^)]+)\)/', $last_email->details, $mx_match);
+                        if (!empty($mx_match[1])) {
+                            $mx_ip_label = $mx_match[1];
+                            $mx_ip_alert = in_array($last_email->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true);
+                            $mx_ip_warn  = in_array($last_email->status, ['PTR WARNING', 'SPF WARNING'], true);
+                        }
+                    }
+                    if (!empty($mx_ip_label)):
+                        if ($mx_ip_alert): $bg = '#fbeaea'; $txt = '#a30000'; $icon = '✗';
+                        elseif ($mx_ip_warn): $bg = '#fff8e5'; $txt = '#996800'; $icon = '⚠';
+                        else: $bg = '#edfaef'; $txt = '#00a32a'; $icon = '✓';
+                        endif;
+                        echo '<span style="background:' . $bg . ';color:' . $txt . ';font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;">' . $icon . ' IP ' . esc_html($mx_ip_label) . '</span>';
+                    else:
+                        echo '<span style="background:#f0f0f0;color:#999;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;">IP —</span>';
+                    endif;
+                    ?>
                 </div>
             </div>
         </div>

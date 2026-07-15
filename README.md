@@ -147,7 +147,11 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 * Improved: DNSBL Blacklist Check title now displays the scanned IP address
 * Added: Custom IP Monitor scan history now shows the historical IP address next to each scan date (terminal-style dark badge)
 * Changed: Removed duplicate "Alert email" field from inline edit forms (Email Monitor and Custom IP Monitor) — now configurable only in Onboarding and Advanced tab
+* Added: Alert email field now present in the Advanced tab under a dedicated "Alert Configuration" section
 * Changed: Email Monitor inline edit label "Email" improved to "Email da monitorare" for clarity
+* Added: Italian translations for all new strings
+* Changed: Global status bar IP badge now shows MX-resolved mail server IP from last email scan instead of Custom IP Monitor status
+* Changed: WordPress Required at least updated from 6.5 to 7.0
 
 ### 1.7.7
 * New: Custom IP tab separated from Monitors — IP monitor in dedicated tab
