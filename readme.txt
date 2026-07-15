@@ -33,6 +33,7 @@ Developed by [PointNet](https://www.pointnet.it/).
 - SPF Analyzer — full RFC 7208 analysis, 9 checks, provider detection
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
+- MTA-STS Analyzer (RFC 8461) — DNS record _mta-sts, policy JSON fetch, mode (enforce/testing/none), MX validation, max_age verification
 - IP Analysis tool — DNSBL, PTR, GeoIP and WHOIS lookup for any IPv4 address
 - GeoIP lookup — country, region, city, ISP and ASN via ipwhois.app
 - WHOIS lookup — IP block owner, range, organization via RDAP (rdap.org)

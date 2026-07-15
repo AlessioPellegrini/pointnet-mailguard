@@ -59,6 +59,7 @@ Developed by [PointNet](https://www.pointnet.it/).
 - SPF Analyzer — full RFC 7208 analysis, 9 checks, provider detection
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
+- MTA-STS Analyzer (RFC 8461) — DNS record `_mta-sts`, policy JSON fetch, mode (enforce/testing/none), MX validation, max_age verification
 - DMARC and DKIM quick check integrated into Email Monitor scanner
 - Recent scans with colour-coded badges for SPF, DMARC, DKIM, PTR, SERVER, DNSBL
 - IP Analysis tool — DNSBL, PTR, GeoIP and WHOIS lookup for any IPv4 address
