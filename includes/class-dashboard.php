@@ -421,7 +421,7 @@ class PN_Mailguard_Dashboard {
                         elseif ($mx_ip_warn): $bg = '#fff8e5'; $txt = '#996800'; $icon = '⚠';
                         else: $bg = '#edfaef'; $txt = '#00a32a'; $icon = '✓';
                         endif;
-                        echo '<span style="background:' . $bg . ';color:' . $txt . ';font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;">' . $icon . ' IP ' . esc_html($mx_ip_label) . '</span>';
+                        echo '<span style="background:' . esc_attr($bg) . ';color:' . esc_attr($txt) . ';font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;">' . esc_html($icon) . ' IP ' . esc_html($mx_ip_label) . '</span>';
                     else:
                         echo '<span style="background:#f0f0f0;color:#999;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;">IP —</span>';
                     endif;
