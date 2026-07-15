@@ -6,8 +6,8 @@ if (!defined('ABSPATH')) exit;
  *
  * MTA-STS (RFC 8461) record analyser.
  * Checks DNS TXT record on _mta-sts.domain and
- * attempts to fetch the policy JSON file from
- * https://mta-sts.domain/.well-known/mta-sts.json
+ * attempts to fetch the policy file from
+ * https://mta-sts.domain/.well-known/mta-sts.txt
  *
  * Usage:
  *   $result = PN_Mailguard_MTA_STS::analyze('example.com');
@@ -116,12 +116,11 @@ class PN_Mailguard_MTA_STS {
         // ---------------------------------------------------------------------
         // CHECK 3: Policy file accessible via HTTPS
         // ---------------------------------------------------------------------
-        $policy_url = 'https://mta-sts.' . $domain . '/.well-known/mta-sts.json';
+        $policy_url = 'https://mta-sts.' . $domain . '/.well-known/mta-sts.txt';
         $base['policy_url'] = $policy_url;
 
         $response = wp_remote_get($policy_url, [
             'timeout'   => 10,
-            'headers'   => ['Accept' => 'application/json'],
             'sslverify' => true,
         ]);
 
@@ -135,25 +134,36 @@ class PN_Mailguard_MTA_STS {
             $status_code = wp_remote_retrieve_response_code($response);
             if ($status_code === 200) {
                 $body = wp_remote_retrieve_body($response);
-                $json = json_decode($body, true);
 
-                if ($json === null) {
+                // Parse YAML-style key: value pairs from the policy file
+                $policy = [];
+                foreach (explode("\n", $body) as $line) {
+                    $line = trim($line);
+                    if (str_contains($line, ':')) {
+                        $parts = explode(':', $line, 2);
+                        $key = trim($parts[0]);
+                        $val = trim($parts[1]);
+                        $policy[$key] = $val;
+                    }
+                }
+
+                if (empty($policy)) {
                     $checks[] = self::result('policy_accessible', 'error',
-                        'Policy file is not valid JSON (HTTP ' . $status_code . ')',
-                        'The file at ' . $policy_url . ' returned HTTP ' . $status_code . ' but the content is not valid JSON. Check the file syntax.'
+                        'Policy file is empty or unreadable (HTTP ' . $status_code . ')',
+                        'The file at ' . $policy_url . ' returned HTTP ' . $status_code . ' but the content is empty or has no valid key: value pairs.'
                     );
                     $errors++;
                 } else {
                     $checks[] = self::result('policy_accessible', 'ok',
                         'Policy file accessible (HTTP ' . $status_code . ')',
-                        'The policy file at ' . $policy_url . ' is reachable and returns valid JSON.'
+                        'The policy file at ' . $policy_url . ' is reachable and contains valid key: value pairs.'
                     );
                     $passed++;
 
                     // ---------------------------------------------------------------------
                     // CHECK 4: Policy version
                     // ---------------------------------------------------------------------
-                    $version = $json['version'] ?? '';
+                    $version = trim($policy['version'] ?? '');
                     if ($version === 'STSv1') {
                         $checks[] = self::result('policy_version', 'ok',
                             'Policy version: STSv1',
@@ -171,7 +181,7 @@ class PN_Mailguard_MTA_STS {
                     // ---------------------------------------------------------------------
                     // CHECK 5: Policy mode
                     // ---------------------------------------------------------------------
-                    $mode = strtolower($json['mode'] ?? '');
+                    $mode = strtolower(trim($policy['mode'] ?? ''));
                     $base['mode'] = $mode;
                     if ($mode === 'enforce') {
                         $checks[] = self::result('policy_mode', 'ok',
@@ -202,8 +212,21 @@ class PN_Mailguard_MTA_STS {
                     // ---------------------------------------------------------------------
                     // CHECK 6: MX list
                     // ---------------------------------------------------------------------
-                    $mx_list = $json['mx'] ?? [];
-                    if (!is_array($mx_list) || empty($mx_list)) {
+                    $mx_raw = trim($policy['mx'] ?? '');
+                    $mx_list = [];
+                    if (!empty($mx_raw)) {
+                        // Handle both comma-separated and space-separated MX entries
+                        $mx_parts = str_contains($mx_raw, ',') ? explode(',', $mx_raw) : explode(' ', $mx_raw);
+                        foreach ($mx_parts as $mx_entry) {
+                            $mx_entry = trim($mx_entry);
+                            if (!empty($mx_entry)) {
+                                $mx_list[] = $mx_entry;
+                                $base['mx'][] = $mx_entry;
+                            }
+                        }
+                    }
+
+                    if (empty($mx_list)) {
                         $checks[] = self::result('policy_mx', 'error',
                             'No MX hosts listed in policy',
                             'The policy file must contain at least one mx: entry. Without it, no mail servers are authorised to receive email for your domain.'
@@ -216,7 +239,6 @@ class PN_Mailguard_MTA_STS {
                             if (str_contains($mx_entry, '*')) {
                                 $has_wildcard = true;
                             }
-                            $base['mx'][] = $mx_entry;
                         }
                         if ($has_wildcard) {
                             $checks[] = self::result('policy_mx', 'warning',
@@ -236,7 +258,7 @@ class PN_Mailguard_MTA_STS {
                     // ---------------------------------------------------------------------
                     // CHECK 7: max_age
                     // ---------------------------------------------------------------------
-                    $max_age = intval($json['max_age'] ?? 0);
+                    $max_age = intval(trim($policy['max_age'] ?? '0'));
                     $base['max_age'] = $max_age;
                     if ($max_age <= 0) {
                         $checks[] = self::result('policy_max_age', 'error',
