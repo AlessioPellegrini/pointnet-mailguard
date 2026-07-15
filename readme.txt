@@ -126,6 +126,7 @@ By default, all plugin data (tables, settings, and logs) is removed when you del
 * Added: Italian translations for all new strings
 * Changed: Global status bar IP badge now shows MX-resolved mail server IP from last email scan instead of Custom IP Monitor status
 * Changed: WordPress Required at least updated from 6.5 to 7.0
+* Fixed: PHPCS error — esc_attr/esc_html escaping on IP MX badge output
 
 = 1.7.7 =
 * New: Custom IP tab separated from Monitors — IP monitor in dedicated tab
