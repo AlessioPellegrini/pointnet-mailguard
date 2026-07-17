@@ -46,14 +46,30 @@ class PN_Mailguard_Logger {
             'details'    => sanitize_text_field($details),
         ]);
 
-        // Automatic cleanup: remove entries older than 30 days
-        $wpdb->query(
-            $wpdb->prepare(
-                "DELETE FROM %i WHERE scan_date < %s",
-                $table_name,
-                gmdate('Y-m-d H:i:s', strtotime('-30 days'))
-            )
+        // Automatic cleanup: keep only the most recent N rows per table.
+        // This prevents unbounded growth while preserving enough history
+        // for troubleshooting. Default: 30 rows (filterable via hook).
+        $keep = max(1, (int) apply_filters('pn_mailguard_log_keep_rows', 30));
+        $count = (int) $wpdb->get_var(
+            $wpdb->prepare("SELECT COUNT(*) FROM %i", $table_name)
         );
+        if ($count > $keep) {
+            // Delete the oldest rows beyond the keep limit.
+            // We use a subquery to work around MySQL's restriction on
+            // directly referring to the target table in a subquery for DELETE.
+            $wpdb->query(
+                $wpdb->prepare(
+                    "DELETE FROM %i WHERE id NOT IN (
+                        SELECT id FROM (
+                            SELECT id FROM %i ORDER BY scan_date DESC LIMIT %d
+                        ) AS keep_ids
+                    )",
+                    $table_name,
+                    $table_name,
+                    $keep
+                )
+            );
+        }
     }
 
     /**
@@ -73,6 +89,18 @@ class PN_Mailguard_Logger {
                 $limit
             )
         );
+    }
+
+    /**
+     * Get the configured number of rows to keep per log table.
+     *
+     * Used by cleanup, UI display, and export — ensures all consumers
+     * stay in sync when the filter is overridden.
+     *
+     * @return int
+     */
+    public static function get_keep_rows(): int {
+        return max(1, (int) apply_filters('pn_mailguard_log_keep_rows', 30));
     }
 
     /**

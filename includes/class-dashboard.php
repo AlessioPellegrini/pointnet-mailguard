@@ -324,14 +324,46 @@ class PN_Mailguard_Dashboard {
             return;
         }
 
-        $spf_data    = $domain ? PN_Mailguard_SPF::analyze($domain) : null;
-        $dmarc_data  = $domain ? PN_Mailguard_DMARC::analyze($domain) : null;
-        $dkim_sel    = get_option('pn_mailguard_dkim_selector', '');
-        $dkim_data   = ($domain && $dkim_sel) ? PN_Mailguard_DKIM::analyze($domain, $dkim_sel) : null;
-        $mtasts_data = $domain ? PN_Mailguard_MTA_STS::analyze($domain) : null;
-
         $last_email = self::get_last_log('email');
         $last_ip    = self::get_last_log('ip');
+
+        // Read cached DNS analysis from transient (populated by last manual or cron scan).
+        // This gives us complete check tables without live DNS lookups on every admin page load.
+        $dns_cache = $domain ? get_transient('pn_mailguard_dns_cache_' . $domain) : null;
+        $spf_data    = null;
+        $dmarc_data  = null;
+        $dkim_data   = null;
+        $mtasts_data = null;
+        if ($dns_cache) {
+            $spf_data    = $dns_cache['spf'] ?? null;
+            $dmarc_data  = $dns_cache['dmarc'] ?? null;
+            $dkim_data   = $dns_cache['dkim'] ?? null;
+            $mtasts_data = $dns_cache['mtasts'] ?? null;
+        }
+
+        // Fallback: build lightweight status objects from last email log when no cache exists.
+        if (!$spf_data || !$dmarc_data || !$dkim_data || !$mtasts_data) {
+            $parse_status = function(string $details, string $label): ?array {
+                if (empty($details)) return null;
+                if (preg_match('/' . preg_quote($label, '/') . ':\s*(OK|WARNING|ERROR|MISSING)/i', $details, $m)) {
+                    $raw = strtoupper($m[1]);
+                    $status = match ($raw) {
+                        'OK'      => 'ok',
+                        'WARNING' => 'warning',
+                        'ERROR'   => 'error',
+                        'MISSING' => 'missing',
+                        default   => 'warning',
+                    };
+                    return ['status' => $status];
+                }
+                return null;
+            };
+            $last_details = $last_email->details ?? '';
+            if (!$spf_data)    $spf_data    = $parse_status($last_details, 'SPF')    ?? ['status' => 'missing'];
+            if (!$dmarc_data)  $dmarc_data  = $parse_status($last_details, 'DMARC')  ?? ['status' => 'missing'];
+            if (!$dkim_data)   $dkim_data   = $parse_status($last_details, 'DKIM')   ?? ['status' => 'missing'];
+            if (!$mtasts_data) $mtasts_data = $parse_status($last_details, 'MTA-STS') ?? ['status' => 'missing'];
+        }
 
         // Extract DNSBL results from last email log
         $dnsbl_results = null;
@@ -438,13 +470,15 @@ class PN_Mailguard_Dashboard {
         </div>
 
         <!-- DNS Record Status -->
-        <?php if ($domain): ?>
+        <?php if ($domain):
+            $last_scan_date = $last_email->scan_date ?? '';
+        ?>
         <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🔐 <?php esc_html_e('DNS Record Status', 'pointnet-mailguard'); ?></h2>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:16px; margin-bottom:24px;">
-            <?php self::render_analyzer_section('spf',   '🔐', 'SPF',   $spf_data, $domain); ?>
-            <?php self::render_analyzer_section('dmarc', '📋', 'DMARC', $dmarc_data, $domain); ?>
-            <?php self::render_analyzer_section('dkim',  '🔑', 'DKIM',  $dkim_data, $domain); ?>
-            <?php self::render_analyzer_section('mtasts', '🛡️', 'MTA-STS', $mtasts_data, $domain); ?>
+            <?php self::render_analyzer_section('spf',   '🔐', 'SPF',   $spf_data, $domain, $last_scan_date); ?>
+            <?php self::render_analyzer_section('dmarc', '📋', 'DMARC', $dmarc_data, $domain, $last_scan_date); ?>
+            <?php self::render_analyzer_section('dkim',  '🔑', 'DKIM',  $dkim_data, $domain, $last_scan_date); ?>
+            <?php self::render_analyzer_section('mtasts', '🛡️', 'MTA-STS', $mtasts_data, $domain, $last_scan_date); ?>
         </div>
         <?php endif; ?>
 
@@ -462,6 +496,9 @@ class PN_Mailguard_Dashboard {
             <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🚫 <?php esc_html_e('DNSBL Blacklist Check', 'pointnet-mailguard'); ?>
                 <?php if (!empty($dnsbl_ip)): ?>
                 <span style="font-size:12px; color:#666; font-weight:400;"> — <?php echo esc_html($dnsbl_ip); ?></span>
+                <?php endif; ?>
+                <?php if (!empty($last_scan_date)): ?>
+                <span style="font-size:11px; color:#999; font-weight:400;"> — <?php echo esc_html($last_scan_date); ?></span>
                 <?php endif; ?>
             </h2>
             <div style="display:flex; flex-wrap:wrap; gap:8px;">
@@ -576,15 +613,19 @@ class PN_Mailguard_Dashboard {
 
     private static function monitor_card(string $type, string $label, string $icon, string $monitored_value = ''): void {
         global $wpdb;
+        $keep = PN_Mailguard_Logger::get_keep_rows();
         $table = $wpdb->prefix . ($type === 'ip' ? PN_Mailguard_Installer::TABLE_IP : PN_Mailguard_Installer::TABLE_EMAIL);
-        $logs  = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY scan_date DESC LIMIT %d", $table, 5));
+        $logs  = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY scan_date DESC LIMIT %d", $table, $keep));
         $is_email = ($type === 'email');
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
                 <span style="font-size:14px; font-weight:600;"><?php echo esc_html($icon . ' ' . $label); ?></span>
                 <span style="font-size:11px; color:#999;">
-                    <?php esc_html_e('Last 5 scans', 'pointnet-mailguard'); ?>
+                    <?php
+                    /* translators: %d: number of recent scans shown */
+                    echo esc_html(sprintf(__('Last %d scans', 'pointnet-mailguard'), $keep));
+                    ?>
                 </span>
             </div>
             <?php if (!empty($monitored_value)): ?>
@@ -864,7 +905,7 @@ class PN_Mailguard_Dashboard {
     // Full DNS analysis sections for Monitors tab
     // -------------------------------------------------------------------------
 
-    private static function render_analyzer_section(string $type, string $icon, string $label, $data, string $domain): void {
+    private static function render_analyzer_section(string $type, string $icon, string $label, $data, string $domain, string $scan_date = ''): void {
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; overflow:hidden;">
             <div style="background:#f8f8f8; border-bottom:1px solid #e0e0e0; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
@@ -873,7 +914,12 @@ class PN_Mailguard_Dashboard {
                     <?php echo esc_html($label . ' Analyzer'); ?>
                 </span>
                 <span style="font-size:11px; color:#999;">
-                    <?php esc_html_e('Last scan', 'pointnet-mailguard'); ?>
+                    <?php
+                    esc_html_e('Last scan', 'pointnet-mailguard');
+                    if (!empty($scan_date)) {
+                        echo ' — ' . esc_html($scan_date);
+                    }
+                    ?>
                 </span>
             </div>
             <div style="padding:16px;">
@@ -1485,11 +1531,8 @@ class PN_Mailguard_Dashboard {
             return $value;
         };
 
-        // DNS configuration
-        $spf_data    = $domain ? PN_Mailguard_SPF::analyze($domain) : null;
-        $dmarc_data  = $domain ? PN_Mailguard_DMARC::analyze($domain) : null;
-        $dkim_data   = ($domain && $dkim_sel) ? PN_Mailguard_DKIM::analyze($domain, $dkim_sel) : null;
-        $mtasts_data = $domain ? PN_Mailguard_MTA_STS::analyze($domain) : null;
+        // DNS configuration via the single source of truth
+        $dns_data = $domain ? PN_Mailguard_AI::build_report_data($domain, $check_email, $dkim_sel) : null;
 
         // Scan history
         $email_logs = PN_Mailguard_Logger::get_rows('email', 20);
@@ -1524,10 +1567,10 @@ class PN_Mailguard_Dashboard {
             ],
             'dns_configuration' => [
                 'domain'   => $domain,
-                'spf'      => $spf_data,
-                'dmarc'    => $dmarc_data,
-                'dkim'     => $dkim_data,
-                'mtasts'   => $mtasts_data,
+                'spf'      => $dns_data['spf'] ?? null,
+                'dmarc'    => $dns_data['dmarc'] ?? null,
+                'dkim'     => $dns_data['dkim'] ?? null,
+                'mtasts'   => $dns_data['mtasts'] ?? null,
             ],
             'scan_history' => [
                 'email_logs' => $email_logs ?: [],
@@ -1576,6 +1619,10 @@ class PN_Mailguard_Dashboard {
         $data = PN_Mailguard_Scanner::run_email($email);
         PN_Mailguard_Logger::save($data, 'email');
         PN_Mailguard_Mailer::maybe_send($data, 'email');
+
+        // Populate DNS cache for the Monitors tab analyzers
+        $dkim_sel = get_option('pn_mailguard_dkim_selector', '');
+        PN_Mailguard_Scanner::cache_dns_analysis($email, $dkim_sel);
 
         wp_send_json_success();
     }

@@ -106,8 +106,12 @@ class PN_Mailguard_Mailer {
         if (!empty($data['dkim_warning'])) {
             $body .= '🔴 ' . __('DKIM key problem detected.', 'pointnet-mailguard') . "\n";
         }
-        if (!empty($data['mtasts_warning'])) {
-            $body .= '🟡 ' . __('MTA-STS policy not configured or invalid.', 'pointnet-mailguard') . "\n";
+        if (isset($data['mtasts_status'])) {
+            if ($data['mtasts_status'] === 'missing') {
+                $body .= '🔴 ' . __('MTA-STS policy is missing.', 'pointnet-mailguard') . "\n";
+            } elseif (!empty($data['mtasts_warning'])) {
+                $body .= '🟡 ' . __('MTA-STS policy has warnings.', 'pointnet-mailguard') . "\n";
+            }
         }
 
         $body .= "\n" . __('DNSBL Results', 'pointnet-mailguard') . ":\n";

@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 7.0  
 **Tested up to:** 7.0  
-**Stable tag:** 1.8.0  
+**Stable tag:** 1.8.1  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -148,6 +148,21 @@ Planned improvements for upcoming releases:
 - **Dashboard Widget** — monitor status on the WordPress admin dashboard
 
 ## Changelog
+
+### 1.8.1
+* Added: Single source of truth — new `build_report_data()` method centralises all data collection for AI analysis, AI chat, JSON export, and email alerts
+* Fixed: Chat AI omitted MTA-STS data from context — AI now sees MTA-STS status and gives accurate responses
+* Fixed: Email alert showed "MTA-STS policy not configured or invalid" even when policy existed — now correctly shows 🔴 missing or 🟡 warning
+* Refactored: `ajax_export_report()` now uses `build_report_data()` instead of 4 separate DNS calls
+* Refactored: `analyze()` and `chat()` both use `build_report_data()` — guaranteed alignment across all output paths
+* Added: DNS analysis cache (transient) — Monitors tab analyzers now show full check tables from the last manual or cron scan, without live DNS lookups on page load
+* Added: `cache_dns_analysis()` in scanner — runs SPF/DMARC/DKIM/MTA-STS analysis after each email scan and stores results in a 24h transient
+* Added: Data/ora ultima scansione accanto a "Last scan" nelle sezioni SPF, DMARC, DKIM, MTA-STS Analyzer e DNSBL Blacklist Check
+* Changed: Log cleanup now keeps the most recent N rows (default 30) instead of deleting by date — prevents unbounded growth while preserving history
+* Added: `get_keep_rows()` helper in logger — UI label and SQL LIMIT now dynamically follow the filter value
+* Changed: Removed 4 synchronous DNS lookups (`SPF::analyze`, `DMARC::analyze`, `DKIM::analyze`, `MTA-STS::analyze`) from `render_monitors()` — page load dropped from 4-20s to <0.1s
+* Changed: JSON export uses `build_report_data()` instead of 4 separate calls
+* Maintainability: Adding future features (BIMI, TLS-RPT, etc.) requires modifying only `build_report_data()` — all consumers pick up changes automatically
 
 ### 1.8.0
 * Changed: JavaScript code consolidated — all AJAX handlers moved from inline PHP templates to admin.js

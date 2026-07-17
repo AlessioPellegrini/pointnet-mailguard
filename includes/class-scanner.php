@@ -134,6 +134,56 @@ class PN_Mailguard_Scanner {
     }
 
     /**
+     * Run full DNS analysis (SPF, DMARC, DKIM, MTA-STS) and store results
+     * in a transient for fast loading by the Monitors tab.
+     *
+     * This is called automatically after each email scan (manual or cron)
+     * so that render_monitors() can display the complete check tables
+     * without performing live DNS lookups on every admin page load.
+     *
+     * The transient has a TTL of 24 hours and is refreshed on every scan.
+     *
+     * @param string $email    The monitored email address (to extract the domain).
+     * @param string $selector Optional DKIM selector.
+     */
+    public static function cache_dns_analysis(string $email, string $selector = ''): void {
+        $domain = '';
+        if (!empty($email) && is_email($email)) {
+            $parts = explode('@', $email);
+            $domain = strtolower(trim($parts[1]));
+        }
+        if (empty($domain)) {
+            return;
+        }
+
+        $spf_data    = PN_Mailguard_SPF::analyze($domain);
+        $dmarc_data  = PN_Mailguard_DMARC::analyze($domain);
+
+        if (empty($selector)) {
+            $selector = get_option('pn_mailguard_dkim_selector', '');
+        }
+        $dkim_data = null;
+        if (!empty($selector)) {
+            $dkim_data = PN_Mailguard_DKIM::analyze($domain, $selector);
+        }
+
+        $mtasts_data = PN_Mailguard_MTA_STS::analyze($domain);
+
+        // Store in a transient (stored in wp_options, auto-expires after 24h).
+        // Plugin consumers read this via get_transient() to avoid blocking DNS lookups.
+        set_transient(
+            'pn_mailguard_dns_cache_' . $domain,
+            [
+                'spf'   => $spf_data,
+                'dmarc' => $dmarc_data,
+                'dkim'  => $dkim_data,
+                'mtasts' => $mtasts_data,
+            ],
+            DAY_IN_SECONDS
+        );
+    }
+
+    /**
      * Run the scheduled daily scan for both email and IP monitors.
      * Called via the pn_mailguard_daily_scan cron hook.
      */
@@ -144,6 +194,7 @@ class PN_Mailguard_Scanner {
             $data = self::run_email($email);
             PN_Mailguard_Logger::save($data, 'email');
             PN_Mailguard_Mailer::maybe_send($data, 'email');
+            self::cache_dns_analysis($email);
         }
 
         // IP scan

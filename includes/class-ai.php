@@ -63,20 +63,28 @@ class PN_Mailguard_AI {
         . "Sii conciso e pertinente allo specifico contesto del plugin e del dominio monitorato.\n";
 
     /**
-     * Analyse the full deliverability status for the given email domain.
+     * Gather ALL deliverability data for a domain — the single source of truth.
      *
-     * @param  string $email    Monitored email address (or empty)
+     * This method is used by analyze(), chat(), and export_report() so that
+     * all three paths always see the same, complete data set.
+     * When adding a new check module, add it HERE and all consumers will
+     * automatically pick it up.
+     *
      * @param  string $domain   Domain to analyse
+     * @param  string $email    Monitored email address (optional)
      * @param  string $selector DKIM selector (optional)
-     * @return array            AI report or error array
+     * @return array            Structured report data
      */
-    public static function analyze(string $email, string $domain, string $selector = ''): array {
-        // 1. Gather all data
-        $scan_data    = self::gather_scan($email, $domain);
-        $spf_data     = PN_Mailguard_SPF::analyze($domain);
-        $dmarc_data   = PN_Mailguard_DMARC::analyze($domain);
-        $mtasts_data  = PN_Mailguard_MTA_STS::analyze($domain);
+    public static function build_report_data(string $domain, string $email = '', string $selector = ''): array {
+        // 1. Scan data (MX, DNSBL, PTR, shared server)
+        $scan_data = self::gather_scan($email, $domain);
 
+        // 2. Full DNS analyses
+        $spf_data    = PN_Mailguard_SPF::analyze($domain);
+        $dmarc_data  = PN_Mailguard_DMARC::analyze($domain);
+        $mtasts_data = PN_Mailguard_MTA_STS::analyze($domain);
+
+        // 3. DKIM — auto-detect selector if none provided
         $dkim_data = null;
         if (empty($selector)) {
             $d = PN_Mailguard_DKIM::autodetect($domain);
@@ -87,6 +95,33 @@ class PN_Mailguard_AI {
         if (!empty($selector)) {
             $dkim_data = PN_Mailguard_DKIM::analyze($domain, $selector);
         }
+
+        return [
+            'scan'  => $scan_data,
+            'spf'   => $spf_data,
+            'dmarc' => $dmarc_data,
+            'dkim'  => $dkim_data,
+            'mtasts' => $mtasts_data,
+        ];
+    }
+
+    /**
+     * Analyse the full deliverability status for the given email domain.
+     *
+     * @param  string $email    Monitored email address (or empty)
+     * @param  string $domain   Domain to analyse
+     * @param  string $selector DKIM selector (optional)
+     * @return array            AI report or error array
+     */
+    public static function analyze(string $email, string $domain, string $selector = ''): array {
+        // 1. Gather all data via the single source of truth
+        $data = self::build_report_data($domain, $email, $selector);
+
+        $scan_data    = $data['scan'];
+        $spf_data     = $data['spf'];
+        $dmarc_data   = $data['dmarc'];
+        $dkim_data    = $data['dkim'];
+        $mtasts_data  = $data['mtasts'];
 
         // 2. Build prompt
         $prompt = self::build_prompt($scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data, $domain);
@@ -625,50 +660,96 @@ class PN_Mailguard_AI {
 
         $model = self::get_configured_model();
 
-        // Build context from latest scan data if domain is available
+        // Build context from fresh data using the single source of truth
         $context_parts = [];
         if (!empty($domain)) {
-            // Try to get the latest AI analysis from DB (already has scan + DNS data)
-            $latest = self::get_latest($domain);
-            if ($latest && !empty($latest->scan_data)) {
-                $scan   = json_decode($latest->scan_data, true);
-                $spf    = json_decode($latest->spf_data, true);
-                $dmarc  = json_decode($latest->dmarc_data, true);
-                $dkim   = json_decode($latest->dkim_data, true);
+            $data = self::build_report_data($domain, $email, $selector);
 
-                $context_parts[] = '=== DATI DEL TUO DOMINIO (correnti) ===';
-                $context_parts[] = 'Dominio monitorato: ' . $domain;
+            $scan         = $data['scan'];
+            $spf          = $data['spf'];
+            $dmarc        = $data['dmarc'];
+            $dkim         = $data['dkim'];
+            $mtasts       = $data['mtasts'];
 
-                if (!empty($scan['mx_host'])) {
-                    $context_parts[] = 'MX: ' . $scan['mx_host'] . ' → ' . $scan['mx_ip'];
+            $context_parts[] = '=== DATI DEL TUO DOMINIO (correnti) ===';
+            $context_parts[] = 'Dominio monitorato: ' . $domain;
+
+            if (!empty($scan['mx_host'])) {
+                $context_parts[] = 'MX: ' . $scan['mx_host'] . ' → ' . $scan['mx_ip'];
+            }
+            if (!empty($scan['wp_ip'])) {
+                $context_parts[] = 'WordPress IP: ' . $scan['wp_ip'];
+                $context_parts[] = 'Server: ' . ($scan['shared_server'] ? 'Condiviso (stesso IP di WordPress)' : 'Dedicato');
+            }
+            if (!empty($scan['ptr'])) {
+                $context_parts[] = 'PTR: ' . $scan['ptr'] . ($scan['ptr_warning'] ? ' (WARNING)' : ' (OK)');
+            }
+            if (!empty($scan['dnsbl'])) {
+                foreach ($scan['dnsbl'] as $name => $val) {
+                    $context_parts[] = "DNSBL {$name}: {$val}";
                 }
-                if (!empty($scan['wp_ip'])) {
-                    $context_parts[] = 'WordPress IP: ' . $scan['wp_ip'];
-                    $context_parts[] = 'Server: ' . ($scan['shared_server'] ? 'Condiviso (stesso IP di WordPress)' : 'Dedicato');
-                }
-                if (!empty($scan['ptr'])) {
-                    $context_parts[] = 'PTR: ' . $scan['ptr'] . ($scan['ptr_warning'] ? ' (WARNING)' : ' (OK)');
-                }
-                if (!empty($scan['dnsbl'])) {
-                    foreach ($scan['dnsbl'] as $name => $val) {
-                        $context_parts[] = "DNSBL {$name}: {$val}";
+            }
+
+            if ($spf) {
+                $context_parts[] = 'SPF Status: ' . ($spf['status'] ?? 'N/A');
+                $context_parts[] = 'SPF Record: ' . ($spf['record'] ?? 'N/A');
+                $context_parts[] = "SPF: Passed {$spf['passed']}, Warnings {$spf['warnings']}, Errors {$spf['errors']}";
+                if (!empty($spf['checks'])) {
+                    foreach ($spf['checks'] as $c) {
+                        $icon = match ($c['status']) {
+                            'ok'      => '✅',
+                            'warning' => '⚠️',
+                            default   => '🔴',
+                        };
+                        $context_parts[] = "  $icon " . $c['title'];
                     }
                 }
-
-                if ($spf) {
-                    $context_parts[] = 'SPF Status: ' . ($spf['status'] ?? 'N/A');
-                    $context_parts[] = 'SPF Record: ' . ($spf['record'] ?? 'N/A');
-                    $context_parts[] = "SPF: Passed {$spf['passed']}, Warnings {$spf['warnings']}, Errors {$spf['errors']}";
+            }
+            if ($dmarc) {
+                $context_parts[] = 'DMARC Status: ' . ($dmarc['status'] ?? 'N/A');
+                $context_parts[] = 'DMARC Record: ' . ($dmarc['record'] ?? 'N/A');
+                $context_parts[] = "DMARC: Passed {$dmarc['passed']}, Warnings {$dmarc['warnings']}, Errors {$dmarc['errors']}";
+                if (!empty($dmarc['checks'])) {
+                    foreach ($dmarc['checks'] as $c) {
+                        $icon = match ($c['status']) {
+                            'ok'      => '✅',
+                            'warning' => '⚠️',
+                            'info'    => 'ℹ️',
+                            default   => '🔴',
+                        };
+                        $context_parts[] = "  $icon " . $c['title'];
+                    }
                 }
-                if ($dmarc) {
-                    $context_parts[] = 'DMARC Status: ' . ($dmarc['status'] ?? 'N/A');
-                    $context_parts[] = 'DMARC Record: ' . ($dmarc['record'] ?? 'N/A');
-                    $context_parts[] = "DMARC: Passed {$dmarc['passed']}, Warnings {$dmarc['warnings']}, Errors {$dmarc['errors']}";
+            }
+            if ($dkim) {
+                $context_parts[] = 'DKIM Status: ' . ($dkim['status'] ?? 'N/A');
+                $context_parts[] = 'DKIM Selector: ' . ($dkim['selector'] ?? 'N/A');
+                $context_parts[] = "DKIM: Passed {$dkim['passed']}, Warnings {$dkim['warnings']}, Errors {$dkim['errors']}";
+                if (!empty($dkim['checks'])) {
+                    foreach ($dkim['checks'] as $c) {
+                        $icon = match ($c['status']) {
+                            'ok'      => '✅',
+                            'warning' => '⚠️',
+                            default   => '🔴',
+                        };
+                        $context_parts[] = "  $icon " . $c['title'];
+                    }
                 }
-                if ($dkim) {
-                    $context_parts[] = 'DKIM Status: ' . ($dkim['status'] ?? 'N/A');
-                    $context_parts[] = 'DKIM Selector: ' . ($dkim['selector'] ?? 'N/A');
-                    $context_parts[] = "DKIM: Passed {$dkim['passed']}, Warnings {$dkim['warnings']}, Errors {$dkim['errors']}";
+            }
+            if ($mtasts) {
+                $context_parts[] = 'MTA-STS Status: ' . ($mtasts['status'] ?? 'N/A');
+                $context_parts[] = 'MTA-STS Record: ' . ($mtasts['record'] ?? 'N/A');
+                $context_parts[] = 'MTA-STS Mode: ' . ($mtasts['mode'] ?? 'N/A');
+                $context_parts[] = "MTA-STS: Passed {$mtasts['passed']}, Warnings {$mtasts['warnings']}, Errors {$mtasts['errors']}";
+                if (!empty($mtasts['checks'])) {
+                    foreach ($mtasts['checks'] as $c) {
+                        $icon = match ($c['status']) {
+                            'ok'      => '✅',
+                            'warning' => '⚠️',
+                            default   => '🔴',
+                        };
+                        $context_parts[] = "  $icon " . $c['title'];
+                    }
                 }
             }
         }
