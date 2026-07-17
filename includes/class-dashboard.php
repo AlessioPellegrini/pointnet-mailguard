@@ -436,7 +436,27 @@ class PN_Mailguard_Dashboard {
                     <?php self::badge('DMARC', $dmarc_data,  'dmarc'); ?>
                     <?php self::badge('DKIM',  $dkim_data,   'dkim'); ?>
                     <?php self::badge('MTA-STS', $mtasts_data, 'mtasts'); ?>
-                    <?php self::monitor_badge(__('Email', 'pointnet-mailguard'), $last_email, !empty($check_email) && is_email($check_email)); ?>
+                    <?php
+                    // DNSBL badge: shows blacklist status of the mail server IP
+                    $dnsbl_has_listed = false;
+                    $dnsbl_has_data   = false;
+                    if (!empty($dnsbl_results)) {
+                        $dnsbl_has_data = true;
+                        foreach ($dnsbl_results as $_st) {
+                            if ($_st === 'LISTED') {
+                                $dnsbl_has_listed = true;
+                                break;
+                            }
+                        }
+                    }
+                    if ($dnsbl_has_listed):
+                        echo '<span style="background:#fbeaea;color:#a30000;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;">✗ DNSBL</span>';
+                    elseif ($dnsbl_has_data):
+                        echo '<span style="background:#edfaef;color:#00a32a;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;">✓ DNSBL</span>';
+                    else:
+                        echo '<span style="background:#f0f0f0;color:#999;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;">DNSBL —</span>';
+                    endif;
+                    ?>
                     <?php
                     // Show MX-resolved IP from last email log instead of Custom IP Monitor
                     $mx_ip_label = '';
