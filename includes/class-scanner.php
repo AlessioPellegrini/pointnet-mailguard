@@ -89,8 +89,8 @@ class PN_Mailguard_Scanner {
             'dkim_warnings'  => $dkim_warnings,
             'mtasts_status'  => $mtasts_status,
             'mtasts_record'  => $mtasts_data['record'] ?? '',
-            'mtasts_warning' => !in_array($mtasts_status, ['ok', 'missing'], true),
-            'dmarc_warning'  => in_array($dmarc_status, ['warning', 'error'], true),
+            'mtasts_warning' => ($mtasts_status === 'error' || $mtasts_status === 'missing'),
+            'dmarc_warning'  => ($dmarc_status === 'error' || $dmarc_status === 'missing'),
             'dkim_warning'   => in_array($dkim_status, ['warning', 'error'], true),
             'error'          => '',
         ];
