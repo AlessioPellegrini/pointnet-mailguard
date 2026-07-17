@@ -301,8 +301,10 @@ jQuery(document).ready(function($) {
         runSingle('spf', domain, null, function() {
             runSingle('dmarc', domain, null, function() {
                 runSingle('dkim', domain, getSelector(), function() {
-                    isAnalyzing = false;
-                    $('#pn-dns-analyze-all').prop('disabled', false).text('🔬 ' + pnMailguard.analyzeAllRecords);
+                    runSingle('mtasts', domain, null, function() {
+                        isAnalyzing = false;
+                        $('#pn-dns-analyze-all').prop('disabled', false).text('🔬 ' + pnMailguard.analyzeAllRecords);
+                    });
                 });
             });
         });
@@ -311,7 +313,8 @@ jQuery(document).ready(function($) {
     function runSingle(type, domain, selector, callback) {
         var action = type === 'spf' ? 'pn_mailguard_analyze_spf'
                    : type === 'dmarc' ? 'pn_mailguard_analyze_dmarc'
-                   : 'pn_mailguard_analyze_dkim';
+                   : type === 'dkim' ? 'pn_mailguard_analyze_dkim'
+                   : 'pn_mailguard_analyze_mtasts';
 
         var $body = $('#pn-dns-' + type + '-body');
         $body.html('<p style="color:#999;">⏳ ' + pnMailguard.analyzing + '</p>');
@@ -445,23 +448,34 @@ jQuery(document).ready(function($) {
             if (type === 'dnsbl') {
                 if (d.results) {
                     var anyListed = false;
+                    var ipv6Notice = false;
                     html += '<table class="pn-dns-table">';
                     $.each(d.results, function(name, status) {
-                        if (status === 'LISTED') anyListed = true;
-                        var dotColor = status === 'LISTED' ? '#d63638' : '#00a32a';
-                        var badgeText = status === 'LISTED' ? '✗ LISTED' : '✓ CLEAN';
-                        var badgeBg = status === 'LISTED' ? '#fbeaea' : '#edfaef';
-                        var badgeColor = status === 'LISTED' ? '#a30000' : '#00a32a';
-                        html += '<tr style="border-top:0.5px solid #e8e8e8;">';
-                        html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
-                        html += '<td style="padding:6px 4px; font-weight:600;">' + escHtml(name) + '</td>';
-                        html += '<td style="padding:6px 4px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
-                        html += '</tr>';
+                        if (name.indexOf('ℹ️') === 0) {
+                            // Informational message (e.g. IPv6 notice) — show as blue info
+                            ipv6Notice = true;
+                            html += '<tr style="border-top:0.5px solid #e8e8e8;">';
+                            html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2271b1;"></span></td>';
+                            html += '<td style="padding:6px 4px; font-weight:600; color:#2271b1;">' + escHtml(name) + '</td>';
+                            html += '<td style="padding:6px 4px; color:#2271b1; font-size:11px;">' + escHtml(status) + '</td>';
+                            html += '</tr>';
+                        } else {
+                            if (status === 'LISTED') anyListed = true;
+                            var dotColor = status === 'LISTED' ? '#d63638' : '#00a32a';
+                            var badgeText = status === 'LISTED' ? '✗ LISTED' : '✓ CLEAN';
+                            var badgeBg = status === 'LISTED' ? '#fbeaea' : '#edfaef';
+                            var badgeColor = status === 'LISTED' ? '#a30000' : '#00a32a';
+                            html += '<tr style="border-top:0.5px solid #e8e8e8;">';
+                            html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
+                            html += '<td style="padding:6px 4px; font-weight:600;">' + escHtml(name) + '</td>';
+                            html += '<td style="padding:6px 4px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
+                            html += '</tr>';
+                        }
                     });
                     html += '</table>';
                     if (anyListed) {
                         html += '<p style="font-size:11px; color:#d63638; margin:8px 0 0;">⚠ ' + pnMailguard.ipListed + '</p>';
-                    } else {
+                    } else if (!ipv6Notice) {
                         html += '<p style="font-size:11px; color:#00a32a; margin:8px 0 0;">✅ ' + pnMailguard.ipClean + '</p>';
                     }
                 } else {

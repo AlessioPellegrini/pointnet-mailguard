@@ -486,7 +486,6 @@ class PN_Mailguard_Dashboard {
             <?php self::monitor_card('email', __('Email Monitor', 'pointnet-mailguard'), '📧', $check_email); ?>
         </div>
 
-        <?php self::render_dashboard_js(); ?>
         <?php
     }
 
@@ -624,12 +623,20 @@ class PN_Mailguard_Dashboard {
                                 $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">DMARC</span> ';
                             }
                             // DKIM
-                            elseif (preg_match('/^DKIM:\s*(OK|WARNING|ERROR)/i', $part, $m)) {
+                            elseif (preg_match('/^DKIM:\s*(OK|WARNING|ERROR|MISSING)/i', $part, $m)) {
                                 $s = strtoupper($m[1]);
                                 if ($s === 'OK') { $bg = '#edfaef'; $txt = '#00a32a'; }
                                 elseif ($s === 'WARNING') { $bg = '#fff8e5'; $txt = '#996800'; }
                                 else { $bg = '#fbeaea'; $txt = '#a30000'; }
                                 $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">DKIM</span> ';
+                            }
+                            // MTA-STS
+                            elseif (preg_match('/^MTA-STS:\s*(OK|WARNING|ERROR|MISSING)/i', $part, $m)) {
+                                $s = strtoupper($m[1]);
+                                if ($s === 'OK') { $bg = '#edfaef'; $txt = '#00a32a'; }
+                                elseif ($s === 'WARNING') { $bg = '#fff8e5'; $txt = '#996800'; }
+                                else { $bg = '#fbeaea'; $txt = '#a30000'; }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">MTA-STS</span> ';
                             }
                             // Server
                             elseif (preg_match('/^Server:\s*(SHARED|SEPARATE)/i', $part, $m)) {
@@ -886,7 +893,7 @@ class PN_Mailguard_Dashboard {
                     </div>
                     <?php endif; ?>
                     <?php if (!empty($data['checks'])): ?>
-                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <table style="width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed;">
                         <?php foreach ($data['checks'] as $i => $c): ?>
                         <?php
                         $st = $c['status'];
@@ -920,7 +927,7 @@ class PN_Mailguard_Dashboard {
                             <td style="padding:6px 4px 6px 8px; width:10px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:<?php echo esc_attr($dotColor); ?>;"></span></td>
                             <td style="padding:6px 4px; font-weight:600; width:40%;"><?php echo esc_html($c['title']); ?></td>
                             <td style="padding:6px 4px; width:70px;"><span style="background:<?php echo esc_attr($badgeBg); ?>;color:<?php echo esc_attr($badgeColor); ?>;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;"><?php echo esc_html($badgeText); ?></span></td>
-                            <td style="padding:6px 4px; color:#555; line-height:1.4;"><?php echo esc_html($c['description']); ?></td>
+                            <td style="padding:6px 4px; color:#555; line-height:1.4; word-break:break-word;"><?php echo esc_html($c['description']); ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </table>
@@ -1023,30 +1030,6 @@ class PN_Mailguard_Dashboard {
     // Dashboard JS
     // -------------------------------------------------------------------------
 
-    private static function render_dashboard_js(): void {
-        ?>
-        <script>
-        jQuery(document).ready(function($) {
-            var pnNonce = "<?php echo esc_js(wp_create_nonce('pn_mailguard_ajax_nonce')); ?>";
-
-            $('#pn-run-scheduled-btn').on('click', function() {
-                var btn = $(this);
-                btn.prop('disabled', true).text('⏳ <?php echo esc_js(__('Running...', 'pointnet-mailguard')); ?>');
-                $.post(ajaxurl, { action: 'pn_mailguard_run_scheduled', nonce: pnNonce }, function(res) {
-                    if (res.success) {
-                        location.reload();
-                    } else {
-                        alert(res.data && res.data.message ? res.data.message : '<?php echo esc_js(__('Scan failed.', 'pointnet-mailguard')); ?>');
-                        btn.prop('disabled', false).text('▶️ <?php echo esc_js(__('Run Scheduled Scan Now', 'pointnet-mailguard')); ?>');
-                    }
-                });
-            });
-
-        });
-        </script>
-        <?php
-    }
-
     // -------------------------------------------------------------------------
     // TAB: DNS Tools
     // -------------------------------------------------------------------------
@@ -1144,7 +1127,6 @@ class PN_Mailguard_Dashboard {
             </div>
         </div>
 
-        <?php self::render_dnstools_js(); ?>
         <?php
     }
 
@@ -1189,309 +1171,6 @@ class PN_Mailguard_Dashboard {
                 </p>
             </div>
         </div>
-        <?php
-    }
-
-    private static function render_dnstools_js(): void {
-        ?>
-        <script>
-        jQuery(document).ready(function($) {
-            var pnNonce = "<?php echo esc_js(wp_create_nonce('pn_mailguard_ajax_nonce')); ?>";
-            var isAnalyzing = false;
-
-            var $domainInput = $('#pn-dns-domain');
-            var autoDomain = $domainInput.data('auto');
-            if (autoDomain && !$domainInput.val()) {
-                $domainInput.val(autoDomain);
-            }
-
-            function getDomain() {
-                return $domainInput.val().trim();
-            }
-
-            function getSelector() {
-                return $('#pn-dns-dkim-selector').val().trim();
-            }
-
-            function analyzeAll() {
-                var domain = getDomain();
-                if (!domain) return;
-
-                isAnalyzing = true;
-                $('#pn-dns-analyze-all').prop('disabled', true).text('⏳ <?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?>');
-
-                $('#pn-dkim-selector-row').slideDown();
-
-                runSingle('spf', domain, null, function() {
-                    runSingle('dmarc', domain, null, function() {
-                        runSingle('dkim', domain, getSelector(), function() {
-                            runSingle('mtasts', domain, null, function() {
-                                isAnalyzing = false;
-                                $('#pn-dns-analyze-all').prop('disabled', false).text('🔬 <?php echo esc_js(__('Analyze All Records', 'pointnet-mailguard')); ?>');
-                            });
-                        });
-                    });
-                });
-            }
-
-            function runSingle(type, domain, selector, callback) {
-                var action = type === 'spf' ? 'pn_mailguard_analyze_spf'
-                          : type === 'dmarc' ? 'pn_mailguard_analyze_dmarc'
-                          : type === 'dkim' ? 'pn_mailguard_analyze_dkim'
-                          : 'pn_mailguard_analyze_mtasts';
-
-                var $body = $('#pn-dns-' + type + '-body');
-                $body.html('<p style="color:#999;">⏳ <?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?></p>');
-
-                var data = { action: action, nonce: pnNonce, domain: domain };
-                if (type === 'dkim' && selector) {
-                    data.selector = selector;
-                }
-
-                $.post(ajaxurl, data, function(res) {
-                    if (!res.success) {
-                        var msg = (res.data && res.data.message) ? res.data.message : '<?php echo esc_js(__('Analysis failed.', 'pointnet-mailguard')); ?>';
-                        $body.html('<div class="notice notice-error inline" style="margin:0;"><p>' + msg + '</p></div>');
-                        if (callback) callback();
-                        return;
-                    }
-
-                    var d = res.data;
-
-                    if (d.autodetected && d.selector) {
-                        $('#pn-dns-dkim-selector').val(d.selector);
-                    }
-
-                    var html = '';
-
-                    if (d.record) {
-                        html += '<div style="background:#1e1e2e; color:#a6e3a1; font-family:monospace; font-size:11px; padding:8px 10px; border-radius:4px; word-break:break-all; margin-bottom:12px; line-height:1.5;">' + escHtml(d.record) + '</div>';
-                    }
-
-                    if (d.passed !== undefined) {
-                        html += '<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px;">';
-                        html += dnsCard(d.passed,   '<?php echo esc_js(__('passed', 'pointnet-mailguard')); ?>',   '#00a32a');
-                        html += dnsCard(d.warnings, '<?php echo esc_js(__('warnings', 'pointnet-mailguard')); ?>', '#dba617');
-                        html += dnsCard(d.errors,   '<?php echo esc_js(__('errors', 'pointnet-mailguard')); ?>',   '#d63638');
-                        html += '</div>';
-                    }
-
-                    if (d.checks && d.checks.length) {
-                        html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
-                        $.each(d.checks, function(i, c) {
-                            var dotColor = c.status === 'ok' ? '#00a32a' : (c.status === 'warning' ? '#dba617' : (c.status === 'info' ? '#2271b1' : '#d63638'));
-                            var badgeText = c.status === 'ok' ? '✓ Pass' : (c.status === 'warning' ? '⚠ Warning' : (c.status === 'info' ? 'ℹ Info' : '✗ Error'));
-                            var badgeBg = c.status === 'ok' ? '#edfaef' : (c.status === 'warning' ? '#fff8e5' : (c.status === 'info' ? '#e8f0fb' : '#fbeaea'));
-                            var badgeColor = c.status === 'ok' ? '#00a32a' : (c.status === 'warning' ? '#996800' : (c.status === 'info' ? '#2271b1' : '#a30000'));
-                            var bg = i % 2 === 0 ? '#fff' : '#fafafa';
-                            html += '<tr style="background:' + bg + '; border-top:0.5px solid #e8e8e8;">';
-                            html += '<td style="padding:6px 4px 6px 8px; width:10px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
-                            html += '<td style="padding:6px 4px; font-weight:600; width:40%;">' + escHtml(c.title) + '</td>';
-                            html += '<td style="padding:6px 4px; width:70px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
-                            html += '<td style="padding:6px 4px; color:#555; line-height:1.4;">' + escHtml(c.description) + '</td>';
-                            html += '</tr>';
-                        });
-                        html += '</table>';
-                    }
-
-                    if (d.providers && d.providers.length) {
-                        html += '<p style="font-size:11px; color:#666; margin:8px 0 0;"><?php echo esc_js(__('Detected providers:', 'pointnet-mailguard')); ?> ' + d.providers.join(', ') + '</p>';
-                    }
-
-                    $body.html(html);
-                    if (callback) callback();
-                });
-            }
-
-            function escHtml(str) { return $('<div>').text(str).html(); }
-
-            function dnsCard(num, label, color) {
-                return '<div style="background:#f8f8f8;border-radius:4px;padding:8px;text-align:center;border:1px solid #e0e0e0;">'
-                    + '<div style="font-size:18px;font-weight:600;color:' + color + ';">' + num + '</div>'
-                    + '<div style="font-size:10px;color:#666;margin-top:2px;">' + label + '</div></div>';
-            }
-
-            $('#pn-dns-analyze-all').on('click', analyzeAll);
-
-            $('.pn-dns-single-btn').on('click', function() {
-                var type = $(this).data('type');
-                var domain = getDomain();
-                if (!domain) return;
-                if (type === 'dkim') {
-                    $('#pn-dkim-selector-row').slideDown();
-                }
-                runSingle(type, domain, type === 'dkim' ? getSelector() : null, null);
-            });
-
-            $('#pn-dns-domain').on('keydown', function(e) {
-                if (e.key === 'Enter' && !isAnalyzing) {
-                    e.preventDefault();
-                    analyzeAll();
-                }
-            });
-
-            // --- IP Analysis ---
-            var isIpAnalyzing = false;
-
-            function getIp() {
-                return $('#pn-ip-address').val().trim();
-            }
-
-            function analyzeIpAll() {
-                var ip = getIp();
-                if (!ip) return;
-
-                isIpAnalyzing = true;
-                $('#pn-ip-analyze-all').prop('disabled', true).text('⏳ <?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?>');
-
-                runIpSingle('dnsbl', ip, function() {
-                    runIpSingle('ptr', ip, function() {
-                        runIpSingle('geoip', ip, function() {
-                            runIpSingle('whois', ip, function() {
-                                isIpAnalyzing = false;
-                                $('#pn-ip-analyze-all').prop('disabled', false).text('🔬 <?php echo esc_js(__('Analyze IP', 'pointnet-mailguard')); ?>');
-                            });
-                        });
-                    });
-                });
-            }
-
-            function runIpSingle(type, ip, callback) {
-                var action = type === 'dnsbl' ? 'pn_mailguard_ip_dnsbl'
-                          : type === 'ptr' ? 'pn_mailguard_ip_ptr'
-                          : type === 'geoip' ? 'pn_mailguard_ip_geoip'
-                          : 'pn_mailguard_ip_whois';
-
-                var $body = $('#pn-ip-' + type + '-body');
-                $body.html('<p style="color:#999;">⏳ <?php echo esc_js(__('Analyzing...', 'pointnet-mailguard')); ?></p>');
-
-                $.post(ajaxurl, { action: action, nonce: pnNonce, ip: ip }, function(res) {
-                    if (!res.success) {
-                        var msg = (res.data && res.data.message) ? res.data.message : '<?php echo esc_js(__('Analysis failed.', 'pointnet-mailguard')); ?>';
-                        $body.html('<div class="notice notice-error inline" style="margin:0;"><p>' + msg + '</p></div>');
-                        if (callback) callback();
-                        return;
-                    }
-
-                    var d = res.data;
-                    var html = '';
-
-                    if (type === 'dnsbl') {
-                        if (d.results) {
-                            var anyListed = false;
-                            var ipv6Notice = false;
-                            html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
-                            $.each(d.results, function(name, status) {
-                                if (name.indexOf('ℹ️') === 0) {
-                                    // Informational message (e.g. IPv6 notice) — show as blue info
-                                    ipv6Notice = true;
-                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
-                                    html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2271b1;"></span></td>';
-                                    html += '<td style="padding:6px 4px; font-weight:600; color:#2271b1;">' + escHtml(name) + '</td>';
-                                    html += '<td style="padding:6px 4px; color:#2271b1; font-size:11px;">' + escHtml(status) + '</td>';
-                                    html += '</tr>';
-                                } else {
-                                    if (status === 'LISTED') anyListed = true;
-                                    var dotColor = status === 'LISTED' ? '#d63638' : '#00a32a';
-                                    var badgeText = status === 'LISTED' ? '✗ LISTED' : '✓ CLEAN';
-                                    var badgeBg = status === 'LISTED' ? '#fbeaea' : '#edfaef';
-                                    var badgeColor = status === 'LISTED' ? '#a30000' : '#00a32a';
-                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
-                                    html += '<td style="padding:6px 4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
-                                    html += '<td style="padding:6px 4px; font-weight:600;">' + escHtml(name) + '</td>';
-                                    html += '<td style="padding:6px 4px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
-                                    html += '</tr>';
-                                }
-                            });
-                            html += '</table>';
-                            if (anyListed) {
-                                html += '<p style="font-size:11px; color:#d63638; margin:8px 0 0;">⚠ <?php echo esc_js(__('IP is listed on one or more blacklists!', 'pointnet-mailguard')); ?></p>';
-                            } else if (!ipv6Notice) {
-                                html += '<p style="font-size:11px; color:#00a32a; margin:8px 0 0;">✅ <?php echo esc_js(__('IP is clean on all checked blacklists.', 'pointnet-mailguard')); ?></p>';
-                            }
-                        } else {
-                            html = '<p style="font-size:13px; color:#999; margin:0;"><?php echo esc_js(__('No DNSBL results.', 'pointnet-mailguard')); ?></p>';
-                        }
-                    } else if (type === 'ptr') {
-                        if (d.ptr_warning) {
-                            html = '<div style="background:#fff8e5; border:1px solid #f0d080; border-radius:4px; padding:10px; font-size:12px;">';
-                            html += '<strong style="color:#996800;">⚠ <?php echo esc_js(__('No PTR record found', 'pointnet-mailguard')); ?></strong>';
-                            html += '<p style="margin:4px 0 0; color:#666;"><?php echo esc_js(__('PTR: ', 'pointnet-mailguard')); ?>' + escHtml(d.ptr) + '</p>';
-                            html += '</div>';
-                        } else {
-                            html = '<div style="background:#1e1e2e; color:#a6e3a1; font-family:monospace; font-size:11px; padding:8px 10px; border-radius:4px; word-break:break-all; line-height:1.5;">' + escHtml(d.ptr) + '</div>';
-                            html += '<p style="font-size:11px; color:#00a32a; margin:6px 0 0;">✅ <?php echo esc_js(__('PTR record found', 'pointnet-mailguard')); ?></p>';
-                        }
-                    } else if (type === 'geoip') {
-                        if (d.status === 'success') {
-                            html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
-                            var fields = [
-                                ['<?php echo esc_js(__('IP', 'pointnet-mailguard')); ?>', d.ip],
-                                ['<?php echo esc_js(__('Country', 'pointnet-mailguard')); ?>', d.country + ' (' + d.countryCode + ')'],
-                                ['<?php echo esc_js(__('Region', 'pointnet-mailguard')); ?>', d.region],
-                                ['<?php echo esc_js(__('City', 'pointnet-mailguard')); ?>', d.city],
-                                ['<?php echo esc_js(__('ISP', 'pointnet-mailguard')); ?>', d.isp],
-                                ['<?php echo esc_js(__('Organization', 'pointnet-mailguard')); ?>', d.org],
-                                ['<?php echo esc_js(__('ASN', 'pointnet-mailguard')); ?>', d.as],
-                            ];
-                            $.each(fields, function(i, f) {
-                                if (f[1]) {
-                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
-                                    html += '<td style="padding:4px 6px; font-weight:600; width:30%;">' + escHtml(f[0]) + '</td>';
-                                    html += '<td style="padding:4px 6px; color:#333;">' + escHtml(f[1]) + '</td>';
-                                    html += '</tr>';
-                                }
-                            });
-                            html += '</table>';
-                        } else {
-                            html = '<p style="font-size:13px; color:#d63638; margin:0;">' + escHtml(d.error) + '</p>';
-                        }
-                    } else if (type === 'whois') {
-                        if (d.status === 'success') {
-                            html += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
-                            var fields = [
-                                ['<?php echo esc_js(__('IP Range', 'pointnet-mailguard')); ?>', d.inetnum],
-                                ['<?php echo esc_js(__('Net Name', 'pointnet-mailguard')); ?>', d.netname],
-                                ['<?php echo esc_js(__('Organization', 'pointnet-mailguard')); ?>', d.org],
-                                ['<?php echo esc_js(__('Country', 'pointnet-mailguard')); ?>', d.country],
-                                ['<?php echo esc_js(__('Person', 'pointnet-mailguard')); ?>', d.person],
-                                ['<?php echo esc_js(__('Email', 'pointnet-mailguard')); ?>', d.email],
-                                ['<?php echo esc_js(__('Source', 'pointnet-mailguard')); ?>', d.source],
-                            ];
-                            $.each(fields, function(i, f) {
-                                if (f[1]) {
-                                    html += '<tr style="border-top:0.5px solid #e8e8e8;">';
-                                    html += '<td style="padding:4px 6px; font-weight:600; width:35%;">' + escHtml(f[0]) + '</td>';
-                                    html += '<td style="padding:4px 6px; color:#333;">' + escHtml(f[1]) + '</td>';
-                                    html += '</tr>';
-                                }
-                            });
-                            html += '</table>';
-                            if (d.remarks) {
-                                html += '<p style="font-size:11px; color:#666; margin:6px 0 0;">' + escHtml(d.remarks) + '</p>';
-                            }
-                        } else {
-                            html = '<p style="font-size:13px; color:#d63638; margin:0;">' + escHtml(d.error) + '</p>';
-                        }
-                    }
-
-                    $body.html(html);
-                    if (callback) callback();
-                }).fail(function() {
-                    $body.html('<div class="notice notice-error inline" style="margin:0;"><p><?php echo esc_js(__('Network error.', 'pointnet-mailguard')); ?></p></div>');
-                    if (callback) callback();
-                });
-            }
-
-            $('#pn-ip-analyze-all').on('click', analyzeIpAll);
-            $('#pn-ip-address').on('keydown', function(e) {
-                if (e.key === 'Enter' && !isIpAnalyzing) {
-                    e.preventDefault();
-                    analyzeIpAll();
-                }
-            });
-        });
-        </script>
         <?php
     }
 
@@ -1628,46 +1307,6 @@ class PN_Mailguard_Dashboard {
             </form>
         </div>
 
-        <script>
-        jQuery(document).ready(function($) {
-            var pnNonce = "<?php echo esc_js(wp_create_nonce('pn_mailguard_ajax_nonce')); ?>";
-            var $fetchBtn = $('#pn-fetch-models-btn');
-            var $modelSelect = $('#pn_mailguard_gemini_model');
-            var $fetchStatus = $('#pn-fetch-models-status');
-
-            $fetchBtn.on('click', function() {
-                $fetchBtn.prop('disabled', true).text('⏳ <?php echo esc_js(__('Loading...', 'pointnet-mailguard')); ?>');
-                $fetchStatus.html('<span style="color:#999;"><?php echo esc_js(__('Fetching available models...', 'pointnet-mailguard')); ?></span>');
-
-                $.post(ajaxurl, {
-                    action: 'pn_mailguard_fetch_models',
-                    nonce: pnNonce
-                }, function(res) {
-                    $fetchBtn.prop('disabled', false).text('🔄 <?php echo esc_js(__('Fetch Models', 'pointnet-mailguard')); ?>');
-                    if (res.success && res.data) {
-                        var currentVal = $modelSelect.val();
-                        $modelSelect.find('option:not(:first)').remove();
-                        var hasModels = false;
-                        $.each(res.data, function(id, display) {
-                            var selected = (id === currentVal) ? ' selected' : '';
-                            $modelSelect.append('<option value="' + id + '"' + selected + '>' + display + ' (' + id + ')</option>');
-                            hasModels = true;
-                        });
-                        if (hasModels) {
-                            $fetchStatus.html('<span style="color:#00a32a;">✅ <?php echo esc_js(__('Models updated successfully.', 'pointnet-mailguard')); ?></span>');
-                        } else {
-                            $fetchStatus.html('<span style="color:#dba617;"><?php echo esc_js(__('No models found. Make sure your API key is valid.', 'pointnet-mailguard')); ?></span>');
-                        }
-                    } else {
-                        $fetchStatus.html('<span style="color:#d63638;"><?php echo esc_js(__('Failed to fetch models. Check your API key.', 'pointnet-mailguard')); ?></span>');
-                    }
-                }).fail(function() {
-                    $fetchBtn.prop('disabled', false).text('🔄 <?php echo esc_js(__('Fetch Models', 'pointnet-mailguard')); ?>');
-                    $fetchStatus.html('<span style="color:#d63638;"><?php echo esc_js(__('Network error.', 'pointnet-mailguard')); ?></span>');
-                });
-            });
-        });
-        </script>
         <?php
     }
 
@@ -1847,9 +1486,10 @@ class PN_Mailguard_Dashboard {
         };
 
         // DNS configuration
-        $spf_data   = $domain ? PN_Mailguard_SPF::analyze($domain) : null;
-        $dmarc_data = $domain ? PN_Mailguard_DMARC::analyze($domain) : null;
-        $dkim_data  = ($domain && $dkim_sel) ? PN_Mailguard_DKIM::analyze($domain, $dkim_sel) : null;
+        $spf_data    = $domain ? PN_Mailguard_SPF::analyze($domain) : null;
+        $dmarc_data  = $domain ? PN_Mailguard_DMARC::analyze($domain) : null;
+        $dkim_data   = ($domain && $dkim_sel) ? PN_Mailguard_DKIM::analyze($domain, $dkim_sel) : null;
+        $mtasts_data = $domain ? PN_Mailguard_MTA_STS::analyze($domain) : null;
 
         // Scan history
         $email_logs = PN_Mailguard_Logger::get_rows('email', 20);
@@ -1883,10 +1523,11 @@ class PN_Mailguard_Dashboard {
                 // API keys are intentionally NOT exported
             ],
             'dns_configuration' => [
-                'domain' => $domain,
-                'spf'    => $spf_data,
-                'dmarc'  => $dmarc_data,
-                'dkim'   => $dkim_data,
+                'domain'   => $domain,
+                'spf'      => $spf_data,
+                'dmarc'    => $dmarc_data,
+                'dkim'     => $dkim_data,
+                'mtasts'   => $mtasts_data,
             ],
             'scan_history' => [
                 'email_logs' => $email_logs ?: [],
@@ -1906,6 +1547,12 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
+        $lock = 'pn_mailguard_scan_lock';
+        if (get_transient($lock)) {
+            wp_send_json_error(['message' => __('Please wait 30 seconds between scans.', 'pointnet-mailguard')]);
+        }
+        set_transient($lock, true, 30);
+
         PN_Mailguard_Scanner::run_scheduled();
 
         wp_send_json_success(['message' => 'Scheduled scan completed.']);
@@ -1914,6 +1561,12 @@ class PN_Mailguard_Dashboard {
     public static function ajax_start_scan_email(): void {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $lock = 'pn_mailguard_scan_lock';
+        if (get_transient($lock)) {
+            wp_send_json_error(['message' => __('Please wait 30 seconds between scans.', 'pointnet-mailguard')]);
+        }
+        set_transient($lock, true, 30);
 
         $email = get_option('pn_mailguard_check_email', '');
         if (empty($email)) {
@@ -1930,6 +1583,12 @@ class PN_Mailguard_Dashboard {
     public static function ajax_start_scan_ip(): void {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $lock = 'pn_mailguard_scan_lock';
+        if (get_transient($lock)) {
+            wp_send_json_error(['message' => __('Please wait 30 seconds between scans.', 'pointnet-mailguard')]);
+        }
+        set_transient($lock, true, 30);
 
         $ip = get_option('pn_mailguard_check_ip', '');
         if (empty($ip)) {

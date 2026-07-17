@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.0
-Stable tag: 1.7.9
+Stable tag: 1.8.0
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,27 @@ Planned improvements for upcoming releases:
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
+
+= 1.8.0 =
+* Changed: JavaScript code consolidated — all AJAX handlers moved from inline PHP templates to admin.js
+* Removed: Duplicate JS code eliminated (render_dashboard_js, render_dnstools_js, inline script in Advanced tab)
+* Fixed: MTA-STS "Analyze" button in DNS & IP Tools tab now correctly triggers the AJAX call
+* Fixed: IPv6 DNSBL message now shown as blue info instead of green "CLEAN" pass
+* Added: MTA-STS in AI Analysis prompt — AI now sees and reports MTA-STS status
+* Added: Export Report now includes mtasts in dns_configuration
+* Added: Database migration for mtasts_data column in AI results table
+* Added: DMARC, DKIM and MTA-STS sections to email alert body
+* Added: DMARC, DKIM and MTA-STS badges to recent scans cards
+* Added: DMARC, DKIM and MTA-STS summary icons in email alerts (🔴🟡)
+* Added: DMARC, DKIM and MTA-STS issues now trigger alert emails
+* Added: MTA-STS field in DNSBL logger details
+* Added: Rate limiting (30 seconds) on AJAX scan endpoints
+* Added: sanitize_text_field() on DNS-originated data in alert emails
+* Added: CSS table-layout:fixed + word-break:break-word on analyzer tables
+* Changed: md5() replaced with hash('sha256', ...) in crypto fallback
+* Fixed: AI format JSON now includes MTA-STS in valid components list
+* Fixed: Migration from v1.7.x now adds mtasts_data column on plugins_loaded
+* Maintainability: All client-side behaviour now lives in a single file (assets/admin.js)
 
 = 1.7.9 =
 * New: MTA-STS Analyzer (RFC 8461) — DNS record, policy file, mode, MX list, max_age validation

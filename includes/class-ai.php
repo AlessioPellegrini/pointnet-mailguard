@@ -55,9 +55,8 @@ class PN_Mailguard_AI {
         . "- Analisi AI della deliverability (questo stesso assistente)\n"
         . "- Chat AI per domande sulla deliverability\n"
         . "- Export report JSON completo per supporto o analisi esterna\n\n"
-        . "Il plugin NON invia email (usa wp_mail(), compatibile con WP Mail SMTP, FluentSMTP, Easy WP SMTP)\n"
+        . "Il plugin non fornisce servizi SMTP relay (usa wp_mail() per gli alert, compatibile con WP Mail SMTP, FluentSMTP, Easy WP SMTP)\n"
         . "Il plugin NON modifica record DNS\n"
-        . "Il plugin NON fornisce servizi SMTP relay\n"
         . "Il plugin NON fa warm-up IP\n\n"
         . "NON suggerire servizi esterni o tool che duplicano i controlli già integrati (SPF, DMARC, DKIM, DNSBL, PTR, GeoIP, WHOIS sono già coperti dal plugin).\n"
         . "Se l'utente chiede servizi professionali di deliverability oltre a quanto già offerto dal plugin, suggerisci di contattare gli sviluppatori: PointNet (https://www.pointnet.it/).\n"
@@ -73,9 +72,10 @@ class PN_Mailguard_AI {
      */
     public static function analyze(string $email, string $domain, string $selector = ''): array {
         // 1. Gather all data
-        $scan_data  = self::gather_scan($email, $domain);
-        $spf_data   = PN_Mailguard_SPF::analyze($domain);
-        $dmarc_data = PN_Mailguard_DMARC::analyze($domain);
+        $scan_data    = self::gather_scan($email, $domain);
+        $spf_data     = PN_Mailguard_SPF::analyze($domain);
+        $dmarc_data   = PN_Mailguard_DMARC::analyze($domain);
+        $mtasts_data  = PN_Mailguard_MTA_STS::analyze($domain);
 
         $dkim_data = null;
         if (empty($selector)) {
@@ -89,14 +89,14 @@ class PN_Mailguard_AI {
         }
 
         // 2. Build prompt
-        $prompt = self::build_prompt($scan_data, $spf_data, $dmarc_data, $dkim_data, $domain);
+        $prompt = self::build_prompt($scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data, $domain);
 
         // 3. Call Gemini API
         $result = self::call_api($prompt);
 
         // 4. Save result
         if (!empty($result) && empty($result['error'])) {
-            self::save_result($domain, $result, $scan_data, $spf_data, $dmarc_data, $dkim_data);
+            self::save_result($domain, $result, $scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data);
         }
 
         return $result;
@@ -162,7 +162,7 @@ class PN_Mailguard_AI {
     /**
      * Build a structured prompt for the AI.
      */
-    private static function build_prompt(array $scan, $spf, $dmarc, $dkim, string $domain): string {
+    private static function build_prompt(array $scan, $spf, $dmarc, $dkim, $mtasts, string $domain): string {
         $language = self::get_ai_language();
         $lines = [];
 
@@ -247,13 +247,40 @@ class PN_Mailguard_AI {
             $lines[] = '';
         }
 
+        if ($mtasts) {
+            $lines[] = '=== MTA-STS ANALYSIS (RFC 8461) ===';
+            $lines[] = 'Record: ' . ($mtasts['record'] ?? 'N/A');
+            $lines[] = 'Status: ' . $mtasts['status'];
+            $lines[] = "Passed: {$mtasts['passed']} | Warnings: {$mtasts['warnings']} | Errors: {$mtasts['errors']}";
+            if (!empty($mtasts['mx'])) {
+                $lines[] = 'MX hosts: ' . implode(', ', $mtasts['mx']);
+            }
+            if (!empty($mtasts['mode'])) {
+                $lines[] = 'Mode: ' . $mtasts['mode'];
+            }
+            if (!empty($mtasts['max_age'])) {
+                $lines[] = 'max_age: ' . $mtasts['max_age'];
+            }
+            if (!empty($mtasts['checks'])) {
+                foreach ($mtasts['checks'] as $c) {
+                    $icon = match ($c['status']) {
+                        'ok'      => '✅',
+                        'warning' => '⚠️',
+                        default   => '🔴',
+                    };
+                    $lines[] = "  $icon " . $c['title'];
+                }
+            }
+            $lines[] = '';
+        }
+
         $lines[] = '=== FORMATO JSON RICHIESTO ===';
         $lines[] = '{';
         $lines[] = '  "severity": "ok|warning|critical",';
         $lines[] = '  "score": 0-100,';
         $lines[] = '  "summary_it": "riassunto in italiano (max 2 frasi)",';
         $lines[] = '  "issues": [';
-        $lines[] = '    { "component": "SPF|DMARC|DKIM|DNSBL|PTR|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
+        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|DNSBL|PTR|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
         $lines[] = '  ],';
         $lines[] = '  "strengths": ["..."],';
         $lines[] = '  "next_steps": ["..."]';
@@ -445,7 +472,7 @@ class PN_Mailguard_AI {
     /**
      * Save AI analysis result to the database.
      */
-    public static function save_result(string $domain, array $result, $scan, $spf, $dmarc, $dkim): void {
+    public static function save_result(string $domain, array $result, $scan, $spf, $dmarc, $dkim, $mtasts = null): void {
         global $wpdb;
         $table = $wpdb->prefix . self::TABLE_AI;
 
@@ -459,6 +486,7 @@ class PN_Mailguard_AI {
             'spf_data'   => wp_json_encode($spf),
             'dmarc_data' => wp_json_encode($dmarc),
             'dkim_data'  => wp_json_encode($dkim),
+            'mtasts_data' => wp_json_encode($mtasts),
         ]);
     }
 

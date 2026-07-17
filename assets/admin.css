@@ -110,10 +110,13 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
+    table-layout: fixed;
 }
 
 .pn-dns-table td {
     padding: 6px 4px;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .pn-stat-card {

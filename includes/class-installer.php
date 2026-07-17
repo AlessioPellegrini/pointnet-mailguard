@@ -40,6 +40,15 @@ class PN_Mailguard_Installer {
         if ($missing) {
             self::install();
         }
+
+        // Add mtasts_data column if missing (migration from v1.7.x to v1.8.0)
+        $ai_table = $wpdb->prefix . self::TABLE_AI;
+        $column   = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM %i LIKE 'mtasts_data'", $ai_table)
+        );
+        if (empty($column)) {
+            $wpdb->query("ALTER TABLE {$ai_table} ADD COLUMN mtasts_data longtext AFTER dkim_data");
+        }
     }
 
     /**
@@ -64,6 +73,7 @@ class PN_Mailguard_Installer {
                     spf_data longtext,
                     dmarc_data longtext,
                     dkim_data longtext,
+                    mtasts_data longtext,
                     created_at datetime DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (id),
                     KEY domain (domain)

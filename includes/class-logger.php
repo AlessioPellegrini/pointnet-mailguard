@@ -167,6 +167,11 @@ class PN_Mailguard_Logger {
             if (!empty($dkim_s)) {
                 $parts[] = 'DKIM: ' . strtoupper($dkim_s);
             }
+            // MTA-STS status
+            $mtasts_s = $data['mtasts_status'] ?? '';
+            if (!empty($mtasts_s)) {
+                $parts[] = 'MTA-STS: ' . strtoupper($mtasts_s);
+            }
         } else {
             $parts[] = 'IP: ' . $data['ip'];
         }

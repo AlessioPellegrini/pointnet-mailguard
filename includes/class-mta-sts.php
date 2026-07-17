@@ -122,6 +122,9 @@ class PN_Mailguard_MTA_STS {
         $response = wp_remote_get($policy_url, [
             'timeout'   => 10,
             'sslverify' => true,
+            'headers'   => [
+                'User-Agent' => 'PointNet-MailGuard/1.0',
+            ],
         ]);
 
         if (is_wp_error($response)) {

@@ -28,7 +28,7 @@ class PN_Mailguard_Crypto {
             $salt = AUTH_KEY;
         } else {
             // Extreme fallback — uses a site-specific hash so it's not trivially guessable.
-            $salt = 'pn-mailguard-' . md5(ABSPATH . NONCE_SALT);
+            $salt = 'pn-mailguard-' . hash('sha256', ABSPATH . NONCE_SALT);
         }
         return hash('sha256', $salt, true); // 32 bytes
     }
