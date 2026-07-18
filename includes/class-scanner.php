@@ -46,8 +46,12 @@ class PN_Mailguard_Scanner {
         $dmarc_warnings = $dmarc_data['warnings'] ?? 0;
 
         // DKIM quick check
+        // Skip auto-detection for public email providers (Gmail, Outlook, Libero, etc.)
+        // as they do not publish DKIM records in public DNS — the selector is only
+        // included in the DKIM-Signature header of actually sent emails.
+        $is_public = PN_Mailguard_DKIM::is_public_provider($mx['domain']);
         $dkim_sel = get_option('pn_mailguard_dkim_selector', '');
-        if (empty($dkim_sel)) {
+        if (empty($dkim_sel) && !$is_public) {
             $d = PN_Mailguard_DKIM::autodetect($mx['domain']);
             if (!empty($d['selector'])) {
                 $dkim_sel = $d['selector'];
