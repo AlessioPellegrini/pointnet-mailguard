@@ -67,9 +67,8 @@ class PN_Mailguard_Scanner {
             $dkim_warnings  = $dkim_data['warnings'] ?? 0;
         }
 
-        // MTA-STS quick check
-        $mtasts_data = PN_Mailguard_MTA_STS::analyze($mx['domain']);
-        $mtasts_status = $mtasts_data['status'] ?? 'missing';
+        // MTA-STS quick check — use check() which normalizes error → warning
+        $mtasts_data = PN_Mailguard_MTA_STS::check($mx['domain']);
 
         return [
             'email'          => $mx['email'],
@@ -91,9 +90,9 @@ class PN_Mailguard_Scanner {
             'dkim_status'    => $dkim_status,
             'dkim_errors'    => $dkim_errors,
             'dkim_warnings'  => $dkim_warnings,
-            'mtasts_status'  => $mtasts_status,
-            'mtasts_record'  => $mtasts_data['record'] ?? '',
-            'mtasts_warning' => ($mtasts_status !== 'ok'),
+            'mtasts_status'  => $mtasts_data['mtasts_status'],
+            'mtasts_record'  => $mtasts_data['mtasts_record'],
+            'mtasts_warning' => $mtasts_data['mtasts_warning'],
             'dmarc_warning'  => ($dmarc_status !== 'ok'),
             'dkim_warning'   => ($dkim_status !== 'ok'),
             'error'          => '',
