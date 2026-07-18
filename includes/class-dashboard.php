@@ -20,6 +20,7 @@ class PN_Mailguard_Dashboard {
         register_setting('pn_mailguard_settings', 'pn_mailguard_dkim_selector', ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_gemini_key',    ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_gemini_model',  ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_alert_level',     ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_uninstall_cleanup', ['sanitize_callback' => 'sanitize_text_field']);
     }
 
@@ -56,6 +57,14 @@ class PN_Mailguard_Dashboard {
             }
             if (!empty($alert_email)) {
                 update_option('pn_mailguard_email_alert', $alert_email);
+            }
+        }
+
+        // Save alert notification level
+        if (isset($_POST['pn_mailguard_alert_level'])) {
+            $alert_level = sanitize_text_field(wp_unslash($_POST['pn_mailguard_alert_level']));
+            if (in_array($alert_level, ['all', 'errors', 'none'], true)) {
+                update_option('pn_mailguard_alert_level', $alert_level);
             }
         }
 
@@ -265,9 +274,15 @@ class PN_Mailguard_Dashboard {
                         <?php esc_html_e('Where to receive alerts when problems are detected.', 'pointnet-mailguard'); ?>
                     </p>
                     <input type="email" name="pn_mailguard_email_alert" id="onboarding-alert-email" value="<?php echo esc_attr(get_option('admin_email')); ?>" class="regular-text" style="width:100%;">
-                    <p style="font-size:11px; color:#dba617; margin:6px 0 0; background:#fff8e5; padding:6px 8px; border-radius:3px;">
+                    <p style="font-size:11px; color:#dba617; margin:6px 0 6px; background:#fff8e5; padding:6px 8px; border-radius:3px;">
                         💡 <?php esc_html_e('Tip: use a different email from the one you monitor. If your mail server has issues, alerts sent to the same monitored address may not arrive.', 'pointnet-mailguard'); ?>
                     </p>
+                    <label for="onboarding-alert-level" style="font-size:11px; font-weight:600; display:block; margin-bottom:4px;">📊 <?php esc_html_e('Notification level', 'pointnet-mailguard'); ?></label>
+                    <select name="pn_mailguard_alert_level" id="onboarding-alert-level" style="width:100%; padding:6px 8px; font-size:12px;">
+                        <option value="all" selected><?php esc_html_e('All issues (warnings + errors)', 'pointnet-mailguard'); ?></option>
+                        <option value="errors"><?php esc_html_e('Errors only (DNSBL, DKIM errors, scan failures)', 'pointnet-mailguard'); ?></option>
+                        <option value="none"><?php esc_html_e('None (disable email notifications)', 'pointnet-mailguard'); ?></option>
+                    </select>
                 </div>
 
                 <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde;">
@@ -1273,7 +1288,7 @@ class PN_Mailguard_Dashboard {
                 <hr>
 
                 <h2>📬 <?php esc_html_e('Alert Configuration', 'pointnet-mailguard'); ?></h2>
-                <p><?php esc_html_e('Email address to receive alerts when problems are detected.', 'pointnet-mailguard'); ?></p>
+                <p><?php esc_html_e('Configure where and when to receive email notifications.', 'pointnet-mailguard'); ?></p>
 
                 <table class="form-table" role="presentation">
                     <tr>
@@ -1286,6 +1301,20 @@ class PN_Mailguard_Dashboard {
                                 <?php if ($alert_email === get_option('admin_email')): ?>
                                 <br><em><?php esc_html_e('Currently using the WordPress admin email. You can change it to any email address.', 'pointnet-mailguard'); ?></em>
                                 <?php endif; ?>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="pn_mailguard_alert_level">📊 <?php esc_html_e('Notification Level', 'pointnet-mailguard'); ?></label></th>
+                        <td>
+                            <?php $alert_level = get_option('pn_mailguard_alert_level', 'all'); ?>
+                            <select name="pn_mailguard_alert_level" id="pn_mailguard_alert_level" style="min-width:300px;">
+                                <option value="all" <?php selected($alert_level, 'all'); ?>><?php esc_html_e('All issues (warnings + errors)', 'pointnet-mailguard'); ?></option>
+                                <option value="errors" <?php selected($alert_level, 'errors'); ?>><?php esc_html_e('Errors only (DNSBL, DKIM errors, scan failures)', 'pointnet-mailguard'); ?></option>
+                                <option value="none" <?php selected($alert_level, 'none'); ?>><?php esc_html_e('None (disable email notifications)', 'pointnet-mailguard'); ?></option>
+                            </select>
+                            <p class="description">
+                                <?php esc_html_e('Choose which types of problems trigger an email notification. "Errors only" means you will only receive emails for critical problems like blacklist listings, DKIM errors, or scan failures — warnings like PTR or DMARC configuration suggestions will be shown only on the dashboard.', 'pointnet-mailguard'); ?>
                             </p>
                         </td>
                     </tr>

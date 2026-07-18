@@ -14,6 +14,23 @@ class PN_Mailguard_Mailer {
             return;
         }
 
+        // Check alert level: all, errors, none
+        $level = get_option('pn_mailguard_alert_level', 'all');
+        if ($level === 'none') {
+            return;
+        }
+        if ($level === 'errors') {
+            // Only send for real errors/alert, not for warnings
+            // "Real errors": scan failure, DNSBL listing, SPF missing, DKIM error/missing
+            $has_real_error = !empty($data['error'])
+                || !empty($data['is_alert'])
+                || (!empty($data['dkim_warning']) && isset($data['dkim_status']) && $data['dkim_status'] !== 'ok' && $data['dkim_status'] !== 'warning')
+                || (!empty($data['spf_warning']) && isset($data['spf_status']) && $data['spf_status'] === 'missing');
+            if (!$has_real_error) {
+                return;
+            }
+        }
+
         $to      = get_option('pn_mailguard_email_alert', get_option('admin_email'));
         $subject = self::build_subject($data, $type);
         $body    = self::build_body($data, $type);

@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.0
-Stable tag: 1.8.1
+Stable tag: 1.8.2
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,14 @@ Planned improvements for upcoming releases:
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
+
+= 1.8.2 =
+* Fixed: email alerts not sent for DMARC `warning` and MTA-STS `warning` statuses — `mtasts_warning` and `dmarc_warning` flags now trigger for all non-OK statuses
+* Fixed: email alerts not sent for DKIM `missing` status — `dkim_warning` flag now correctly includes `missing` status
+* Added: `pn_mailguard_alert_level` setting — choose notification level: All issues (default, warnings + errors), Errors only (DNSBL, SPF missing, DKIM errors/missing, scan failures), or None (disable email notifications)
+* Added: Notification level selector in onboarding wizard (Step 3)
+* Added: Notification level selector in Advanced tab under Alert Configuration
+* Changed: "Errors only" level now includes SPF missing and DKIM error/missing as real errors per industry standards; DMARC, MTA-STS, PTR, SPF warnings remain warnings
 
 = 1.8.1 =
 * Added: Single source of truth — new `build_report_data()` method centralises all data collection for AI analysis, AI chat, JSON export, and email alerts

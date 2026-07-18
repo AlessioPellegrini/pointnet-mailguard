@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 7.0  
 **Tested up to:** 7.0  
-**Stable tag:** 1.8.1  
+**Stable tag:** 1.8.2  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -73,6 +73,8 @@ Developed by [PointNet](https://www.pointnet.it/).
 - Auto-fill alert email from monitored email during onboarding wizard
 - Daily automated scan via WP-Cron
 - Email alerts only on problems — sent via wp_mail()
+- **Configurable notification levels** — choose between All issues (warnings + errors), Errors only (DNSBL listings, scan failures, SPF missing, DKIM errors/missing), or None (disable email notifications)
+- **Error classification** — DNSBL listing, scan failures, SPF missing and DKIM errors/missing are treated as real errors (email-blocking); DMARC, MTA-STS, PTR and SPF warnings are classified as warnings (informational)
 - Compatible with WP Mail SMTP, FluentSMTP, Easy WP SMTP and any SMTP plugin
 - Automatic log cleanup after 30 days
 - Uninstall data cleanup preference (keep or delete data)
@@ -148,6 +150,14 @@ Planned improvements for upcoming releases:
 - **Dashboard Widget** — monitor status on the WordPress admin dashboard
 
 ## Changelog
+
+### 1.8.2
+* **Fixed**: email alerts not sent for DMARC `warning` and MTA-STS `warning` statuses — `mtasts_warning` and `dmarc_warning` flags now trigger for all non-OK statuses
+* **Fixed**: email alerts not sent for DKIM `missing` status — `dkim_warning` flag now correctly includes `missing` status
+* **Added**: `pn_mailguard_alert_level` setting — choose notification level: All issues (default, warnings + errors), Errors only (DNSBL, SPF missing, DKIM errors/missing, scan failures), or None (disable email notifications)
+* **Added**: Notification level selector in onboarding wizard (Step 3)
+* **Added**: Notification level selector in Advanced tab under Alert Configuration
+* **Changed**: "Errors only" level now includes SPF missing and DKIM error/missing as real errors per industry standards; DMARC, MTA-STS, PTR, SPF warnings remain warnings
 
 ### 1.8.1
 * Added: Single source of truth — new `build_report_data()` method centralises all data collection for AI analysis, AI chat, JSON export, and email alerts
