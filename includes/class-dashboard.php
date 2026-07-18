@@ -243,9 +243,9 @@ class PN_Mailguard_Dashboard {
                 <?php esc_html_e('Set up your first monitor in just 2 minutes. Follow the steps below:', 'pointnet-mailguard'); ?>
             </p>
 
-            <form method="post" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px;">
+            <form method="post" style="display:flex; flex-wrap:wrap; gap:16px;">
                 <?php wp_nonce_field('pn_mailguard_save_action', 'pn_mailguard_nonce'); ?>
-                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde;">
+                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde; flex:1 1 240px; min-width:240px;">
                     <div style="font-size:24px; margin-bottom:8px;">📧</div>
                     <p style="font-weight:600; margin:0 0 4px;"><?php esc_html_e('Step 1: Email to monitor', 'pointnet-mailguard'); ?></p>
                     <p style="font-size:12px; color:#666; margin:0 0 10px;">
@@ -254,7 +254,7 @@ class PN_Mailguard_Dashboard {
                     <input type="email" id="onboarding-email" name="pn_mailguard_check_email" value="" class="regular-text" placeholder="info@yourdomain.com" style="width:100%;">
                 </div>
 
-                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde;">
+                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde; flex:1 1 240px; min-width:240px;">
                     <div style="font-size:24px; margin-bottom:8px;">🌐</div>
                     <p style="font-weight:600; margin:0 0 4px;">
                         <?php esc_html_e('Step 2: Additional IP to monitor', 'pointnet-mailguard'); ?>
@@ -267,7 +267,7 @@ class PN_Mailguard_Dashboard {
                     <p style="font-size:11px; color:#999; margin:4px 0 0;"><em><?php esc_html_e('Leave empty to skip — the email monitor already covers your mail server.', 'pointnet-mailguard'); ?></em></p>
                 </div>
 
-                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde;">
+                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde; flex:1 1 240px; min-width:240px;">
                     <div style="font-size:24px; margin-bottom:8px;">📬</div>
                     <p style="font-weight:600; margin:0 0 4px;"><?php esc_html_e('Step 3: Alert email', 'pointnet-mailguard'); ?></p>
                     <p style="font-size:12px; color:#666; margin:0 0 10px;">
@@ -285,13 +285,13 @@ class PN_Mailguard_Dashboard {
                     </select>
                 </div>
 
-                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde;">
+                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde; flex:1 1 240px; min-width:240px;">
                     <div style="font-size:24px; margin-bottom:8px;">🔑</div>
                     <p style="font-weight:600; margin:0 0 4px;"><?php esc_html_e('Step 4: DKIM Selector (optional)', 'pointnet-mailguard'); ?></p>
                     <p style="font-size:12px; color:#666; margin:0 0 10px;">
                         <?php esc_html_e('If known, enter your DKIM selector. Leave empty to auto-detect.', 'pointnet-mailguard'); ?>
                     </p>
-                    <div style="display:flex; gap:6px;">
+                    <div style="display:flex; flex-wrap:wrap; gap:6px;">
                         <input type="text" name="pn_mailguard_dkim_selector" id="onboarding-dkim-selector"
                             value="<?php echo esc_attr($dkim_sel); ?>"
                             placeholder="<?php esc_attr_e('Leave empty to auto-detect', 'pointnet-mailguard'); ?>"
@@ -303,7 +303,7 @@ class PN_Mailguard_Dashboard {
                     <div id="onboarding-dkim-status" style="font-size:11px; margin-top:6px;"></div>
                 </div>
 
-                <div style="grid-column:1/-1;">
+                <div style="flex:1 1 100%;">
                     <input type="submit" name="pn_mailguard_save_settings" class="button button-primary button-hero" value="<?php esc_attr_e('Save & Start Monitoring →', 'pointnet-mailguard'); ?>" style="width:100%;">
                 </div>
             </form>
