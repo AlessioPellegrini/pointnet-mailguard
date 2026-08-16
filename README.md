@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 7.0  
 **Tested up to:** 7.0  
-**Stable tag:** 1.8.2  
+**Stable tag:** 1.8.3  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -58,6 +58,8 @@ Developed by [PointNet](https://www.pointnet.it/).
 - PTR (reverse DNS) verification with alert on missing record
 - SPF Analyzer — full RFC 7208 analysis, 9 checks, provider detection
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
+- **DMARC Aggregate Report (RUA) parser** — XML, GZIP, and ZIP report processing with persistent DB storage and dashboard management
+- **TLSRPT Report (RFC 8460) parser** — JSON, GZIP, and ZIP report processing with persistent DB storage and dashboard management
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
 - MTA-STS Analyzer (RFC 8461) — DNS record `_mta-sts`, policy JSON fetch, mode (enforce/testing/none), MX validation, max_age verification
 - DMARC and DKIM quick check integrated into Email Monitor scanner
@@ -150,6 +152,12 @@ Planned improvements for upcoming releases:
 - **Dashboard Widget** — monitor status on the WordPress admin dashboard
 
 ## Changelog
+
+### 1.8.3
+* **New**: DMARC Aggregate Report (RUA) processing — parse XML, GZIP, and ZIP aggregate reports natively in PHP
+* **New**: TLSRPT Report (RFC 8460) processing — parse JSON, GZIP, and ZIP TLS failure reports natively in PHP
+* **New**: Database schema migration — added dedicated `dmarc_reports`, `dmarc_records`, `tls_reports`, and `tls_records` storage tables
+* **New**: Dashboard UI — added DMARC Reports and TLSRPT Reports tabs with report summary cards, detailed record views, manual report uploads, and report deletion
 
 ### 1.8.2
 * **Fixed**: email alerts not sent for DMARC `warning` and MTA-STS `warning` statuses — `mtasts_warning` and `dmarc_warning` flags now trigger for all non-OK statuses
