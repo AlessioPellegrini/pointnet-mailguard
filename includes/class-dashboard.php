@@ -178,7 +178,7 @@ class PN_Mailguard_Dashboard {
     public static function render_page(): void {
         if (!current_user_can('manage_options')) wp_die(esc_html__('Unauthorized', 'pointnet-mailguard'));
 
-        $tabs   = ['monitors', 'customip', 'dnstools', 'advanced', 'support'];
+        $tabs   = ['monitors', 'dmarcreports', 'customip', 'dnstools', 'advanced', 'support'];
         $raw    = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : '';
         $tab    = in_array($raw, $tabs, true) ? $raw : 'monitors';
         $base   = admin_url('admin.php?page=pn-mailguard');
@@ -199,11 +199,12 @@ class PN_Mailguard_Dashboard {
             <nav class="nav-tab-wrapper" style="margin-bottom:20px;">
                 <?php
                 $tab_labels = [
-                    'monitors'  => '📧 ' . __('Email & MX Monitor',    'pointnet-mailguard'),
-                    'customip'  => '🌐 ' . __('Custom IP Monitor',   'pointnet-mailguard'),
-                    'dnstools'  => '🔬 ' . __('DNS & IP Tools',   'pointnet-mailguard'),
-                    'advanced'  => '⚙️ '  . __('Advanced',    'pointnet-mailguard'),
-                    'support'   => '📤 '  . __('Export / Support', 'pointnet-mailguard'),
+                    'monitors'     => '📧 ' . __('Email & MX Monitor', 'pointnet-mailguard'),
+                    'dmarcreports' => '📊 ' . __('DMARC Reports',      'pointnet-mailguard'),
+                    'customip'     => '🌐 ' . __('Custom IP Monitor',   'pointnet-mailguard'),
+                    'dnstools'     => '🔬 ' . __('DNS & IP Tools',      'pointnet-mailguard'),
+                    'advanced'     => '⚙️ '  . __('Advanced',          'pointnet-mailguard'),
+                    'support'      => '📤 '  . __('Export / Support',    'pointnet-mailguard'),
                 ];
                 foreach ($tab_labels as $key => $label) {
                     $active = $tab === $key ? 'nav-tab-active' : '';
@@ -214,11 +215,12 @@ class PN_Mailguard_Dashboard {
 
             <?php
             switch ($tab) {
-                case 'monitors': self::render_monitors($check_email, $check_ip); break;
-                case 'customip': self::render_custom_ip($check_ip); break;
-                case 'dnstools': self::render_dnstools(); break;
-                case 'advanced': self::render_advanced(); break;
-                case 'support':  self::render_support(); break;
+                case 'monitors':     self::render_monitors($check_email, $check_ip); break;
+                case 'dmarcreports': self::render_dmarcreports(); break;
+                case 'customip':     self::render_custom_ip($check_ip); break;
+                case 'dnstools':     self::render_dnstools(); break;
+                case 'advanced':     self::render_advanced(); break;
+                case 'support':      self::render_support(); break;
             }
             ?>
         </div>
@@ -1897,5 +1899,726 @@ class PN_Mailguard_Dashboard {
 
         $result = PN_Mailguard_Whois::lookup($ip);
         wp_send_json_success($result);
+    }
+
+    // -------------------------------------------------------------------------
+    // TAB: DMARC & TLS Reports
+    // -------------------------------------------------------------------------
+
+    private static function render_dmarcreports(): void {
+        global $wpdb;
+        $table_dmarc_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_REPORTS;
+        $table_dmarc_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_RECORDS;
+        $table_tls_rep   = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
+        $table_tls_rec   = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
+
+        // DMARC stats
+        $dmarc_stats = $wpdb->get_row("SELECT COUNT(id) as count_reports, SUM(total_messages) as total_msg, SUM(passed_messages) as passed_msg, SUM(failed_messages) as failed_msg FROM {$table_dmarc_rep}");
+        $dmarc_count_reports = intval($dmarc_stats->count_reports ?? 0);
+        $dmarc_total_msg     = intval($dmarc_stats->total_msg ?? 0);
+        $dmarc_passed_msg    = intval($dmarc_stats->passed_msg ?? 0);
+        $dmarc_failed_msg    = intval($dmarc_stats->failed_msg ?? 0);
+        $dmarc_pass_rate     = $dmarc_total_msg > 0 ? round(($dmarc_passed_msg / $dmarc_total_msg) * 100, 1) : 0.0;
+
+        // TLS stats
+        $tls_stats = $wpdb->get_row("SELECT COUNT(id) as count_reports, SUM(successful_sessions) as total_success, SUM(failed_sessions) as total_failed FROM {$table_tls_rep}");
+        $tls_count_reports   = intval($tls_stats->count_reports ?? 0);
+        $tls_total_success   = intval($tls_stats->total_success ?? 0);
+        $tls_total_failed    = intval($tls_stats->total_failed ?? 0);
+        $tls_total_sessions  = $tls_total_success + $tls_total_failed;
+        $tls_success_rate    = $tls_total_sessions > 0 ? round(($tls_total_success / $tls_total_sessions) * 100, 1) : 100.0;
+
+        $dmarc_reports = $wpdb->get_results("SELECT * FROM {$table_dmarc_rep} ORDER BY created_at DESC LIMIT 50");
+        $tls_reports   = $wpdb->get_results("SELECT * FROM {$table_tls_rep} ORDER BY created_at DESC LIMIT 50");
+        $monitored_domain = self::get_monitored_domain();
+        ?>
+        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:20px; margin-bottom:24px;">
+            <h2 style="font-size:18px; margin:0 0 8px; color:#1d2327; display:flex; align-items:center; gap:8px;">
+                📊 <?php esc_html_e('DMARC & TLS Aggregate Reports Reader', 'pointnet-mailguard'); ?>
+            </h2>
+            <p style="font-size:13px; color:#50575e; margin:0 0 16px; line-height:1.5;">
+                <?php esc_html_e('Upload DMARC aggregate report files (.xml, .gz, .zip) and TLSRPT TLS reports (.json, .json.gz, .zip) sent by Gmail, Outlook, Yahoo, etc. PointNet Mail Guard automatically uncompresses, detects and stores full email authentication and MTA-STS TLS delivery analytics.', 'pointnet-mailguard'); ?>
+            </p>
+
+            <!-- Upload Area -->
+            <div id="pn-dmarc-dropzone" style="border:2px dashed #2271b1; background:#f0f6ff; border-radius:8px; padding:24px; text-align:center; transition:background 0.2s; cursor:pointer;">
+                <div style="font-size:36px; margin-bottom:8px;">📂</div>
+                <p style="font-size:15px; font-weight:600; margin:0 0 4px; color:#1d2327;">
+                    <?php esc_html_e('Drag & drop DMARC (.xml) or TLSRPT (.json) report files here, or click to browse', 'pointnet-mailguard'); ?>
+                </p>
+                <p style="font-size:12px; color:#666; margin:0 0 16px;">
+                    <?php esc_html_e('Supported formats: DMARC XML (.xml, .gz, .zip) and TLSRPT JSON (.json, .json.gz, .gz, .zip)', 'pointnet-mailguard'); ?>
+                </p>
+
+                <form id="pn-dmarc-upload-form" style="display:inline-block;">
+                    <input type="file" id="pn-dmarc-file-input" name="dmarc_file[]" accept=".xml,.json,.gz,.zip" multiple style="display:none;">
+                    <button type="button" id="pn-dmarc-browse-btn" class="button button-primary button-hero">
+                        📤 <?php esc_html_e('Select DMARC / TLSRPT Report Files', 'pointnet-mailguard'); ?>
+                    </button>
+                </form>
+
+                <div id="pn-dmarc-upload-status" style="margin-top:12px; font-size:13px; font-weight:600; display:none;"></div>
+            </div>
+        </div>
+
+        <!-- RUA & TLSRPT Helper Box -->
+        <div style="background:#fff8e5; border:1px solid #f0d080; border-radius:8px; padding:16px; margin-bottom:24px;">
+            <div style="display:flex; align-items:flex-start; gap:12px;">
+                <span style="font-size:24px;">💡</span>
+                <div style="flex:1;">
+                    <h3 style="font-size:14px; font-weight:600; margin:0 0 6px; color:#996800;">
+                        <?php esc_html_e('How to receive automatic DMARC and TLSRPT reports', 'pointnet-mailguard'); ?>
+                    </h3>
+                    <p style="font-size:12px; color:#555; margin:0 0 10px; line-height:1.4;">
+                        <?php esc_html_e('To enable automatic reporting from major email receivers (Google, Microsoft, Yahoo), publish the following DNS TXT records for your domain:', 'pointnet-mailguard'); ?>
+                    </p>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <strong style="font-size:11px; color:#666; text-transform:uppercase;"><?php esc_html_e('1. DMARC Aggregate Reports (RFC 7489)', 'pointnet-mailguard'); ?>:</strong>
+                            <div style="background:#fff; border:1px solid #e0e0e0; padding:8px 12px; border-radius:4px; font-family:monospace; font-size:11px; color:#1d2327; margin-top:4px; word-break:break-all;">
+                                _dmarc<?php echo $monitored_domain ? '.' . esc_html($monitored_domain) : ''; ?> TXT "v=DMARC1; p=none; rua=mailto:dmarc-reports@<?php echo $monitored_domain ? esc_html($monitored_domain) : 'yourdomain.com'; ?>;"
+                            </div>
+                        </div>
+                        <div>
+                            <strong style="font-size:11px; color:#666; text-transform:uppercase;"><?php esc_html_e('2. MTA-STS TLS Reports (RFC 8460)', 'pointnet-mailguard'); ?>:</strong>
+                            <div style="background:#fff; border:1px solid #e0e0e0; padding:8px 12px; border-radius:4px; font-family:monospace; font-size:11px; color:#1d2327; margin-top:4px; word-break:break-all;">
+                                _smtp._tls<?php echo $monitored_domain ? '.' . esc_html($monitored_domain) : ''; ?> TXT "v=TLSRPTv1; rua=mailto:tls-reports@<?php echo $monitored_domain ? esc_html($monitored_domain) : 'yourdomain.com'; ?>;"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Summary Statistics -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:24px;">
+            <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; text-align:center;">
+                <div style="font-size:26px; font-weight:700; color:#2271b1;"><?php echo esc_html(number_format_i18n($dmarc_count_reports + $tls_count_reports)); ?></div>
+                <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('Total Reports Imported', 'pointnet-mailguard'); ?></div>
+            </div>
+            <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; text-align:center;">
+                <div style="font-size:26px; font-weight:700; color:#1d2327;"><?php echo esc_html(number_format_i18n($dmarc_total_msg)); ?></div>
+                <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('DMARC Evaluated Emails', 'pointnet-mailguard'); ?></div>
+            </div>
+            <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; text-align:center;">
+                <div style="font-size:26px; font-weight:700; color:<?php echo $dmarc_pass_rate >= 90 ? '#00a32a' : ($dmarc_pass_rate >= 70 ? '#dba617' : '#d63638'); ?>;">
+                    <?php echo esc_html($dmarc_pass_rate); ?>%
+                </div>
+                <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('DMARC Pass Rate', 'pointnet-mailguard'); ?></div>
+            </div>
+            <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; text-align:center;">
+                <div style="font-size:26px; font-weight:700; color:#1d2327;"><?php echo esc_html(number_format_i18n($tls_total_sessions)); ?></div>
+                <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('MTA-STS TLS Sessions', 'pointnet-mailguard'); ?></div>
+            </div>
+            <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; text-align:center;">
+                <div style="font-size:26px; font-weight:700; color:<?php echo $tls_success_rate >= 95 ? '#00a32a' : ($tls_success_rate >= 80 ? '#dba617' : '#d63638'); ?>;">
+                    <?php echo esc_html($tls_success_rate); ?>%
+                </div>
+                <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('TLS Delivery Success', 'pointnet-mailguard'); ?></div>
+            </div>
+        </div>
+
+        <!-- Section 1: DMARC Reports -->
+        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:20px; margin-bottom:24px;">
+            <h3 style="font-size:15px; margin:0 0 16px; color:#1d2327;">✉️ <?php esc_html_e('DMARC Aggregate Reports (RFC 7489)', 'pointnet-mailguard'); ?></h3>
+
+            <?php if (empty($dmarc_reports)): ?>
+                <p style="font-size:13px; color:#999; text-align:center; padding:20px 0; margin:0;">
+                    <?php esc_html_e('No DMARC reports imported yet. Use the upload box above to upload your first report file.', 'pointnet-mailguard'); ?>
+                </p>
+            <?php else: ?>
+                <table class="wp-list-table widefat fixed striped" style="border:none;">
+                    <thead>
+                        <tr>
+                            <th style="width:180px;"><?php esc_html_e('Reporting Org', 'pointnet-mailguard'); ?></th>
+                            <th><?php esc_html_e('Domain', 'pointnet-mailguard'); ?></th>
+                            <th style="width:180px;"><?php esc_html_e('Date Range', 'pointnet-mailguard'); ?></th>
+                            <th style="width:100px; text-align:center;"><?php esc_html_e('Total Emails', 'pointnet-mailguard'); ?></th>
+                            <th style="width:100px; text-align:center;"><?php esc_html_e('Pass Rate', 'pointnet-mailguard'); ?></th>
+                            <th style="width:130px; text-align:center;"><?php esc_html_e('Imported On', 'pointnet-mailguard'); ?></th>
+                            <th style="width:120px; text-align:right;"><?php esc_html_e('Actions', 'pointnet-mailguard'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($dmarc_reports as $rep):
+                            $records = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_dmarc_rec} WHERE report_id_fk = %d ORDER BY count DESC", $rep->id));
+                        ?>
+                        <tr>
+                            <td>
+                                <strong>🏢 <?php echo esc_html($rep->org_name); ?></strong>
+                                <div style="font-size:10px; color:#999; font-family:monospace;"><?php echo esc_html($rep->report_id); ?></div>
+                            </td>
+                            <td><code><?php echo esc_html($rep->domain); ?></code></td>
+                            <td style="font-size:11px; color:#666;">
+                                <?php echo esc_html($rep->date_begin ? substr($rep->date_begin, 0, 10) : 'N/A'); ?> → 
+                                <?php echo esc_html($rep->date_end ? substr($rep->date_end, 0, 10) : 'N/A'); ?>
+                            </td>
+                            <td style="text-align:center;"><strong><?php echo esc_html(number_format_i18n($rep->total_messages)); ?></strong></td>
+                            <td style="text-align:center;">
+                                <?php
+                                $rate = floatval($rep->pass_rate);
+                                $badge_bg = $rate >= 90 ? '#edfaef' : ($rate >= 70 ? '#fff8e5' : '#fbeaea');
+                                $badge_color = $rate >= 90 ? '#00a32a' : ($rate >= 70 ? '#996800' : '#a30000');
+                                ?>
+                                <span style="background:<?php echo esc_attr($badge_bg); ?>; color:<?php echo esc_attr($badge_color); ?>; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">
+                                    <?php echo esc_html($rate); ?>%
+                                </span>
+                            </td>
+                            <td style="text-align:center; font-size:11px; color:#666;"><?php echo esc_html(substr($rep->created_at, 0, 10)); ?></td>
+                            <td style="text-align:right;">
+                                <button type="button" class="button button-small button-secondary pn-toggle-details-btn" data-target="details-dmarc-<?php echo esc_attr($rep->id); ?>">
+                                    👁️ <?php esc_html_e('Details', 'pointnet-mailguard'); ?>
+                                </button>
+                                <button type="button" class="button button-small button-link-delete pn-delete-report-btn" data-id="<?php echo esc_attr($rep->id); ?>" style="color:#d63638;">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Details Accordion Row -->
+                        <tr id="details-dmarc-<?php echo esc_attr($rep->id); ?>" style="display:none; background:#fafafa;">
+                            <td colspan="7" style="padding:16px;">
+                                <div style="background:#fff; border:1px solid #e0e0e0; border-radius:6px; padding:16px;">
+                                    <h4 style="font-size:13px; margin:0 0 10px; color:#1d2327;">🌐 <?php esc_html_e('Sender IPs & Authentication Breakdown', 'pointnet-mailguard'); ?></h4>
+                                    <?php if (empty($records)): ?>
+                                        <p style="font-size:12px; color:#999; margin:0;"><?php esc_html_e('No sender IP details found.', 'pointnet-mailguard'); ?></p>
+                                    <?php else: ?>
+                                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                            <thead>
+                                                <tr style="border-bottom:1.5px solid #e0e0e0; text-align:left; color:#666;">
+                                                    <th style="padding:6px;"><?php esc_html_e('Source IP', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px;"><?php esc_html_e('Country', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px; text-align:center;"><?php esc_html_e('Count', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px;"><?php esc_html_e('Disposition', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px; text-align:center;"><?php esc_html_e('SPF Result', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px; text-align:center;"><?php esc_html_e('DKIM Result', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px;"><?php esc_html_e('Header From', 'pointnet-mailguard'); ?></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($records as $rec):
+                                                    $flag = !empty($rec->country_code) ? esc_html($rec->country_code) : '—';
+                                                ?>
+                                                <tr style="border-bottom:1px solid #eee;">
+                                                    <td style="padding:6px; font-family:monospace; font-weight:600;"><?php echo esc_html($rec->source_ip); ?></td>
+                                                    <td style="padding:6px; font-weight:600;"><?php echo esc_html($flag); ?></td>
+                                                    <td style="padding:6px; text-align:center; font-weight:700;"><?php echo esc_html(number_format_i18n($rec->count)); ?></td>
+                                                    <td style="padding:6px;">
+                                                        <span style="font-size:10px; text-transform:uppercase; font-weight:600; padding:2px 6px; border-radius:3px; background:#f0f0f1; color:#333;">
+                                                            <?php echo esc_html($rec->disposition); ?>
+                                                        </span>
+                                                    </td>
+                                                    <td style="padding:6px; text-align:center;">
+                                                        <?php if ($rec->spf_eval === 'pass'): ?>
+                                                            <span style="background:#edfaef; color:#00a32a; font-size:10px; font-weight:700; padding:2px 6px; border-radius:3px;">✓ PASS</span>
+                                                        <?php else: ?>
+                                                            <span style="background:#fbeaea; color:#a30000; font-size:10px; font-weight:700; padding:2px 6px; border-radius:3px;">✗ FAIL</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td style="padding:6px; text-align:center;">
+                                                        <?php if ($rec->dkim_eval === 'pass'): ?>
+                                                            <span style="background:#edfaef; color:#00a32a; font-size:10px; font-weight:700; padding:2px 6px; border-radius:3px;">✓ PASS</span>
+                                                        <?php else: ?>
+                                                            <span style="background:#fbeaea; color:#a30000; font-size:10px; font-weight:700; padding:2px 6px; border-radius:3px;">✗ FAIL</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td style="padding:6px; font-size:11px; color:#555;"><?php echo esc_html($rec->header_from); ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+
+        <!-- Section 2: TLSRPT Reports -->
+        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:20px;">
+            <h3 style="font-size:15px; margin:0 0 16px; color:#1d2327;">🔒 <?php esc_html_e('TLSRPT Reports (RFC 8460 - MTA-STS / DANE TLS)', 'pointnet-mailguard'); ?></h3>
+
+            <?php if (empty($tls_reports)): ?>
+                <p style="font-size:13px; color:#999; text-align:center; padding:20px 0; margin:0;">
+                    <?php esc_html_e('No TLSRPT TLS reports imported yet. Upload a .json or .json.gz report file above.', 'pointnet-mailguard'); ?>
+                </p>
+            <?php else: ?>
+                <table class="wp-list-table widefat fixed striped" style="border:none;">
+                    <thead>
+                        <tr>
+                            <th style="width:180px;"><?php esc_html_e('Reporting Org', 'pointnet-mailguard'); ?></th>
+                            <th><?php esc_html_e('Policy Domain', 'pointnet-mailguard'); ?></th>
+                            <th style="width:180px;"><?php esc_html_e('Date Range', 'pointnet-mailguard'); ?></th>
+                            <th style="width:110px; text-align:center;"><?php esc_html_e('Success Sessions', 'pointnet-mailguard'); ?></th>
+                            <th style="width:100px; text-align:center;"><?php esc_html_e('Failures', 'pointnet-mailguard'); ?></th>
+                            <th style="width:100px; text-align:center;"><?php esc_html_e('Success Rate', 'pointnet-mailguard'); ?></th>
+                            <th style="width:130px; text-align:center;"><?php esc_html_e('Imported On', 'pointnet-mailguard'); ?></th>
+                            <th style="width:120px; text-align:right;"><?php esc_html_e('Actions', 'pointnet-mailguard'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($tls_reports as $trep):
+                            $t_records = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_tls_rec} WHERE report_id_fk = %d", $trep->id));
+                        ?>
+                        <tr>
+                            <td>
+                                <strong>🏢 <?php echo esc_html($trep->org_name); ?></strong>
+                                <div style="font-size:10px; color:#999; font-family:monospace;"><?php echo esc_html($trep->report_id); ?></div>
+                            </td>
+                            <td><code><?php echo esc_html($trep->domain); ?></code></td>
+                            <td style="font-size:11px; color:#666;">
+                                <?php echo esc_html($trep->date_begin ? substr($trep->date_begin, 0, 10) : 'N/A'); ?> → 
+                                <?php echo esc_html($trep->date_end ? substr($trep->date_end, 0, 10) : 'N/A'); ?>
+                            </td>
+                            <td style="text-align:center; font-weight:700; color:#00a32a;">
+                                <?php echo esc_html(number_format_i18n($trep->successful_sessions)); ?>
+                            </td>
+                            <td style="text-align:center; font-weight:700; color:<?php echo $trep->failed_sessions > 0 ? '#d63638' : '#666'; ?>;">
+                                <?php echo esc_html(number_format_i18n($trep->failed_sessions)); ?>
+                            </td>
+                            <td style="text-align:center;">
+                                <?php
+                                $trate = floatval($trep->success_rate);
+                                $t_bg = $trate >= 95 ? '#edfaef' : ($trate >= 80 ? '#fff8e5' : '#fbeaea');
+                                $t_color = $trate >= 95 ? '#00a32a' : ($trate >= 80 ? '#996800' : '#a30000');
+                                ?>
+                                <span style="background:<?php echo esc_attr($t_bg); ?>; color:<?php echo esc_attr($t_color); ?>; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">
+                                    <?php echo esc_html($trate); ?>%
+                                </span>
+                            </td>
+                            <td style="text-align:center; font-size:11px; color:#666;"><?php echo esc_html(substr($trep->created_at, 0, 10)); ?></td>
+                            <td style="text-align:right;">
+                                <button type="button" class="button button-small button-secondary pn-toggle-details-btn" data-target="details-tls-<?php echo esc_attr($trep->id); ?>">
+                                    👁️ <?php esc_html_e('Details', 'pointnet-mailguard'); ?>
+                                </button>
+                                <button type="button" class="button button-small button-link-delete pn-delete-tls-report-btn" data-id="<?php echo esc_attr($trep->id); ?>" style="color:#d63638;">
+                                    🗑️
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Details Accordion Row for TLS -->
+                        <tr id="details-tls-<?php echo esc_attr($trep->id); ?>" style="display:none; background:#fafafa;">
+                            <td colspan="8" style="padding:16px;">
+                                <div style="background:#fff; border:1px solid #e0e0e0; border-radius:6px; padding:16px;">
+                                    <h4 style="font-size:13px; margin:0 0 10px; color:#1d2327;">🔒 <?php esc_html_e('MTA-STS Policies & TLS Session Delivery Breakdown', 'pointnet-mailguard'); ?></h4>
+                                    
+                                    <?php
+                                    $policies_data = json_decode($trep->policies_json ?? '[]', true);
+                                    if (!empty($policies_data)):
+                                    ?>
+                                        <div style="margin-bottom:12px;">
+                                            <?php foreach ($policies_data as $p): ?>
+                                                <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:4px; padding:10px; margin-bottom:8px;">
+                                                    <div style="font-size:12px; font-weight:600; color:#1d2327; margin-bottom:4px;">
+                                                        Policy Type: <span style="text-transform:uppercase; color:#2271b1;"><?php echo esc_html($p['policy_type'] ?? 'sts'); ?></span>
+                                                        | Domain: <code><?php echo esc_html($p['policy_domain'] ?? ''); ?></code>
+                                                    </div>
+                                                    <?php if (!empty($p['policy_string'])): ?>
+                                                        <div style="font-size:11px; color:#555; font-family:monospace; margin-bottom:4px;">
+                                                            Strings: <?php echo esc_html(implode(' | ', $p['policy_string'])); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($p['mx_hosts'])): ?>
+                                                        <div style="font-size:11px; color:#555; font-family:monospace;">
+                                                            MX Hosts: <?php echo esc_html(implode(', ', $p['mx_hosts'])); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($t_records)): ?>
+                                        <h5 style="font-size:12px; margin:12px 0 8px; color:#1d2327;"><?php esc_html_e('Failure Details:', 'pointnet-mailguard'); ?></h5>
+                                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                            <thead>
+                                                <tr style="border-bottom:1.5px solid #e0e0e0; text-align:left; color:#666;">
+                                                    <th style="padding:6px;"><?php esc_html_e('Result Type', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px;"><?php esc_html_e('Sending MTA IP', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px;"><?php esc_html_e('Receiving IP / MX', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px; text-align:center;"><?php esc_html_e('Failed Count', 'pointnet-mailguard'); ?></th>
+                                                    <th style="padding:6px;"><?php esc_html_e('Additional Info', 'pointnet-mailguard'); ?></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($t_records as $trec):
+                                                    $failures = json_decode($trec->failure_details_json ?? '[]', true);
+                                                    if (empty($failures)):
+                                                ?>
+                                                    <tr>
+                                                        <td colspan="5" style="padding:6px; color:#00a32a; font-weight:600;">
+                                                            ✅ <?php esc_html_e('No TLS failures reported for this policy.', 'pointnet-mailguard'); ?>
+                                                        </td>
+                                                    </tr>
+                                                <?php else:
+                                                    foreach ($failures as $f):
+                                                ?>
+                                                    <tr style="border-bottom:1px solid #eee;">
+                                                        <td style="padding:6px; font-weight:700; color:#d63638;"><?php echo esc_html($f['result_type'] ?? 'unknown'); ?></td>
+                                                        <td style="padding:6px; font-family:monospace;"><?php echo esc_html($f['sending_mta_ip'] ?? 'N/A'); ?></td>
+                                                        <td style="padding:6px; font-family:monospace;">
+                                                            <?php echo esc_html($f['receiving_ip'] ?? ''); ?>
+                                                            <?php if (!empty($f['receiving_mx_hostname'])): ?>
+                                                                (<?php echo esc_html($f['receiving_mx_hostname']); ?>)
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td style="padding:6px; text-align:center; font-weight:700; color:#d63638;"><?php echo esc_html(number_format_i18n($f['failed_session_count'] ?? 1)); ?></td>
+                                                        <td style="padding:6px; font-size:11px; color:#555;"><?php echo esc_html($f['additional_info'] ?? ''); ?></td>
+                                                    </tr>
+                                                <?php
+                                                    endforeach;
+                                                endif;
+                                                endforeach;
+                                                ?>
+                                            </tbody>
+                                        </table>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+
+        <script>
+        jQuery(document).ready(function($) {
+            var dropzone = $('#pn-dmarc-dropzone');
+            var fileInput = $('#pn-dmarc-file-input');
+            var statusDiv = $('#pn-dmarc-upload-status');
+
+            $('#pn-dmarc-browse-btn, #pn-dmarc-dropzone').on('click', function(e) {
+                if (e.target.id !== 'pn-dmarc-file-input') {
+                    fileInput.trigger('click');
+                }
+            });
+
+            dropzone.on('dragover dragenter', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.css('background', '#e1eeef');
+            }).on('dragleave drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.css('background', '#f0f6ff');
+            });
+
+            dropzone.on('drop', function(e) {
+                var files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    uploadReports(files);
+                }
+            });
+
+            fileInput.on('change', function() {
+                if (this.files.length > 0) {
+                    uploadReports(this.files);
+                }
+            });
+
+            async function uploadReports(files) {
+                var total = files.length;
+                var successCount = 0;
+                var errorCount = 0;
+                var errors = [];
+
+                statusDiv.css('color', '#2271b1').show();
+
+                for (var i = 0; i < total; i++) {
+                    var file = files[i];
+                    statusDiv.html('⏳ Processamento file <strong>' + (i + 1) + ' di ' + total + '</strong> (' + file.name + ')...');
+
+                    var formData = new FormData();
+                    formData.append('action', 'pn_mailguard_upload_dmarc_report');
+                    formData.append('nonce', pnMailguard.nonce);
+                    formData.append('dmarc_file', file);
+
+                    try {
+                        let response = await $.ajax({
+                            url: ajaxurl,
+                            type: 'POST',
+                            data: formData,
+                            contentType: false,
+                            processData: false
+                        });
+
+                        if (response.success) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                            errors.push(file.name + ': ' + (response.data.message || 'Upload fallito'));
+                        }
+                    } catch (err) {
+                        errorCount++;
+                        errors.push(file.name + ': Errore di rete');
+                    }
+                }
+
+                if (errorCount === 0) {
+                    statusDiv.css('color', '#00a32a').html('✅ ' + (total === 1 ? 'Report importato con successo!' : total + ' report importati con successo!'));
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else if (successCount > 0) {
+                    statusDiv.css('color', '#dba617').html('⚠️ Importati ' + successCount + ' report su ' + total + '. ' + errorCount + ' errore/i:<br>' + errors.join('<br>'));
+                    setTimeout(function() { location.reload(); }, 3500);
+                } else {
+                    statusDiv.css('color', '#d63638').html('✗ Importazione fallita:<br>' + errors.join('<br>'));
+                }
+            }
+
+            $('.pn-toggle-details-btn').on('click', function() {
+                var targetId = $(this).data('target');
+                $('#' + targetId).toggle();
+            });
+
+            $('.pn-delete-report-btn').on('click', function() {
+                if (!confirm(pnMailguard.confirmDeleteReport || 'Are you sure you want to delete this report?')) return;
+                var reportId = $(this).data('id');
+                $.post(ajaxurl, {
+                    action: 'pn_mailguard_delete_dmarc_report',
+                    nonce: pnMailguard.nonce,
+                    report_id: reportId
+                }, function(res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        alert(res.data.message || 'Delete failed');
+                    }
+                });
+            });
+
+            $('.pn-delete-tls-report-btn').on('click', function() {
+                if (!confirm(pnMailguard.confirmDeleteReport || 'Are you sure you want to delete this report?')) return;
+                var reportId = $(this).data('id');
+                $.post(ajaxurl, {
+                    action: 'pn_mailguard_delete_tls_report',
+                    nonce: pnMailguard.nonce,
+                    report_id: reportId
+                }, function(res) {
+                    if (res.success) {
+                        location.reload();
+                    } else {
+                        alert(res.data.message || 'Delete failed');
+                    }
+                });
+            });
+        });
+        </script>
+        <?php
+    }
+
+    public static function ajax_upload_dmarc_report(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        if (empty($_FILES['dmarc_file']) || $_FILES['dmarc_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json_error(['message' => __('No valid file uploaded. Please select an XML, JSON, .gz, or .zip file.', 'pointnet-mailguard')]);
+        }
+
+        $tmp_path = $_FILES['dmarc_file']['tmp_name'];
+        $raw_bytes = @file_get_contents($tmp_path);
+        if ($raw_bytes === false) {
+            wp_send_json_error(['message' => __('Unable to read uploaded report file.', 'pointnet-mailguard')]);
+        }
+
+        // Check if file is TLSRPT JSON or DMARC XML
+        $decompressed = PN_Mailguard_Tlsrpt_Parser::decompress($raw_bytes);
+        $is_tlsrpt = false;
+        if ($decompressed !== false) {
+            $trimmed = ltrim($decompressed);
+            if (str_starts_with($trimmed, '{') && (str_contains($trimmed, 'organization-name') || str_contains($trimmed, 'policies'))) {
+                $is_tlsrpt = true;
+            }
+        }
+
+        global $wpdb;
+
+        if ($is_tlsrpt) {
+            // Process TLSRPT Report
+            $parsed = PN_Mailguard_Tlsrpt_Parser::parse($tmp_path);
+            if (!$parsed['success']) {
+                wp_send_json_error(['message' => $parsed['error']]);
+            }
+
+            $table_tls_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
+            $table_tls_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
+
+            $meta = $parsed['metadata'];
+            $sum  = $parsed['summary'];
+
+            // Duplicate check
+            if (!empty($meta['report_id'])) {
+                $exists = $wpdb->get_var(
+                    $wpdb->prepare("SELECT id FROM %i WHERE report_id = %s AND org_name = %s LIMIT 1", $table_tls_rep, $meta['report_id'], $meta['org_name'])
+                );
+                if ($exists) {
+                    wp_send_json_error(['message' => sprintf(__('TLSRPT Report ID "%s" from %s has already been imported.', 'pointnet-mailguard'), esc_html($meta['report_id']), esc_html($meta['org_name']))]);
+                }
+            }
+
+            $inserted = $wpdb->insert(
+                $table_tls_rep,
+                [
+                    'report_id'           => $meta['report_id'],
+                    'org_name'            => $meta['org_name'],
+                    'contact_info'        => $meta['contact_info'],
+                    'domain'              => $parsed['domain'],
+                    'date_begin'          => $meta['date_begin'] ?: null,
+                    'date_end'            => $meta['date_end'] ?: null,
+                    'successful_sessions' => $sum['successful_sessions'],
+                    'failed_sessions'     => $sum['failed_sessions'],
+                    'success_rate'        => $sum['success_rate_percent'],
+                    'policies_json'       => wp_json_encode($parsed['policies']),
+                    'created_at'          => current_time('mysql'),
+                ]
+            );
+
+            if (!$inserted) {
+                wp_send_json_error(['message' => __('Failed to save TLSRPT report to database.', 'pointnet-mailguard')]);
+            }
+
+            $report_db_id = $wpdb->insert_id;
+
+            foreach ($parsed['records'] as $rec) {
+                $wpdb->insert(
+                    $table_tls_rec,
+                    [
+                        'report_id_fk'         => $report_db_id,
+                        'policy_type'          => $rec['policy_type'],
+                        'policy_domain'        => $rec['policy_domain'],
+                        'successful_count'     => $rec['successful'],
+                        'failed_count'         => $rec['failed'],
+                        'failure_details_json' => wp_json_encode($rec['failures']),
+                    ]
+                );
+            }
+
+            wp_send_json_success([
+                'message' => sprintf(__('TLSRPT (MTA-STS TLS) Report successfully imported! (%d successful sessions, %d failed).', 'pointnet-mailguard'), $sum['successful_sessions'], $sum['failed_sessions']),
+            ]);
+        } else {
+            // Process DMARC XML Report
+            $parsed = PN_Mailguard_Dmarc_Parser::parse($tmp_path);
+
+            if (!$parsed['success']) {
+                wp_send_json_error(['message' => $parsed['error']]);
+            }
+
+            $table_reports = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_REPORTS;
+            $table_records = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_RECORDS;
+
+            $meta   = $parsed['metadata'];
+            $policy = $parsed['policy_published'];
+            $sum    = $parsed['summary'];
+
+            // Check if report_id already exists to prevent duplicate imports
+            if (!empty($meta['report_id'])) {
+                $exists = $wpdb->get_var(
+                    $wpdb->prepare("SELECT id FROM %i WHERE report_id = %s AND org_name = %s LIMIT 1", $table_reports, $meta['report_id'], $meta['org_name'])
+                );
+                if ($exists) {
+                    wp_send_json_error(['message' => sprintf(__('DMARC Report ID "%s" from %s has already been imported.', 'pointnet-mailguard'), esc_html($meta['report_id']), esc_html($meta['org_name']))]);
+                }
+            }
+
+            // Insert report metadata
+            $inserted = $wpdb->insert(
+                $table_reports,
+                [
+                    'report_id'        => $meta['report_id'],
+                    'org_name'         => $meta['org_name'],
+                    'email'            => $meta['email'],
+                    'domain'           => $policy['domain'],
+                    'date_begin'       => $meta['date_begin'] ?: null,
+                    'date_end'         => $meta['date_end'] ?: null,
+                    'total_messages'   => $sum['total_messages'],
+                    'passed_messages'  => $sum['passed_messages'],
+                    'failed_messages'  => $sum['failed_messages'],
+                    'pass_rate'        => $sum['pass_rate_percent'],
+                    'policy_published' => wp_json_encode($policy),
+                    'created_at'       => current_time('mysql'),
+                ]
+            );
+
+            if (!$inserted) {
+                wp_send_json_error(['message' => __('Failed to save DMARC report to database.', 'pointnet-mailguard')]);
+            }
+
+            $report_db_id = $wpdb->insert_id;
+
+            // Insert record items
+            foreach ($parsed['records'] as $rec) {
+                $country_code = '';
+                if (class_exists('PN_Mailguard_GeoIP')) {
+                    $geoip = PN_Mailguard_GeoIP::lookup($rec['source_ip']);
+                    $country_code = $geoip['country_code'] ?? '';
+                }
+
+                $wpdb->insert(
+                    $table_records,
+                    [
+                        'report_id_fk'  => $report_db_id,
+                        'source_ip'     => $rec['source_ip'],
+                        'count'         => $rec['count'],
+                        'disposition'   => $rec['disposition'],
+                        'dkim_eval'     => $rec['dkim_eval'],
+                        'spf_eval'      => $rec['spf_eval'],
+                        'header_from'   => $rec['header_from'],
+                        'envelope_from' => $rec['envelope_from'],
+                        'envelope_to'   => $rec['envelope_to'],
+                        'country_code'  => $country_code,
+                        'auth_details'  => wp_json_encode([
+                            'dkim' => $rec['dkim_results'],
+                            'spf'  => $rec['spf_results'],
+                        ]),
+                    ]
+                );
+            }
+
+            wp_send_json_success([
+                'message' => sprintf(__('DMARC Report successfully imported! (%d messages evaluated, %d passed).', 'pointnet-mailguard'), $sum['total_messages'], $sum['passed_messages']),
+            ]);
+        }
+    }
+
+    public static function ajax_delete_dmarc_report(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $report_id = isset($_POST['report_id']) ? intval($_POST['report_id']) : 0;
+        if (!$report_id) {
+            wp_send_json_error(['message' => __('Invalid report ID.', 'pointnet-mailguard')]);
+        }
+
+        global $wpdb;
+        $table_reports = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_REPORTS;
+        $table_records = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_RECORDS;
+
+        $wpdb->delete($table_records, ['report_id_fk' => $report_id]);
+        $wpdb->delete($table_reports, ['id' => $report_id]);
+
+        wp_send_json_success(['message' => __('Report deleted successfully.', 'pointnet-mailguard')]);
+    }
+
+    public static function ajax_delete_tls_report(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $report_id = isset($_POST['report_id']) ? intval($_POST['report_id']) : 0;
+        if (!$report_id) {
+            wp_send_json_error(['message' => __('Invalid report ID.', 'pointnet-mailguard')]);
+        }
+
+        global $wpdb;
+        $table_reports = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
+        $table_records = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
+
+        $wpdb->delete($table_records, ['report_id_fk' => $report_id]);
+        $wpdb->delete($table_reports, ['id' => $report_id]);
+
+        wp_send_json_success(['message' => __('TLS report deleted successfully.', 'pointnet-mailguard')]);
     }
 }

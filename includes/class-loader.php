@@ -50,8 +50,11 @@ class PN_Mailguard_Loader {
         // AJAX — SPF Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_spf',        ['PN_Mailguard_Dashboard', 'ajax_analyze_spf']);
 
-        // AJAX — DMARC Analyzer tab
+        // AJAX — DMARC Analyzer tab & DMARC/TLSRPT Reports
         add_action('wp_ajax_pn_mailguard_analyze_dmarc',       ['PN_Mailguard_Dashboard', 'ajax_analyze_dmarc']);
+        add_action('wp_ajax_pn_mailguard_upload_dmarc_report', ['PN_Mailguard_Dashboard', 'ajax_upload_dmarc_report']);
+        add_action('wp_ajax_pn_mailguard_delete_dmarc_report', ['PN_Mailguard_Dashboard', 'ajax_delete_dmarc_report']);
+        add_action('wp_ajax_pn_mailguard_delete_tls_report',   ['PN_Mailguard_Dashboard', 'ajax_delete_tls_report']);
 
         // AJAX — DKIM Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_dkim',        ['PN_Mailguard_Dashboard', 'ajax_analyze_dkim']);
@@ -135,7 +138,9 @@ class PN_Mailguard_Loader {
             'dkimDetected'       => __('DKIM selector detected:', 'pointnet-mailguard'),
             'dkimFound'          => __('DKIM selector found:', 'pointnet-mailguard'),
             'dkimNotDetected'    => __('Could not auto-detect DKIM selector. You can enter it manually if you know it, or leave empty.', 'pointnet-mailguard'),
-            'saveFailed'         => __('Save failed.', 'pointnet-mailguard'),
+            'saveFailed'          => __('Save failed.', 'pointnet-mailguard'),
+            'uploadingReport'     => __('Uploading and parsing DMARC report...', 'pointnet-mailguard'),
+            'confirmDeleteReport' => __('Are you sure you want to delete this report?', 'pointnet-mailguard'),
             'analysisFailed'     => __('Analysis failed.', 'pointnet-mailguard'),
             'passed'             => __('passed', 'pointnet-mailguard'),
             'warnings'           => __('warnings', 'pointnet-mailguard'),

@@ -40,6 +40,8 @@ if (is_admin() || wp_doing_cron() || (defined('WP_CLI') && WP_CLI)) {
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-ptr.php';
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-spf.php';
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dmarc.php';
+    require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dmarc-parser.php';
+    require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-tlsrpt-parser.php';
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dkim.php';
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-mta-sts.php';
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-scanner.php';
