@@ -21,8 +21,9 @@ class PN_Mailguard_Loader {
         register_deactivation_hook(PN_MAILGUARD_PLUGIN_FILE, ['PN_Mailguard_Installer', 'deactivate']);
         add_action('plugins_loaded', ['PN_Mailguard_Installer', 'maybe_install']);
 
-        // Daily cron scan (runs both email and IP)
-        add_action('pn_mailguard_daily_scan', ['PN_Mailguard_Scanner', 'run_scheduled']);
+        // Daily cron scan & IMAP report fetch cron
+        add_action('pn_mailguard_daily_scan',          ['PN_Mailguard_Scanner', 'run_scheduled']);
+        add_action('pn_mailguard_fetch_reports_cron', ['PN_Mailguard_Imap_Fetcher', 'fetch_reports']);
 
         // Settings
         add_action('admin_init', ['PN_Mailguard_Dashboard', 'register_settings']);
@@ -55,6 +56,8 @@ class PN_Mailguard_Loader {
         add_action('wp_ajax_pn_mailguard_upload_dmarc_report', ['PN_Mailguard_Dashboard', 'ajax_upload_dmarc_report']);
         add_action('wp_ajax_pn_mailguard_delete_dmarc_report', ['PN_Mailguard_Dashboard', 'ajax_delete_dmarc_report']);
         add_action('wp_ajax_pn_mailguard_delete_tls_report',   ['PN_Mailguard_Dashboard', 'ajax_delete_tls_report']);
+        add_action('wp_ajax_pn_mailguard_test_imap',           ['PN_Mailguard_Dashboard', 'ajax_test_imap']);
+        add_action('wp_ajax_pn_mailguard_fetch_imap_now',      ['PN_Mailguard_Dashboard', 'ajax_fetch_imap_now']);
 
         // AJAX — DKIM Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_dkim',        ['PN_Mailguard_Dashboard', 'ajax_analyze_dkim']);

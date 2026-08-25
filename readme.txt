@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.0
-Stable tag: 1.8.3
+Stable tag: 1.8.4
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -34,6 +34,7 @@ Developed by [PointNet](https://www.pointnet.it/).
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
 - DMARC Aggregate Report (RUA) parser — XML, GZIP, and ZIP report processing with persistent DB storage and dashboard management
 - TLSRPT Report (RFC 8460) parser — JSON, GZIP, and ZIP report processing with persistent DB storage and dashboard management
+- Automated IMAP Email Ingestion — fetch and import DMARC (XML/ZIP/GZ) and TLSRPT (JSON/ZIP/GZ) reports automatically via IMAP with WP-Cron
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
 - MTA-STS Analyzer (RFC 8461) — DNS record _mta-sts, policy JSON fetch, mode (enforce/testing/none), MX validation, max_age verification
 - IP Analysis tool — DNSBL, PTR, GeoIP and WHOIS lookup for any IPv4 address
@@ -124,6 +125,13 @@ Planned improvements for upcoming releases:
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
+
+= 1.8.4 =
+* New: Automated IMAP Email Ingestion — fetch DMARC aggregate XML and TLSRPT JSON report attachments (.zip, .gz, .xml, .json) automatically from an IMAP mailbox
+* New: Custom IMAP configuration — configurable host, port (993/143), encryption (SSL/TLS/Plain), username, encrypted password, and mailbox (e.g. INBOX)
+* New: Flexible post-ingestion actions — mark processed emails as read (\Seen) or automatically expunge (\Deleted) them
+* New: Interactive IMAP UI — added IMAP connection test, manual "Fetch Now" button, and last fetch statistics summary in DMARC/TLSRPT dashboard tabs
+* New: Automated scheduling — integrated IMAP report polling into WP-Cron (`pn_mailguard_fetch_reports_cron`)
 
 = 1.8.3 =
 * New: DMARC Aggregate Report (RUA) processing — parse XML, GZIP, and ZIP aggregate reports natively in PHP

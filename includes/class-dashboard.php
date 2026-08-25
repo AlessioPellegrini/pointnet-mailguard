@@ -22,6 +22,16 @@ class PN_Mailguard_Dashboard {
         register_setting('pn_mailguard_settings', 'pn_mailguard_gemini_model',  ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_alert_level',     ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_uninstall_cleanup', ['sanitize_callback' => 'sanitize_text_field']);
+
+        // IMAP settings
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_host',         ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_port',         ['sanitize_callback' => 'absint']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_encryption',   ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_username',     ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_password',     ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_mailbox',      ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_auto_fetch',   ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_action_after', ['sanitize_callback' => 'sanitize_text_field']);
     }
 
     public static function save_settings(): void {
@@ -90,6 +100,37 @@ class PN_Mailguard_Dashboard {
             update_option('pn_mailguard_gemini_key', $gemini_key);
         }
         update_option('pn_mailguard_gemini_model', $gemini_model);
+
+        // Save IMAP settings if present
+        if (isset($_POST['pn_mailguard_imap_host'])) {
+            update_option('pn_mailguard_imap_host', sanitize_text_field(wp_unslash($_POST['pn_mailguard_imap_host'])));
+            update_option('pn_mailguard_imap_port', absint($_POST['pn_mailguard_imap_port'] ?? 993));
+            update_option('pn_mailguard_imap_encryption', sanitize_text_field(wp_unslash($_POST['pn_mailguard_imap_encryption'] ?? 'ssl')));
+            update_option('pn_mailguard_imap_username', sanitize_text_field(wp_unslash($_POST['pn_mailguard_imap_username'] ?? '')));
+            update_option('pn_mailguard_imap_mailbox', sanitize_text_field(wp_unslash($_POST['pn_mailguard_imap_mailbox'] ?? 'INBOX')));
+            update_option('pn_mailguard_imap_action_after', sanitize_text_field(wp_unslash($_POST['pn_mailguard_imap_action_after'] ?? 'delete')));
+
+            $auto_fetch = empty($_POST['pn_mailguard_imap_auto_fetch']) ? '0' : '1';
+            update_option('pn_mailguard_imap_auto_fetch', $auto_fetch);
+
+            if ($auto_fetch === '1') {
+                if (!wp_next_scheduled('pn_mailguard_fetch_reports_cron')) {
+                    wp_schedule_event(time(), 'hourly', 'pn_mailguard_fetch_reports_cron');
+                }
+            } else {
+                $imap_ts = wp_next_scheduled('pn_mailguard_fetch_reports_cron');
+                if ($imap_ts) {
+                    wp_unschedule_event($imap_ts, 'pn_mailguard_fetch_reports_cron');
+                }
+            }
+
+            $submitted_imap_pass = wp_unslash($_POST['pn_mailguard_imap_password'] ?? '');
+            if (empty($submitted_imap_pass)) {
+                delete_option('pn_mailguard_imap_password');
+            } elseif ($submitted_imap_pass !== '********') {
+                update_option('pn_mailguard_imap_password', PN_Mailguard_Crypto::encrypt($submitted_imap_pass));
+            }
+        }
 
         // Save uninstall cleanup preference
         // HTML checkboxes send no value when unchecked — treat missing as '0'.
@@ -303,6 +344,60 @@ class PN_Mailguard_Dashboard {
                         </button>
                     </div>
                     <div id="onboarding-dkim-status" style="font-size:11px; margin-top:6px;"></div>
+                </div>
+
+                <!-- Step 5: IMAP Auto-Fetch (Optional) -->
+                <?php $imap_cfg = PN_Mailguard_Imap_Fetcher::get_config(); ?>
+                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde; flex:1 1 100%; min-width:280px;">
+                    <div style="font-size:24px; margin-bottom:8px;">📬</div>
+                    <p style="font-weight:600; margin:0 0 4px;">
+                        <?php esc_html_e('Step 5: DMARC & TLSRPT Report Auto-Fetch (IMAP)', 'pointnet-mailguard'); ?>
+                        <span style="font-size:11px; font-weight:400; color:#999; margin-left:4px;"><?php esc_html_e('(optional)', 'pointnet-mailguard'); ?></span>
+                    </p>
+                    <p style="font-size:12px; color:#666; margin:0 0 12px;">
+                        <?php esc_html_e('Connect a dedicated mailbox (e.g. dmarc@yourdomain.com) to automatically download and process report attachments.', 'pointnet-mailguard'); ?>
+                    </p>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('IMAP Host', 'pointnet-mailguard'); ?></label>
+                            <input type="text" name="pn_mailguard_imap_host" value="<?php echo esc_attr($imap_cfg['host']); ?>" placeholder="mail.yourdomain.com" style="width:100%; font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Port', 'pointnet-mailguard'); ?></label>
+                            <input type="number" name="pn_mailguard_imap_port" value="<?php echo esc_attr($imap_cfg['port']); ?>" placeholder="993" style="width:100%; font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Encryption', 'pointnet-mailguard'); ?></label>
+                            <select name="pn_mailguard_imap_encryption" style="width:100%; font-size:12px;">
+                                <option value="ssl" <?php selected($imap_cfg['encryption'], 'ssl'); ?>>SSL / TLS (993)</option>
+                                <option value="tls" <?php selected($imap_cfg['encryption'], 'tls'); ?>>STARTTLS (143)</option>
+                                <option value="none" <?php selected($imap_cfg['encryption'], 'none'); ?>>None</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Username', 'pointnet-mailguard'); ?></label>
+                            <input type="text" name="pn_mailguard_imap_username" value="<?php echo esc_attr($imap_cfg['username']); ?>" placeholder="dmarc@yourdomain.com" style="width:100%; font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Password', 'pointnet-mailguard'); ?></label>
+                            <input type="password" name="pn_mailguard_imap_password" value="<?php echo !empty($imap_cfg['password']) ? '********' : ''; ?>" placeholder="••••••••" style="width:100%; font-size:12px;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
+                        <label style="font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                            <input type="checkbox" name="pn_mailguard_imap_auto_fetch" value="1" <?php checked($imap_cfg['auto_fetch']); ?>>
+                            <?php esc_html_e('Enable automatic hourly polling (WP-Cron)', 'pointnet-mailguard'); ?>
+                        </label>
+                        <label style="font-size:12px; color:#555; display:inline-flex; align-items:center; gap:6px;">
+                            <span><?php esc_html_e('Action after import:', 'pointnet-mailguard'); ?></span>
+                            <select name="pn_mailguard_imap_action_after" style="font-size:12px;">
+                                <option value="delete" <?php selected($imap_cfg['action_after'], 'delete'); ?>><?php esc_html_e('Delete email (Recommended)', 'pointnet-mailguard'); ?></option>
+                                <option value="mark_read" <?php selected($imap_cfg['action_after'], 'mark_read'); ?>><?php esc_html_e('Mark as read', 'pointnet-mailguard'); ?></option>
+                            </select>
+                        </label>
+                    </div>
                 </div>
 
                 <div style="flex:1 1 100%;">
@@ -1959,6 +2054,113 @@ class PN_Mailguard_Dashboard {
 
                 <div id="pn-dmarc-upload-status" style="margin-top:12px; font-size:13px; font-weight:600; display:none;"></div>
             </div>
+
+            <!-- IMAP Automatic Fetcher Accordion / Card -->
+            <?php
+            $imap_cfg = PN_Mailguard_Imap_Fetcher::get_config();
+            $last_time = get_option('pn_mailguard_imap_last_fetch_time', '');
+            $last_summary = get_option('pn_mailguard_imap_last_fetch_summary', []);
+            ?>
+            <div style="margin-top:20px; background:#f8f9fa; border:1px solid #dcdcde; border-radius:6px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h3 style="font-size:14px; margin:0; color:#1d2327; display:flex; align-items:center; gap:6px;">
+                        📬 <?php esc_html_e('Automatic Email Ingestion (IMAP Mailbox)', 'pointnet-mailguard'); ?>
+                        <?php if ($imap_cfg['auto_fetch']): ?>
+                            <span style="background:#edfaef; color:#00a32a; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">
+                                ACTIVE (HOURLY)
+                            </span>
+                        <?php else: ?>
+                            <span style="background:#f0f0f1; color:#666; font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px;">
+                                DISABLED
+                            </span>
+                        <?php endif; ?>
+                    </h3>
+                    <div>
+                        <button type="button" id="pn-imap-fetch-btn" class="button button-secondary button-small" style="display:inline-flex; align-items:center; gap:4px;">
+                            🔄 <?php esc_html_e('Fetch Reports Now', 'pointnet-mailguard'); ?>
+                        </button>
+                    </div>
+                </div>
+
+                <p style="font-size:12px; color:#666; margin:0 0 12px;">
+                    <?php esc_html_e('Configure a dedicated mailbox (e.g. dmarc-reports@domain.com) to automatically download and process incoming DMARC and TLSRPT report attachments.', 'pointnet-mailguard'); ?>
+                </p>
+
+                <form method="post" action="" id="pn-imap-settings-form">
+                    <?php wp_nonce_field('pn_mailguard_save_action', 'pn_mailguard_nonce'); ?>
+                    <input type="hidden" name="pn_mailguard_save_settings" value="1">
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:12px;">
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:4px;"><?php esc_html_e('IMAP Host', 'pointnet-mailguard'); ?></label>
+                            <input type="text" id="pn_imap_host" name="pn_mailguard_imap_host" value="<?php echo esc_attr($imap_cfg['host']); ?>" placeholder="mail.yourdomain.com" style="width:100%; font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:4px;"><?php esc_html_e('Port', 'pointnet-mailguard'); ?></label>
+                            <input type="number" id="pn_imap_port" name="pn_mailguard_imap_port" value="<?php echo esc_attr($imap_cfg['port']); ?>" placeholder="993" style="width:100%; font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:4px;"><?php esc_html_e('Encryption', 'pointnet-mailguard'); ?></label>
+                            <select id="pn_imap_encryption" name="pn_mailguard_imap_encryption" style="width:100%; font-size:12px;">
+                                <option value="ssl" <?php selected($imap_cfg['encryption'], 'ssl'); ?>>SSL / TLS (Port 993)</option>
+                                <option value="tls" <?php selected($imap_cfg['encryption'], 'tls'); ?>>STARTTLS (Port 143)</option>
+                                <option value="none" <?php selected($imap_cfg['encryption'], 'none'); ?>>None (Plaintext)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:4px;"><?php esc_html_e('Username / Email', 'pointnet-mailguard'); ?></label>
+                            <input type="text" id="pn_imap_username" name="pn_mailguard_imap_username" value="<?php echo esc_attr($imap_cfg['username']); ?>" placeholder="dmarc@yourdomain.com" style="width:100%; font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:4px;"><?php esc_html_e('Password', 'pointnet-mailguard'); ?></label>
+                            <input type="password" id="pn_imap_password" name="pn_mailguard_imap_password" value="<?php echo !empty($imap_cfg['password']) ? '********' : ''; ?>" placeholder="••••••••" style="width:100%; font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:4px;"><?php esc_html_e('Mailbox Folder', 'pointnet-mailguard'); ?></label>
+                            <input type="text" id="pn_imap_mailbox" name="pn_mailguard_imap_mailbox" value="<?php echo esc_attr($imap_cfg['mailbox']); ?>" placeholder="INBOX" style="width:100%; font-size:12px;">
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; background:#fff; padding:10px 12px; border:1px solid #e0e0e0; border-radius:4px;">
+                        <div style="display:flex; align-items:center; gap:16px;">
+                            <label style="font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="checkbox" name="pn_mailguard_imap_auto_fetch" value="1" <?php checked($imap_cfg['auto_fetch']); ?>>
+                                <?php esc_html_e('Enable automatic hourly polling (WP-Cron)', 'pointnet-mailguard'); ?>
+                            </label>
+
+                            <label style="font-size:12px; color:#555; display:inline-flex; align-items:center; gap:6px;">
+                                <span><?php esc_html_e('Action after import:', 'pointnet-mailguard'); ?></span>
+                                <select name="pn_mailguard_imap_action_after" style="font-size:12px;">
+                                    <option value="delete" <?php selected($imap_cfg['action_after'], 'delete'); ?>><?php esc_html_e('Delete email from server (Recommended for dedicated mailboxes)', 'pointnet-mailguard'); ?></option>
+                                    <option value="mark_read" <?php selected($imap_cfg['action_after'], 'mark_read'); ?>><?php esc_html_e('Mark as read (\Seen)', 'pointnet-mailguard'); ?></option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button type="button" id="pn-imap-test-btn" class="button button-secondary">
+                                🔌 <?php esc_html_e('Test Connection', 'pointnet-mailguard'); ?>
+                            </button>
+                            <button type="submit" class="button button-primary">
+                                💾 <?php esc_html_e('Save IMAP Settings', 'pointnet-mailguard'); ?>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="pn-imap-status" style="margin-top:10px; font-size:12px; font-weight:600; display:none;"></div>
+
+                <?php if (!empty($last_time)): ?>
+                    <div style="margin-top:10px; font-size:11px; color:#666;">
+                        <strong>Last fetch:</strong> <?php echo esc_html($last_time); ?>
+                        <?php if (is_array($last_summary)): ?>
+                            | Imported: <strong><?php echo esc_html($last_summary['imported'] ?? 0); ?></strong>,
+                            Duplicates skipped: <strong><?php echo esc_html($last_summary['duplicates'] ?? 0); ?></strong>,
+                            Failed: <strong><?php echo esc_html($last_summary['failed'] ?? 0); ?></strong>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
 
         <!-- RUA & TLSRPT Helper Box -->
@@ -2620,5 +2822,48 @@ class PN_Mailguard_Dashboard {
         $wpdb->delete($table_reports, ['id' => $report_id]);
 
         wp_send_json_success(['message' => __('TLS report deleted successfully.', 'pointnet-mailguard')]);
+    }
+
+    public static function ajax_test_imap(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $config = [
+            'host'         => sanitize_text_field(wp_unslash($_POST['host'] ?? '')),
+            'port'         => intval($_POST['port'] ?? 993),
+            'encryption'   => sanitize_text_field(wp_unslash($_POST['encryption'] ?? 'ssl')),
+            'username'     => sanitize_text_field(wp_unslash($_POST['username'] ?? '')),
+            'password'     => wp_unslash($_POST['password'] ?? ''),
+            'mailbox'      => sanitize_text_field(wp_unslash($_POST['mailbox'] ?? 'INBOX')),
+            'action_after' => sanitize_text_field(wp_unslash($_POST['action_after'] ?? 'delete')),
+        ];
+
+        if (empty($config['password']) || $config['password'] === '********') {
+            $config['password'] = PN_Mailguard_Crypto::decrypt(get_option('pn_mailguard_imap_password', ''));
+        }
+
+        $res = PN_Mailguard_Imap_Fetcher::test_connection($config);
+        if ($res['success']) {
+            wp_send_json_success(['message' => $res['message']]);
+        } else {
+            wp_send_json_error(['message' => $res['message']]);
+        }
+    }
+
+    public static function ajax_fetch_imap_now(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $res = PN_Mailguard_Imap_Fetcher::fetch_reports();
+        if ($res['success']) {
+            wp_send_json_success([
+                'message'   => $res['message'],
+                'imported'  => $res['imported'],
+                'duplicates'=> $res['duplicates'],
+                'failed'    => $res['failed'],
+            ]);
+        } else {
+            wp_send_json_error(['message' => $res['message']]);
+        }
     }
 }

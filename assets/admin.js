@@ -633,4 +633,71 @@ jQuery(document).ready(function($) {
             $fetchStatus.html('<span style="color:#d63638;">' + pnMailguard.networkError + '</span>');
         });
     });
+
+    // -------------------------------------------------------------------------
+    // Reports Reader — IMAP Test & Fetch Now
+    // -------------------------------------------------------------------------
+    $(document).on('click', '#pn-imap-test-btn', function() {
+        var btn = $(this);
+        var status = $('#pn-imap-status');
+        btn.prop('disabled', true).text('⏳ Testing...');
+        status.hide().removeClass('notice-error notice-success');
+
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_test_imap',
+            nonce: pnMailguard.nonce,
+            host: $('#pn_imap_host').val(),
+            port: $('#pn_imap_port').val(),
+            encryption: $('#pn_imap_encryption').val(),
+            username: $('#pn_imap_username').val(),
+            password: $('#pn_imap_password').val(),
+            mailbox: $('#pn_imap_mailbox').val(),
+            action_after: $('select[name="pn_mailguard_imap_action_after"]').val()
+        }, function(res) {
+            btn.prop('disabled', false).text('🔌 Test Connection');
+            if (res.success) {
+                status.css({ color: '#00a32a', background: '#edfaef', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c3e6cb' })
+                      .text('✅ ' + (res.data && res.data.message ? res.data.message : 'Connection successful!'))
+                      .show();
+            } else {
+                status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                      .text('❌ ' + (res.data && res.data.message ? res.data.message : 'Connection failed.'))
+                      .show();
+            }
+        }).fail(function() {
+            btn.prop('disabled', false).text('🔌 Test Connection');
+            status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                  .text('❌ ' + (pnMailguard.networkError || 'Network error'))
+                  .show();
+        });
+    });
+
+    $(document).on('click', '#pn-imap-fetch-btn', function() {
+        var btn = $(this);
+        var status = $('#pn-imap-status');
+        btn.prop('disabled', true).text('⏳ Fetching...');
+        status.hide().removeClass('notice-error notice-success');
+
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_fetch_imap_now',
+            nonce: pnMailguard.nonce
+        }, function(res) {
+            btn.prop('disabled', false).text('🔄 Fetch Reports Now');
+            if (res.success) {
+                status.css({ color: '#00a32a', background: '#edfaef', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c3e6cb' })
+                      .text('✅ ' + (res.data && res.data.message ? res.data.message : 'Fetch completed!'))
+                      .show();
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                      .text('❌ ' + (res.data && res.data.message ? res.data.message : 'Fetch failed.'))
+                      .show();
+            }
+        }).fail(function() {
+            btn.prop('disabled', false).text('🔄 Fetch Reports Now');
+            status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                  .text('❌ ' + (pnMailguard.networkError || 'Network error'))
+                  .show();
+        });
+    });
 });

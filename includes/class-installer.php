@@ -26,6 +26,10 @@ class PN_Mailguard_Installer {
         if ($timestamp) {
             wp_unschedule_event($timestamp, 'pn_mailguard_daily_scan');
         }
+        $imap_ts = wp_next_scheduled('pn_mailguard_fetch_reports_cron');
+        if ($imap_ts) {
+            wp_unschedule_event($imap_ts, 'pn_mailguard_fetch_reports_cron');
+        }
     }
 
     /**
