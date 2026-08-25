@@ -47,6 +47,7 @@ class PN_Mailguard_AI {
         . "- DMARC: analisi RFC 7489 (policy strength, correlazione SPF)\n"
         . "- DKIM: auto-rilevamento selettore, tipo/lunghezza chiave, test mode, hash\n"
         . "- MTA-STS: analisi RFC 8461 (record DNS _mta-sts, policy JSON, modalità enforce/testing/none, MX list, max_age)\n"
+        . "- DNSSEC: analisi RFC 4033-4035 (verifiche record DS, DNSKEY e flag AD di autenticazione)\n"
         . "- Rilevamento server condiviso vs dedicato\n"
         . "- GeoIP: paese, regione, città, ISP e ASN via ipwhois.app\n"
         . "- WHOIS: proprietario blocco IP, range, organizzazione via RDAP\n"
@@ -58,7 +59,7 @@ class PN_Mailguard_AI {
         . "Il plugin non fornisce servizi SMTP relay (usa wp_mail() per gli alert, compatibile con WP Mail SMTP, FluentSMTP, Easy WP SMTP)\n"
         . "Il plugin NON modifica record DNS\n"
         . "Il plugin NON fa warm-up IP\n\n"
-        . "NON suggerire servizi esterni o tool che duplicano i controlli già integrati (SPF, DMARC, DKIM, DNSBL, PTR, GeoIP, WHOIS sono già coperti dal plugin).\n"
+        . "NON suggerire servizi esterni o tool che duplicano i controlli già integrati (SPF, DMARC, DKIM, MTA-STS, DNSSEC, DNSBL, PTR, GeoIP, WHOIS sono già coperti dal plugin).\n"
         . "Se l'utente chiede servizi professionali di deliverability oltre a quanto già offerto dal plugin, suggerisci di contattare gli sviluppatori: PointNet (https://www.pointnet.it/).\n"
         . "Sii conciso e pertinente allo specifico contesto del plugin e del dominio monitorato.\n";
 
@@ -83,6 +84,7 @@ class PN_Mailguard_AI {
         $spf_data    = PN_Mailguard_SPF::analyze($domain);
         $dmarc_data  = PN_Mailguard_DMARC::analyze($domain);
         $mtasts_data = PN_Mailguard_MTA_STS::analyze($domain);
+        $dnssec_data = PN_Mailguard_Dnssec::analyze($domain);
 
         // 3. DKIM — auto-detect selector if none provided
         $dkim_data = null;
@@ -97,11 +99,12 @@ class PN_Mailguard_AI {
         }
 
         return [
-            'scan'  => $scan_data,
-            'spf'   => $spf_data,
-            'dmarc' => $dmarc_data,
-            'dkim'  => $dkim_data,
+            'scan'   => $scan_data,
+            'spf'    => $spf_data,
+            'dmarc'  => $dmarc_data,
+            'dkim'   => $dkim_data,
             'mtasts' => $mtasts_data,
+            'dnssec' => $dnssec_data,
         ];
     }
 
@@ -122,9 +125,10 @@ class PN_Mailguard_AI {
         $dmarc_data   = $data['dmarc'];
         $dkim_data    = $data['dkim'];
         $mtasts_data  = $data['mtasts'];
+        $dnssec_data  = $data['dnssec'];
 
         // 2. Build prompt
-        $prompt = self::build_prompt($scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data, $domain);
+        $prompt = self::build_prompt($scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data, $dnssec_data, $domain);
 
         // 3. Call Gemini API
         $result = self::call_api($prompt);
@@ -197,7 +201,7 @@ class PN_Mailguard_AI {
     /**
      * Build a structured prompt for the AI.
      */
-    private static function build_prompt(array $scan, $spf, $dmarc, $dkim, $mtasts, string $domain): string {
+    private static function build_prompt(array $scan, $spf, $dmarc, $dkim, $mtasts, $dnssec, string $domain): string {
         $language = self::get_ai_language();
         $lines = [];
 
@@ -309,13 +313,32 @@ class PN_Mailguard_AI {
             $lines[] = '';
         }
 
+        if ($dnssec) {
+            $lines[] = '=== DNSSEC ANALYSIS (RFC 4033-4035) ===';
+            $lines[] = 'Status: ' . ($dnssec['status'] ?? 'N/A');
+            $lines[] = 'Enabled: ' . (($dnssec['enabled'] ?? false) ? 'YES' : 'NO');
+            $lines[] = 'AD Flag: ' . (($dnssec['ad_flag'] ?? false) ? 'YES' : 'NO');
+            if (!empty($dnssec['details'])) {
+                foreach ($dnssec['details'] as $c) {
+                    $icon = match ($c['status']) {
+                        'pass'    => '✅',
+                        'warning' => '⚠️',
+                        'info'    => 'ℹ️',
+                        default   => '🔴',
+                    };
+                    $lines[] = "  $icon " . ($c['label'] ?? '') . ': ' . ($c['message'] ?? '');
+                }
+            }
+            $lines[] = '';
+        }
+
         $lines[] = '=== FORMATO JSON RICHIESTO ===';
         $lines[] = '{';
         $lines[] = '  "severity": "ok|warning|critical",';
         $lines[] = '  "score": 0-100,';
         $lines[] = '  "summary_it": "riassunto in italiano (max 2 frasi)",';
         $lines[] = '  "issues": [';
-        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|DNSBL|PTR|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
+        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|DNSSEC|DNSBL|PTR|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
         $lines[] = '  ],';
         $lines[] = '  "strengths": ["..."],';
         $lines[] = '  "next_steps": ["..."]';
@@ -751,6 +774,11 @@ class PN_Mailguard_AI {
                         $context_parts[] = "  $icon " . $c['title'];
                     }
                 }
+            }
+            if (!empty($data['dnssec'])) {
+                $dnssec = $data['dnssec'];
+                $context_parts[] = 'DNSSEC Status: ' . ($dnssec['status'] ?? 'N/A');
+                $context_parts[] = 'DNSSEC Enabled: ' . (($dnssec['enabled'] ?? false) ? 'YES' : 'NO');
             }
         }
 

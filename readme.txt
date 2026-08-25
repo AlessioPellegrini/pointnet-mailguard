@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.0
-Stable tag: 1.8.4
+Stable tag: 1.9.0
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -37,6 +37,7 @@ Developed by [PointNet](https://www.pointnet.it/).
 - Automated IMAP Email Ingestion — fetch and import DMARC (XML/ZIP/GZ) and TLSRPT (JSON/ZIP/GZ) reports automatically via IMAP with WP-Cron
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
 - MTA-STS Analyzer (RFC 8461) — DNS record _mta-sts, policy JSON fetch, mode (enforce/testing/none), MX validation, max_age verification
+- DNSSEC Analyzer — authenticated DNSSEC validation via DoH (Google/Cloudflare) verifying DS, DNSKEY and AD validation flag
 - IP Analysis tool — DNSBL, PTR, GeoIP and WHOIS lookup for any IPv4 address
 - GeoIP lookup — country, region, city, ISP and ASN via ipwhois.app
 - WHOIS lookup — IP block owner, range, organization via RDAP (rdap.org)
@@ -70,6 +71,7 @@ PointNet Mail Guard makes the following external HTTP requests, all initiated by
 
 - **v4.ident.me** — Automatically at startup. Retrieves the public IPv4 address of your WordPress server to detect shared vs. dedicated mail server setup.
 - **Google Gemini API** (generativelanguage.googleapis.com) — Only when an API key is configured. Provides AI-powered deliverability analysis and chat functionality.
+- **Google / Cloudflare DNS-over-HTTPS (DoH)** (dns.google / cloudflare-dns.com) — Used by the DNSSEC Analyzer for authenticated DNSSEC verification.
 - **ipwhois.app** (GeoIP) — On-demand when using the IP Analysis tool in the DNS & IP Tools tab. Looks up geolocation data (country, region, city, ISP, ASN). Free tier, no API key required.
 - **rdap.org** (WHOIS) — On-demand when using the IP Analysis tool in the DNS & IP Tools tab. Looks up IP block ownership and registry information. Free REST API, no API key required.
 
@@ -120,13 +122,20 @@ Planned improvements for upcoming releases:
 - MTA-STS: Multiple Records check — detect duplicate v=STSv1 DNS records
 - MTA-STS: HTTPS Certificate validation — verify the policy file certificate chain and expiry
 - MTA-STS: MX Host Validation — compare MX hosts in the policy file against actual DNS MX records
-- MTA-STS Analyzer section in Email Monitor card — show MTA-STS status alongside SPF/DMARC/DKIM in scan terminal
 - BIMI Analyzer — Brand Indicators for Message Identification (logo verification in email clients)
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
 
-= 1.8.4 =
+= 1.9.0 =
+* New: DNSSEC Analyzer — authenticated DNSSEC validation via DoH (DNS-over-HTTPS) using Google and Cloudflare endpoints
+* New: Verifies DS (Delegation Signer) records, DNSKEY public keys, and the AD (Authenticated Data) validation flag
+* New: Integrated DNSSEC security checks into core scanner, daily WP-Cron background runs, and cached transient storage
+* New: Added DNSSEC status badge to global status bar and DNS Record Status section in Email & MX Monitor tab
+* New: Added DNSSEC Analyzer card to DNS & IP Tools tab with instant DoH analysis
+* New: Integrated DNSSEC Findings into AI deliverability analysis and AI Chat context (Google Gemini API)
+* New: Export / Support JSON report now includes DNSSEC configuration
+* Improved: Capped DNS Record Status cards grid to max 4 columns in Email & MX Monitor with responsive breakpoints
 * New: Automated IMAP Email Ingestion — fetch DMARC aggregate XML and TLSRPT JSON report attachments (.zip, .gz, .xml, .json) automatically from an IMAP mailbox
 * New: Custom IMAP configuration — configurable host, port (993/143), encryption (SSL/TLS/Plain), username, encrypted password, and mailbox (e.g. INBOX)
 * New: Flexible post-ingestion actions — mark processed emails as read (\Seen) or automatically expunge (\Deleted) them

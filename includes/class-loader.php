@@ -65,6 +65,9 @@ class PN_Mailguard_Loader {
         // AJAX — MTA-STS Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_mtasts',      ['PN_Mailguard_Dashboard', 'ajax_analyze_mtasts']);
 
+        // AJAX — DNSSEC Analyzer tab
+        add_action('wp_ajax_pn_mailguard_analyze_dnssec',      ['PN_Mailguard_Dashboard', 'ajax_analyze_dnssec']);
+
         // AJAX — Fetch available models
         add_action('wp_ajax_pn_mailguard_fetch_models',        ['PN_Mailguard_Dashboard', 'ajax_fetch_models']);
 

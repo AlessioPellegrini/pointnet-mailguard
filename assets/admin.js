@@ -302,8 +302,10 @@ jQuery(document).ready(function($) {
             runSingle('dmarc', domain, null, function() {
                 runSingle('dkim', domain, getSelector(), function() {
                     runSingle('mtasts', domain, null, function() {
-                        isAnalyzing = false;
-                        $('#pn-dns-analyze-all').prop('disabled', false).text('🔬 ' + pnMailguard.analyzeAllRecords);
+                        runSingle('dnssec', domain, null, function() {
+                            isAnalyzing = false;
+                            $('#pn-dns-analyze-all').prop('disabled', false).text('🔬 ' + pnMailguard.analyzeAllRecords);
+                        });
                     });
                 });
             });
@@ -314,7 +316,8 @@ jQuery(document).ready(function($) {
         var action = type === 'spf' ? 'pn_mailguard_analyze_spf'
                    : type === 'dmarc' ? 'pn_mailguard_analyze_dmarc'
                    : type === 'dkim' ? 'pn_mailguard_analyze_dkim'
-                   : 'pn_mailguard_analyze_mtasts';
+                   : type === 'mtasts' ? 'pn_mailguard_analyze_mtasts'
+                   : 'pn_mailguard_analyze_dnssec';
 
         var $body = $('#pn-dns-' + type + '-body');
         $body.html('<p style="color:#999;">⏳ ' + pnMailguard.analyzing + '</p>');
@@ -348,19 +351,24 @@ jQuery(document).ready(function($) {
                 html += dnsCard(d.errors, pnMailguard.errors, '#d63638');
                 html += '</div>';
             }
-            if (d.checks && d.checks.length) {
+            var items = d.checks || d.details;
+            if (items && items.length) {
                 html += '<table class="pn-dns-table">';
-                $.each(d.checks, function(i, c) {
-                    var dotColor = c.status === 'ok' ? '#00a32a' : (c.status === 'warning' ? '#dba617' : (c.status === 'info' ? '#2271b1' : '#d63638'));
-                    var badgeText = c.status === 'ok' ? '✓ ' + pnMailguard.pass : (c.status === 'warning' ? '⚠ ' + pnMailguard.warning : (c.status === 'info' ? 'ℹ Info' : '✗ Error'));
-                    var badgeBg = c.status === 'ok' ? '#edfaef' : (c.status === 'warning' ? '#fff8e5' : (c.status === 'info' ? '#e8f0fb' : '#fbeaea'));
-                    var badgeColor = c.status === 'ok' ? '#00a32a' : (c.status === 'warning' ? '#996800' : (c.status === 'info' ? '#2271b1' : '#a30000'));
+                $.each(items, function(i, c) {
+                    var st = c.status;
+                    var isOk = (st === 'ok' || st === 'pass');
+                    var dotColor = isOk ? '#00a32a' : (st === 'warning' ? '#dba617' : (st === 'info' ? '#2271b1' : '#d63638'));
+                    var badgeText = isOk ? '✓ ' + pnMailguard.pass : (st === 'warning' ? '⚠ ' + pnMailguard.warning : (st === 'info' ? 'ℹ Info' : '✗ Error'));
+                    var badgeBg = isOk ? '#edfaef' : (st === 'warning' ? '#fff8e5' : (st === 'info' ? '#e8f0fb' : '#fbeaea'));
+                    var badgeColor = isOk ? '#00a32a' : (st === 'warning' ? '#996800' : (st === 'info' ? '#2271b1' : '#a30000'));
                     var bg = i % 2 === 0 ? '#fff' : '#fafafa';
+                    var title = c.title || c.label || c.check || '';
+                    var desc = c.description || c.message || '';
                     html += '<tr style="background:' + bg + '; border-top:0.5px solid #e8e8e8;">';
                     html += '<td style="padding:6px 4px 6px 8px; width:10px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';"></span></td>';
-                    html += '<td style="padding:6px 4px; font-weight:600; width:40%;">' + escHtml(c.title) + '</td>';
+                    html += '<td style="padding:6px 4px; font-weight:600; width:40%;">' + escHtml(title) + '</td>';
                     html += '<td style="padding:6px 4px; width:70px;"><span style="background:' + badgeBg + ';color:' + badgeColor + ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;">' + badgeText + '</span></td>';
-                    html += '<td style="padding:6px 4px; color:#555; line-height:1.4;">' + escHtml(c.description) + '</td>';
+                    html += '<td style="padding:6px 4px; color:#555; line-height:1.4;">' + escHtml(desc) + '</td>';
                     html += '</tr>';
                 });
                 html += '</table>';

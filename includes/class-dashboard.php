@@ -446,15 +446,17 @@ class PN_Mailguard_Dashboard {
         $dmarc_data  = null;
         $dkim_data   = null;
         $mtasts_data = null;
+        $dnssec_data = null;
         if ($dns_cache) {
             $spf_data    = $dns_cache['spf'] ?? null;
             $dmarc_data  = $dns_cache['dmarc'] ?? null;
             $dkim_data   = $dns_cache['dkim'] ?? null;
             $mtasts_data = $dns_cache['mtasts'] ?? null;
+            $dnssec_data = $dns_cache['dnssec'] ?? null;
         }
 
         // Fallback: build lightweight status objects from last email log when no cache exists.
-        if (!$spf_data || !$dmarc_data || !$dkim_data || !$mtasts_data) {
+        if (!$spf_data || !$dmarc_data || !$dkim_data || !$mtasts_data || !$dnssec_data) {
             $parse_status = function(string $details, string $label): ?array {
                 if (empty($details)) return null;
                 if (preg_match('/' . preg_quote($label, '/') . ':\s*(OK|WARNING|ERROR|MISSING)/i', $details, $m)) {
@@ -475,6 +477,7 @@ class PN_Mailguard_Dashboard {
             if (!$dmarc_data)  $dmarc_data  = $parse_status($last_details, 'DMARC')  ?? ['status' => 'missing'];
             if (!$dkim_data)   $dkim_data   = $parse_status($last_details, 'DKIM')   ?? ['status' => 'missing'];
             if (!$mtasts_data) $mtasts_data = $parse_status($last_details, 'MTA-STS') ?? ['status' => 'missing'];
+            if ((!$dnssec_data || empty($dnssec_data['checks'])) && $domain) $dnssec_data = PN_Mailguard_Dnssec::analyze($domain);
         }
 
         // Extract DNSBL results from last email log
@@ -494,9 +497,10 @@ class PN_Mailguard_Dashboard {
         }
 
         $issues = 0;
-        if ($spf_data   && $spf_data['status']  !== 'ok') $issues++;
-        if ($dmarc_data  && $dmarc_data['status'] !== 'ok') $issues++;
-        if ($dkim_data   && $dkim_data['status']  !== 'ok') $issues++;
+        if ($spf_data    && $spf_data['status']   !== 'ok') $issues++;
+        if ($dmarc_data   && $dmarc_data['status']  !== 'ok') $issues++;
+        if ($dkim_data    && $dkim_data['status']   !== 'ok') $issues++;
+        if ($dnssec_data  && $dnssec_data['status'] !== 'ok') $issues++;
         $email_active = !empty($check_email) && is_email($check_email);
         $ip_active    = !empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP);
         if ($email_active && $last_email && in_array($last_email->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true)) $issues++;
@@ -544,10 +548,11 @@ class PN_Mailguard_Dashboard {
                     <?php echo esc_html($light_label); ?>
                 </p>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <?php self::badge('SPF',   $spf_data,    'spf'); ?>
-                    <?php self::badge('DMARC', $dmarc_data,  'dmarc'); ?>
-                    <?php self::badge('DKIM',  $dkim_data,   'dkim'); ?>
+                    <?php self::badge('SPF',     $spf_data,    'spf'); ?>
+                    <?php self::badge('DMARC',   $dmarc_data,  'dmarc'); ?>
+                    <?php self::badge('DKIM',    $dkim_data,   'dkim'); ?>
                     <?php self::badge('MTA-STS', $mtasts_data, 'mtasts'); ?>
+                    <?php self::badge('DNSSEC',  $dnssec_data, 'dnssec'); ?>
                     <?php
                     // DNSBL badge: shows blacklist status of the mail server IP
                     $dnsbl_has_listed = false;
@@ -606,11 +611,12 @@ class PN_Mailguard_Dashboard {
             $last_scan_date = $last_email->scan_date ?? '';
         ?>
         <h2 style="font-size:15px; margin:0 0 12px; color:#50575e;">🔐 <?php esc_html_e('DNS Record Status', 'pointnet-mailguard'); ?></h2>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:16px; margin-bottom:24px;">
-            <?php self::render_analyzer_section('spf',   '🔐', 'SPF',   $spf_data, $domain, $last_scan_date); ?>
-            <?php self::render_analyzer_section('dmarc', '📋', 'DMARC', $dmarc_data, $domain, $last_scan_date); ?>
-            <?php self::render_analyzer_section('dkim',  '🔑', 'DKIM',  $dkim_data, $domain, $last_scan_date); ?>
+        <div class="pn-dns-status-grid" style="margin-bottom:24px;">
+            <?php self::render_analyzer_section('spf',    '🔐', 'SPF',     $spf_data,    $domain, $last_scan_date); ?>
+            <?php self::render_analyzer_section('dmarc',  '📋', 'DMARC',   $dmarc_data,  $domain, $last_scan_date); ?>
+            <?php self::render_analyzer_section('dkim',   '🔑', 'DKIM',    $dkim_data,   $domain, $last_scan_date); ?>
             <?php self::render_analyzer_section('mtasts', '🛡️', 'MTA-STS', $mtasts_data, $domain, $last_scan_date); ?>
+            <?php self::render_analyzer_section('dnssec', '🔒', 'DNSSEC',  $dnssec_data, $domain, $last_scan_date); ?>
         </div>
         <?php endif; ?>
 
@@ -1263,10 +1269,11 @@ class PN_Mailguard_Dashboard {
         <div id="pn-dns-results">
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:20px;">
                 <?php
-                self::render_dns_section('spf',   '🔐', 'SPF',   $nonce, $dns_domain);
-                self::render_dns_section('dmarc', '📋', 'DMARC', $nonce, $dns_domain);
-                self::render_dns_section('dkim',  '🔑', 'DKIM',  $nonce, $dns_domain);
+                self::render_dns_section('spf',    '🔐', 'SPF',    $nonce, $dns_domain);
+                self::render_dns_section('dmarc',  '📋', 'DMARC',  $nonce, $dns_domain);
+                self::render_dns_section('dkim',   '🔑', 'DKIM',   $nonce, $dns_domain);
                 self::render_dns_section('mtasts', '🛡️', 'MTA-STS', $nonce, $dns_domain);
+                self::render_dns_section('dnssec', '🔒', 'DNSSEC',  $nonce, $dns_domain);
                 ?>
             </div>
         </div>
@@ -1717,6 +1724,7 @@ class PN_Mailguard_Dashboard {
                 'dmarc'    => $dns_data['dmarc'] ?? null,
                 'dkim'     => $dns_data['dkim'] ?? null,
                 'mtasts'   => $dns_data['mtasts'] ?? null,
+                'dnssec'   => $dns_data['dnssec'] ?? null,
             ],
             'scan_history' => [
                 'email_logs' => $email_logs ?: [],
@@ -1884,6 +1892,19 @@ class PN_Mailguard_Dashboard {
         }
 
         $result = PN_Mailguard_MTA_STS::analyze($domain);
+        wp_send_json_success($result);
+    }
+
+    public static function ajax_analyze_dnssec(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $domain = isset($_POST['domain']) ? sanitize_text_field(wp_unslash($_POST['domain'])) : '';
+        if (empty($domain)) {
+            wp_send_json_error(['message' => 'Domain is required.']);
+        }
+
+        $result = PN_Mailguard_Dnssec::analyze($domain);
         wp_send_json_success($result);
     }
 

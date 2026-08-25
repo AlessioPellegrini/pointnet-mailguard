@@ -70,6 +70,10 @@ class PN_Mailguard_Scanner {
         // MTA-STS quick check — use check() which normalizes error → warning
         $mtasts_data = PN_Mailguard_MTA_STS::check($mx['domain']);
 
+        // DNSSEC quick check
+        $dnssec_data = PN_Mailguard_Dnssec::analyze($mx['domain']);
+        $dnssec_status = $dnssec_data['status'] ?? 'warning';
+
         return [
             'email'          => $mx['email'],
             'domain'         => $mx['domain'],
@@ -93,6 +97,9 @@ class PN_Mailguard_Scanner {
             'mtasts_status'  => $mtasts_data['mtasts_status'],
             'mtasts_record'  => $mtasts_data['mtasts_record'],
             'mtasts_warning' => $mtasts_data['mtasts_warning'],
+            'dnssec_status'  => $dnssec_status,
+            'dnssec_enabled' => $dnssec_data['enabled'] ?? false,
+            'dnssec_warning' => ($dnssec_status !== 'ok'),
             'dmarc_warning'  => ($dmarc_status !== 'ok'),
             'dkim_warning'   => ($dkim_status !== 'ok'),
             'error'          => '',
@@ -137,7 +144,7 @@ class PN_Mailguard_Scanner {
     }
 
     /**
-     * Run full DNS analysis (SPF, DMARC, DKIM, MTA-STS) and store results
+     * Run full DNS analysis (SPF, DMARC, DKIM, MTA-STS, DNSSEC) and store results
      * in a transient for fast loading by the Monitors tab.
      *
      * This is called automatically after each email scan (manual or cron)
@@ -171,16 +178,18 @@ class PN_Mailguard_Scanner {
         }
 
         $mtasts_data = PN_Mailguard_MTA_STS::analyze($domain);
+        $dnssec_data = PN_Mailguard_Dnssec::analyze($domain);
 
         // Store in a transient (stored in wp_options, auto-expires after 24h).
         // Plugin consumers read this via get_transient() to avoid blocking DNS lookups.
         set_transient(
             'pn_mailguard_dns_cache_' . $domain,
             [
-                'spf'   => $spf_data,
-                'dmarc' => $dmarc_data,
-                'dkim'  => $dkim_data,
+                'spf'    => $spf_data,
+                'dmarc'  => $dmarc_data,
+                'dkim'   => $dkim_data,
                 'mtasts' => $mtasts_data,
+                'dnssec' => $dnssec_data,
             ],
             DAY_IN_SECONDS
         );
