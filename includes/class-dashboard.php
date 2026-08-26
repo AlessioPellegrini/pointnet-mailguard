@@ -88,23 +88,16 @@ class PN_Mailguard_Dashboard {
             update_option('pn_mailguard_gemini_model', $gemini_model);
         }
 
-        // Encrypt Gemini API key before storing in the database.
-        // The HTML password field shows "********" as placeholder when a key is already saved.
-        // If the submitted value is empty or the placeholder, keep the existing encrypted key.
-        $submitted_key = isset($_POST['pn_mailguard_gemini_key']) ? sanitize_text_field(wp_unslash($_POST['pn_mailguard_gemini_key'])) : '';
-
-        if (empty($submitted_key)) {
-            // User cleared the field — delete the key
-            delete_option('pn_mailguard_gemini_key');
-        } elseif ($submitted_key === '********') {
-            // User did not change the key — preserve whatever is stored
-            // (no update needed, the existing value remains)
-        } else {
-            // User entered a new key — encrypt and save it
-            $gemini_key = PN_Mailguard_Crypto::encrypt($submitted_key);
-            update_option('pn_mailguard_gemini_key', $gemini_key);
+        // Encrypt Gemini API key before storing in the database if present in POST.
+        if (isset($_POST['pn_mailguard_gemini_key'])) {
+            $submitted_key = sanitize_text_field(wp_unslash($_POST['pn_mailguard_gemini_key']));
+            if (empty($submitted_key)) {
+                delete_option('pn_mailguard_gemini_key');
+            } elseif ($submitted_key !== '********') {
+                $gemini_key = PN_Mailguard_Crypto::encrypt($submitted_key);
+                update_option('pn_mailguard_gemini_key', $gemini_key);
+            }
         }
-        update_option('pn_mailguard_gemini_model', $gemini_model);
 
         // Save IMAP settings if present
         if (isset($_POST['pn_mailguard_imap_host'])) {
@@ -321,8 +314,8 @@ class PN_Mailguard_Dashboard {
             <h2 style="font-size:18px; margin:0 0 4px; color:#1d2327;">
                 🚀 <?php esc_html_e('Welcome to PointNet Mail Guard!', 'pointnet-mailguard'); ?>
             </h2>
-            <p style="font-size:13px; color:#50575e; margin:0 0 16px;">
-                <?php esc_html_e('Set up your first monitor in just 2 minutes. Follow the steps below:', 'pointnet-mailguard'); ?>
+            <p style="font-size:13px; color:#50575e; margin:0 0 16px; line-height:1.5;">
+                <?php esc_html_e('Set up your monitoring in 2 minutes. We automatically analyze 7 security layers: SPF, DMARC, DKIM, MTA-STS, DNSSEC, DNSBL Blacklists, and Mail Server IP/PTR.', 'pointnet-mailguard'); ?>
             </p>
 
             <form method="post" style="display:flex; flex-wrap:wrap; gap:16px;">
@@ -400,15 +393,15 @@ class PN_Mailguard_Dashboard {
                     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
                         <div>
                             <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('IMAP Host', 'pointnet-mailguard'); ?></label>
-                            <input type="text" name="pn_mailguard_imap_host" value="<?php echo esc_attr($imap_cfg['host']); ?>" placeholder="mail.yourdomain.com" style="width:100%; font-size:12px;">
+                            <input type="text" id="onboarding-imap-host" name="pn_mailguard_imap_host" value="<?php echo esc_attr($imap_cfg['host']); ?>" placeholder="mail.yourdomain.com" style="width:100%; font-size:12px;">
                         </div>
                         <div>
                             <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Port', 'pointnet-mailguard'); ?></label>
-                            <input type="number" name="pn_mailguard_imap_port" value="<?php echo esc_attr($imap_cfg['port']); ?>" placeholder="993" style="width:100%; font-size:12px;">
+                            <input type="number" id="onboarding-imap-port" name="pn_mailguard_imap_port" value="<?php echo esc_attr($imap_cfg['port']); ?>" placeholder="993" style="width:100%; font-size:12px;">
                         </div>
                         <div>
                             <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Encryption', 'pointnet-mailguard'); ?></label>
-                            <select name="pn_mailguard_imap_encryption" style="width:100%; font-size:12px;">
+                            <select id="onboarding-imap-encryption" name="pn_mailguard_imap_encryption" style="width:100%; font-size:12px;">
                                 <option value="ssl" <?php selected($imap_cfg['encryption'], 'ssl'); ?>>SSL / TLS (993)</option>
                                 <option value="tls" <?php selected($imap_cfg['encryption'], 'tls'); ?>>STARTTLS (143)</option>
                                 <option value="none" <?php selected($imap_cfg['encryption'], 'none'); ?>>None</option>
@@ -416,26 +409,59 @@ class PN_Mailguard_Dashboard {
                         </div>
                         <div>
                             <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Username', 'pointnet-mailguard'); ?></label>
-                            <input type="text" name="pn_mailguard_imap_username" value="<?php echo esc_attr($imap_cfg['username']); ?>" placeholder="dmarc@yourdomain.com" style="width:100%; font-size:12px;">
+                            <input type="text" id="onboarding-imap-username" name="pn_mailguard_imap_username" value="<?php echo esc_attr($imap_cfg['username']); ?>" placeholder="dmarc@yourdomain.com" style="width:100%; font-size:12px;">
                         </div>
                         <div>
                             <label style="font-size:11px; font-weight:600; color:#555; display:block; margin-bottom:3px;"><?php esc_html_e('Password', 'pointnet-mailguard'); ?></label>
-                            <input type="password" name="pn_mailguard_imap_password" value="<?php echo !empty($imap_cfg['password']) ? '********' : ''; ?>" placeholder="••••••••" style="width:100%; font-size:12px;">
+                            <input type="password" id="onboarding-imap-password" name="pn_mailguard_imap_password" value="<?php echo !empty($imap_cfg['password']) ? '********' : ''; ?>" placeholder="••••••••" style="width:100%; font-size:12px;">
                         </div>
                     </div>
 
-                    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
-                        <label style="font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-                            <input type="checkbox" name="pn_mailguard_imap_auto_fetch" value="1" <?php checked($imap_cfg['auto_fetch']); ?>>
-                            <?php esc_html_e('Enable automatic hourly polling (WP-Cron)', 'pointnet-mailguard'); ?>
-                        </label>
-                        <label style="font-size:12px; color:#555; display:inline-flex; align-items:center; gap:6px;">
-                            <span><?php esc_html_e('Action after import:', 'pointnet-mailguard'); ?></span>
-                            <select name="pn_mailguard_imap_action_after" style="font-size:12px;">
-                                <option value="delete" <?php selected($imap_cfg['action_after'], 'delete'); ?>><?php esc_html_e('Delete email (Recommended)', 'pointnet-mailguard'); ?></option>
-                                <option value="mark_read" <?php selected($imap_cfg['action_after'], 'mark_read'); ?>><?php esc_html_e('Mark as read', 'pointnet-mailguard'); ?></option>
-                            </select>
-                        </label>
+                    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; margin-top:10px;">
+                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
+                            <label style="font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="checkbox" name="pn_mailguard_imap_auto_fetch" value="1" <?php checked($imap_cfg['auto_fetch']); ?>>
+                                <?php esc_html_e('Enable automatic hourly polling (WP-Cron)', 'pointnet-mailguard'); ?>
+                            </label>
+                            <label style="font-size:12px; color:#555; display:inline-flex; align-items:center; gap:6px;">
+                                <span><?php esc_html_e('Action after import:', 'pointnet-mailguard'); ?></span>
+                                <select name="pn_mailguard_imap_action_after" style="font-size:12px;">
+                                    <option value="delete" <?php selected($imap_cfg['action_after'], 'delete'); ?>><?php esc_html_e('Delete email (Recommended)', 'pointnet-mailguard'); ?></option>
+                                    <option value="mark_read" <?php selected($imap_cfg['action_after'], 'mark_read'); ?>><?php esc_html_e('Mark as read', 'pointnet-mailguard'); ?></option>
+                                </select>
+                            </label>
+                        </div>
+                        <button type="button" id="onboarding-imap-test-btn" class="button button-secondary" style="font-size:12px;">
+                            🧪 <?php esc_html_e('Test IMAP Connection', 'pointnet-mailguard'); ?>
+                        </button>
+                    </div>
+                    <div id="onboarding-imap-status" style="display:none; font-size:12px; margin-top:10px;"></div>
+                </div>
+
+                <!-- Step 6: Google Gemini AI Advisor (Optional) -->
+                <?php
+                $saved_gemini_key = get_option('pn_mailguard_gemini_key', '');
+                ?>
+                <div style="background:#fff; border-radius:8px; padding:16px; border:1px solid #dcdcde; flex:1 1 100%; min-width:280px;">
+                    <div style="font-size:24px; margin-bottom:8px;">🤖</div>
+                    <p style="font-weight:600; margin:0 0 4px;">
+                        <?php esc_html_e('Step 6: Google Gemini AI Deliverability Advisor', 'pointnet-mailguard'); ?>
+                        <span style="font-size:11px; font-weight:400; color:#999; margin-left:4px;"><?php esc_html_e('(optional)', 'pointnet-mailguard'); ?></span>
+                    </p>
+                    <p style="font-size:12px; color:#666; margin:0 0 10px;">
+                        <?php esc_html_e('Get AI-powered email deliverability recommendations, root cause diagnosis, and interactive chat assistance.', 'pointnet-mailguard'); ?>
+                    </p>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                        <input type="password" name="pn_mailguard_gemini_key" value="<?php echo !empty($saved_gemini_key) ? '********' : ''; ?>" placeholder="<?php esc_attr_e('Enter your Gemini API key (AIzaSy...)', 'pointnet-mailguard'); ?>" style="flex:1; min-width:260px; font-size:12px;">
+                        <span style="font-size:11px; color:#666;">
+                            <?php
+                            echo sprintf(
+                                /* translators: %s: URL to Google AI Studio */
+                                esc_html__('Get a free API key at %s', 'pointnet-mailguard'),
+                                '<a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color:#2271b1;">Google AI Studio ↗</a>'
+                            );
+                            ?>
+                        </span>
                     </div>
                 </div>
 

@@ -680,6 +680,40 @@ jQuery(document).ready(function($) {
         });
     });
 
+    $(document).on('click', '#onboarding-imap-test-btn', function() {
+        var btn = $(this);
+        var status = $('#onboarding-imap-status');
+        btn.prop('disabled', true).text('⏳ Testing...');
+        status.hide();
+
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_test_imap',
+            nonce: pnMailguard.nonce,
+            host: $('#onboarding-imap-host').val(),
+            port: $('#onboarding-imap-port').val(),
+            encryption: $('#onboarding-imap-encryption').val(),
+            username: $('#onboarding-imap-username').val(),
+            password: $('#onboarding-imap-password').val(),
+            mailbox: 'INBOX'
+        }, function(res) {
+            btn.prop('disabled', false).text('🧪 Test IMAP Connection');
+            if (res.success) {
+                status.css({ color: '#00a32a', background: '#edfaef', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c3e6cb' })
+                      .text('✅ ' + (res.data && res.data.message ? res.data.message : 'Connection successful!'))
+                      .show();
+            } else {
+                status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                      .text('❌ ' + (res.data && res.data.message ? res.data.message : 'Connection failed.'))
+                      .show();
+            }
+        }).fail(function() {
+            btn.prop('disabled', false).text('🧪 Test IMAP Connection');
+            status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                  .text('❌ ' + (pnMailguard.networkError || 'Network error'))
+                  .show();
+        });
+    });
+
     $(document).on('click', '#pn-imap-fetch-btn', function() {
         var btn = $(this);
         var status = $('#pn-imap-status');
