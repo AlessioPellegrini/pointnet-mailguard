@@ -2063,7 +2063,7 @@ class PN_Mailguard_Dashboard {
         $table_tls_rec   = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
 
         // DMARC stats
-        $dmarc_stats = $wpdb->get_row("SELECT COUNT(id) as count_reports, SUM(total_messages) as total_msg, SUM(passed_messages) as passed_msg, SUM(failed_messages) as failed_msg FROM {$table_dmarc_rep}");
+        $dmarc_stats = $wpdb->get_row($wpdb->prepare("SELECT COUNT(id) as count_reports, SUM(total_messages) as total_msg, SUM(passed_messages) as passed_msg, SUM(failed_messages) as failed_msg FROM %i", $table_dmarc_rep));
         $dmarc_count_reports = intval($dmarc_stats->count_reports ?? 0);
         $dmarc_total_msg     = intval($dmarc_stats->total_msg ?? 0);
         $dmarc_passed_msg    = intval($dmarc_stats->passed_msg ?? 0);
@@ -2071,15 +2071,15 @@ class PN_Mailguard_Dashboard {
         $dmarc_pass_rate     = $dmarc_total_msg > 0 ? round(($dmarc_passed_msg / $dmarc_total_msg) * 100, 1) : 0.0;
 
         // TLS stats
-        $tls_stats = $wpdb->get_row("SELECT COUNT(id) as count_reports, SUM(successful_sessions) as total_success, SUM(failed_sessions) as total_failed FROM {$table_tls_rep}");
+        $tls_stats = $wpdb->get_row($wpdb->prepare("SELECT COUNT(id) as count_reports, SUM(successful_sessions) as total_success, SUM(failed_sessions) as total_failed FROM %i", $table_tls_rep));
         $tls_count_reports   = intval($tls_stats->count_reports ?? 0);
         $tls_total_success   = intval($tls_stats->total_success ?? 0);
         $tls_total_failed    = intval($tls_stats->total_failed ?? 0);
         $tls_total_sessions  = $tls_total_success + $tls_total_failed;
         $tls_success_rate    = $tls_total_sessions > 0 ? round(($tls_total_success / $tls_total_sessions) * 100, 1) : 100.0;
 
-        $dmarc_reports = $wpdb->get_results("SELECT * FROM {$table_dmarc_rep} ORDER BY created_at DESC LIMIT 50");
-        $tls_reports   = $wpdb->get_results("SELECT * FROM {$table_tls_rep} ORDER BY created_at DESC LIMIT 50");
+        $dmarc_reports = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY created_at DESC LIMIT %d", $table_dmarc_rep, 50));
+        $tls_reports   = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY created_at DESC LIMIT %d", $table_tls_rep, 50));
         $monitored_domain = self::get_monitored_domain();
         ?>
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:20px; margin-bottom:24px;">
@@ -2299,7 +2299,7 @@ class PN_Mailguard_Dashboard {
                     </thead>
                     <tbody>
                         <?php foreach ($dmarc_reports as $rep):
-                            $records = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_dmarc_rec} WHERE report_id_fk = %d ORDER BY count DESC", $rep->id));
+                            $records = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE report_id_fk = %d ORDER BY count DESC", $table_dmarc_rec, $rep->id));
                         ?>
                         <tr>
                             <td>
@@ -2418,7 +2418,7 @@ class PN_Mailguard_Dashboard {
                     </thead>
                     <tbody>
                         <?php foreach ($tls_reports as $trep):
-                            $t_records = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_tls_rec} WHERE report_id_fk = %d", $trep->id));
+                            $t_records = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE report_id_fk = %d", $table_tls_rec, $trep->id));
                         ?>
                         <tr>
                             <td>

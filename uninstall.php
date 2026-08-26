@@ -13,6 +13,10 @@ if ($pn_mailguard_cleanup === '1') {
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_log_email");
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_log_ip");
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_ai_results");
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_dmarc_records");
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_dmarc_reports");
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_tls_records");
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_tls_reports");
     // phpcs:enable
 
     // 2. Delete all plugin options and transients
@@ -28,6 +32,16 @@ if ($pn_mailguard_cleanup === '1') {
         'pn_mailguard_gemini_key',
         'pn_mailguard_gemini_model',
         'pn_mailguard_uninstall_cleanup',
+        'pn_mailguard_imap_host',
+        'pn_mailguard_imap_port',
+        'pn_mailguard_imap_encryption',
+        'pn_mailguard_imap_username',
+        'pn_mailguard_imap_password',
+        'pn_mailguard_imap_mailbox',
+        'pn_mailguard_imap_auto_fetch',
+        'pn_mailguard_imap_action_after',
+        'pn_mailguard_imap_last_fetch_time',
+        'pn_mailguard_imap_last_fetch_summary',
     ];
 
     foreach ($pn_mailguard_options as $pn_mailguard_option) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
@@ -46,10 +60,15 @@ if ($pn_mailguard_cleanup === '1') {
         delete_transient($pn_mailguard_transient);
     }
 
-    // 3. Clear the scheduled cron event
+    // 3. Clear scheduled cron events
     $pn_mailguard_timestamp = wp_next_scheduled('pn_mailguard_daily_scan'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
     if ($pn_mailguard_timestamp) {
         wp_unschedule_event($pn_mailguard_timestamp, 'pn_mailguard_daily_scan');
+    }
+
+    $pn_mailguard_imap_timestamp = wp_next_scheduled('pn_mailguard_fetch_reports_cron'); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+    if ($pn_mailguard_imap_timestamp) {
+        wp_unschedule_event($pn_mailguard_imap_timestamp, 'pn_mailguard_fetch_reports_cron');
     }
 
 }
