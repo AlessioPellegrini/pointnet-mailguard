@@ -1,7 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PointNet Mail Guard 1.7.6\n"
-"POT-Creation-Date: 2026-07-13 22:00+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-26 21:39+0200\n"
 "PO-Revision-Date: 2026-07-13 22:00+0200\n"
 "Last-Translator: PointNet Lab\n"
 "Language-Team: Italian\n"
@@ -11,689 +12,1701 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: custom\n"
 
-msgid "Settings"
-msgstr "Impostazioni"
+#: includes/class-ai.php:392 includes/class-ai.php:681
+msgid "AI not configured. Add your Gemini API key in Settings."
+msgstr ""
+"AI non configurata. Aggiungi la tua chiave API Gemini nelle Impostazioni."
 
+#: includes/class-ai.php:450
+#, fuzzy, php-format
+msgid "Gemini API error: %s"
+msgstr "Chiave API Gemini"
+
+#: includes/class-ai.php:474 includes/class-ai.php:834
+msgid "AI returned an empty response."
+msgstr "L'AI ha restituito una risposta vuota."
+
+#: includes/class-ai.php:491 includes/class-ai.php:507
+msgid "AI response could not be parsed."
+msgstr "Impossibile analizzare la risposta dell'AI."
+
+#: includes/class-dashboard.php:40 includes/class-dashboard.php:220
 msgid "Unauthorized"
 msgstr "Non autorizzato"
 
-msgid "Monitors"
-msgstr "Monitor"
-
-msgid "DNS & IP Tools"
-msgstr "DNS e Strumenti IP"
-
-msgid "Advanced"
-msgstr "Avanzate"
-
-msgid "Export / Support"
-msgstr "Esporta / Supporto"
-
-msgid "Email Monitor"
-msgstr "Monitor Email"
-
-msgid "IP Monitor"
-msgstr "Monitor IP"
-
-# Onboarding
-msgid "Step 1: Email to monitor"
-msgstr "Passo 1: Email da monitorare"
-
-msgid "The email address you send from — we will detect your mail server automatically."
-msgstr "L'indirizzo email da cui invii — rileveremo automaticamente il tuo server di posta."
-
-msgid "Step 2: Additional IP to monitor"
-msgstr "Passo 2: IP aggiuntivo da monitorare"
-
-msgid "(optional)"
-msgstr "(opzionale)"
-
-msgid "Your mail server IP is already monitored via the email above. You only need this if you want to monitor a different server — for example your web server, a VPS, or an SMTP relay service."
-msgstr "Il tuo server di posta è già monitorato tramite l'email qui sopra. Serve solo se vuoi monitorare un server diverso — ad esempio il tuo server web, un VPS o un servizio SMTP relay."
-
-msgid "Leave empty to skip — the email monitor already covers your mail server."
-msgstr "Lascia vuoto per saltare — il monitor email copre già il tuo server di posta."
-
-msgid "Alert email"
-msgstr "Email per gli avvisi"
-
-msgid "Where to send alerts when problems are detected."
-msgstr "Dove inviare gli avvisi quando vengono rilevati problemi."
-
-msgid "Step 3: Alert email"
-msgstr "Passo 3: Email per gli avvisi"
-
-msgid "Tip: use a different email from the one you monitor. If your mail server has issues, alerts sent to the same monitored address may not arrive."
-msgstr "Consiglio: usa un'email diversa da quella che monitori. Se il server di posta ha problemi, gli avvisi inviati alla stessa email monitorata potrebbero non arrivare."
-
-msgid "Save Settings"
-msgstr "Salva Impostazioni"
-
-msgid "Save & Start Monitoring →"
-msgstr "Salva e Avvia Monitoraggio →"
-
-msgid "Settings saved."
-msgstr "Impostazioni salvate."
-
+#: includes/class-dashboard.php:47 includes/class-dashboard.php:157
 msgid "Please enter a valid email address to monitor."
 msgstr "Inserisci un indirizzo email valido da monitorare."
 
+#: includes/class-dashboard.php:56 includes/class-dashboard.php:165
 msgid "Please enter a valid IPv4 or IPv6 address."
 msgstr "Inserisci un indirizzo IPv4 o IPv6 valido."
 
+#: includes/class-dashboard.php:65 includes/class-dashboard.php:173
 msgid "Please enter a valid alert email address."
 msgstr "Inserisci un indirizzo email valido per gli avvisi."
 
+#: includes/class-dashboard.php:142
+msgid "Settings saved."
+msgstr "Impostazioni salvate."
+
+#: includes/class-dashboard.php:180
 msgid "Monitor settings saved."
 msgstr "Impostazioni monitor salvate."
 
-msgid "Save failed."
-msgstr "Salvataggio fallito."
+#: includes/class-dashboard.php:200
+msgid "Settings"
+msgstr "Impostazioni"
 
-msgid "Saving..."
-msgstr "Salvataggio in corso..."
+#: includes/class-dashboard.php:243
+#, fuzzy
+msgid "Email & MX Monitor"
+msgstr "Monitor Email"
 
-msgid "Cancel"
-msgstr "Annulla"
+#: includes/class-dashboard.php:244
+msgid "DMARC Reports"
+msgstr ""
 
-msgid "Edit monitor settings:"
-msgstr "Modifica impostazioni monitor:"
+#: includes/class-dashboard.php:245 includes/class-dashboard.php:764
+#, fuzzy
+msgid "Custom IP Monitor"
+msgstr "Monitor IP"
 
-msgid "Edit this monitor"
-msgstr "Modifica questo monitor"
+#: includes/class-dashboard.php:246
+msgid "DNS & IP Tools"
+msgstr "DNS e Strumenti IP"
 
-msgid "Not configured. Click ✏️ to set up."
-msgstr "Non configurato. Clicca ✏️ per impostare."
+#: includes/class-dashboard.php:247
+msgid "Advanced"
+msgstr "Avanzate"
 
-msgid "No scan results yet."
-msgstr "Nessun risultato di scansione ancora."
+#: includes/class-dashboard.php:248
+msgid "Export / Support"
+msgstr "Esporta / Supporto"
 
-msgid "Run Diagnosis Now"
-msgstr "Esegui Diagnosi Ora"
+#: includes/class-dashboard.php:284
+msgid "Contextual Documentation"
+msgstr "Documentazione Contestuale"
 
-msgid "📧 Run Email Diagnosis"
-msgstr "📧 Esegui Diagnosi Email"
+#: includes/class-dashboard.php:285
+msgid "DNS & Email Security Guide"
+msgstr "Guida alla sicurezza DNS & Email"
 
-msgid "🌐 Run IP Diagnosis"
-msgstr "🌐 Esegui Diagnosi IP"
+#: includes/class-dashboard.php:288 includes/class-dashboard.php:298
+msgid "Close"
+msgstr "Chiudi"
 
-msgid "Auto-detected mail server IP"
-msgstr "IP server di posta rilevato automaticamente"
+#: includes/class-dashboard.php:295
+msgid "Open Live Analysis Tool"
+msgstr "Apri Strumento Analisi Live"
 
-msgid "Manual IP address"
-msgstr "Indirizzo IP manuale"
+# Welcome wizard
+#: includes/class-dashboard.php:317
+msgid "Welcome to PointNet Mail Guard!"
+msgstr "Benvenuto in PointNet Mail Guard!"
 
-msgid "Auto-detects your mail server IP via MX lookup and runs full checks."
-msgstr "Rileva automaticamente l'IP del server di posta tramite MX lookup ed esegue tutti i controlli."
+#: includes/class-dashboard.php:320
+msgid "Set up your first monitor in just 2 minutes. Follow the steps below:"
+msgstr ""
+"Configura il primo monitor in soli 2 minuti. Segui i passaggi qui sotto:"
 
-msgid "Monitors a SEPARATE IP (your mail server is already covered by the email monitor above)."
-msgstr "Monitora un IP SEPARATO (il tuo server di posta è già coperto dal monitor email qui sopra)."
+# Onboarding
+#: includes/class-dashboard.php:327
+msgid "Step 1: Email to monitor"
+msgstr "Passo 1: Email da monitorare"
 
-msgid "Auto-detected from Email Monitor: %s"
-msgstr "Rilevato automaticamente dal Monitor Email: %s"
+#: includes/class-dashboard.php:329
+#, fuzzy
+msgid ""
+"The email address you send from — we will detect your mail server IP "
+"automatically via MX lookup."
+msgstr ""
+"L'indirizzo email da cui invii — rileveremo automaticamente il tuo server di "
+"posta."
 
-msgid "Run Scheduled Scan Now"
-msgstr "Esegui Scansione Programmata Ora"
+#: includes/class-dashboard.php:337
+msgid "Step 2: Additional IP to monitor"
+msgstr "Passo 2: IP aggiuntivo da monitorare"
 
-msgid "Scan failed."
-msgstr "Scansione fallita."
+#: includes/class-dashboard.php:338 includes/class-dashboard.php:389
+msgid "(optional)"
+msgstr "(opzionale)"
 
-msgid "Running..."
-msgstr "Analisi in corso..."
+#: includes/class-dashboard.php:341
+msgid ""
+"Your mail server IP is already monitored via the email above. You only need "
+"this if you want to monitor a different server — for example your web "
+"server, a VPS, or an SMTP relay service."
+msgstr ""
+"Il tuo server di posta è già monitorato tramite l'email qui sopra. Serve "
+"solo se vuoi monitorare un server diverso — ad esempio il tuo server web, un "
+"VPS o un servizio SMTP relay."
 
-msgid "Next automatic scan:"
-msgstr "Prossima scansione automatica:"
+#: includes/class-dashboard.php:344
+msgid ""
+"Leave empty to skip — the email monitor already covers your mail server."
+msgstr ""
+"Lascia vuoto per saltare — il monitor email copre già il tuo server di posta."
+
+#: includes/class-dashboard.php:349
+msgid "Step 3: Alert email"
+msgstr "Passo 3: Email per gli avvisi"
+
+#: includes/class-dashboard.php:351
+#, fuzzy
+msgid "Where to receive alerts when problems are detected."
+msgstr "Dove inviare gli avvisi quando vengono rilevati problemi."
+
+#: includes/class-dashboard.php:355
+msgid ""
+"Tip: use a different email from the one you monitor. If your mail server has "
+"issues, alerts sent to the same monitored address may not arrive."
+msgstr ""
+"Consiglio: usa un'email diversa da quella che monitori. Se il server di "
+"posta ha problemi, gli avvisi inviati alla stessa email monitorata "
+"potrebbero non arrivare."
+
+#: includes/class-dashboard.php:357
+msgid "Notification level"
+msgstr ""
+
+#: includes/class-dashboard.php:359 includes/class-dashboard.php:1450
+msgid "All issues (warnings + errors)"
+msgstr ""
+
+#: includes/class-dashboard.php:360 includes/class-dashboard.php:1451
+msgid "Errors only (DNSBL, DKIM errors, scan failures)"
+msgstr ""
+
+#: includes/class-dashboard.php:361 includes/class-dashboard.php:1452
+msgid "None (disable email notifications)"
+msgstr ""
+
+# DKIM onboarding strings
+#: includes/class-dashboard.php:367
+msgid "Step 4: DKIM Selector (optional)"
+msgstr "Passo 4: Selettore DKIM (opzionale)"
+
+#: includes/class-dashboard.php:369
+msgid "If known, enter your DKIM selector. Leave empty to auto-detect."
+msgstr ""
+"Se lo conosci, inserisci il selettore DKIM. Lascia vuoto per rilevamento "
+"automatico."
+
+#: includes/class-dashboard.php:374 includes/class-dashboard.php:1294
+#: includes/class-dashboard.php:1420
+msgid "Leave empty to auto-detect"
+msgstr "Lascia vuoto per rilevamento automatico"
+
+#: includes/class-dashboard.php:377 includes/class-loader.php:144
+msgid "Detect"
+msgstr "Rileva"
+
+#: includes/class-dashboard.php:388
+msgid "Step 5: DMARC & TLSRPT Report Auto-Fetch (IMAP)"
+msgstr ""
+
+#: includes/class-dashboard.php:392
+msgid ""
+"Connect a dedicated mailbox (e.g. dmarc@yourdomain.com) to automatically "
+"download and process report attachments."
+msgstr ""
+
+#: includes/class-dashboard.php:397 includes/class-dashboard.php:2150
+msgid "IMAP Host"
+msgstr ""
+
+#: includes/class-dashboard.php:401 includes/class-dashboard.php:2154
+msgid "Port"
+msgstr ""
+
+#: includes/class-dashboard.php:405 includes/class-dashboard.php:2158
+msgid "Encryption"
+msgstr ""
+
+#: includes/class-dashboard.php:413
+msgid "Username"
+msgstr ""
+
+# Pass / Warning / Error labels
+#: includes/class-dashboard.php:417 includes/class-dashboard.php:2170
+#, fuzzy
+msgid "Password"
+msgstr "Superato"
+
+#: includes/class-dashboard.php:425 includes/class-dashboard.php:2183
+msgid "Enable automatic hourly polling (WP-Cron)"
+msgstr ""
+
+#: includes/class-dashboard.php:428 includes/class-dashboard.php:2187
+msgid "Action after import:"
+msgstr ""
+
+#: includes/class-dashboard.php:430
+msgid "Delete email (Recommended)"
+msgstr ""
+
+#: includes/class-dashboard.php:431
+msgid "Mark as read"
+msgstr ""
+
+#: includes/class-dashboard.php:438
+msgid "Save & Start Monitoring →"
+msgstr "Salva e Avvia Monitoraggio →"
 
 # Status indicators
+#: includes/class-dashboard.php:544
 msgid "All good"
 msgstr "Tutto ok"
 
+#: includes/class-dashboard.php:546
 msgid "Attention needed"
 msgstr "Attenzione necessaria"
 
+#: includes/class-dashboard.php:548
 msgid "Issues detected"
 msgstr "Problemi rilevati"
 
-msgid "All checks passed"
-msgstr "Tutti i controlli superati"
+#: includes/class-dashboard.php:565
+msgid "Next automatic scan:"
+msgstr "Prossima scansione automatica:"
 
-# DNS Analyzer
-msgid "Not analyzed yet."
-msgstr "Non ancora analizzato."
+#: includes/class-dashboard.php:568 includes/class-loader.php:130
+msgid "Run Scheduled Scan Now"
+msgstr "Esegui Scansione Programmata Ora"
 
-msgid "Not analyzed yet"
-msgstr "Non ancora analizzato"
+#: includes/class-dashboard.php:604 includes/class-dashboard.php:606
+#: includes/class-dashboard.php:608 includes/class-dashboard.php:629
+#: includes/class-dashboard.php:631 includes/class-dashboard.php:703
+#: includes/class-dashboard.php:712 includes/class-dashboard.php:714
+#: includes/class-dashboard.php:716
+msgid "Click for contextual guide"
+msgstr "Clicca per la guida contestuale"
 
-msgid "Last scan"
-msgstr "Ultima scansione"
-
-msgid "Detected providers:"
-msgstr "Provider rilevati:"
-
+#: includes/class-dashboard.php:647
 msgid "DNS Record Status"
 msgstr "Stato Record DNS"
 
-msgid "SPF"
-msgstr "SPF"
-
-msgid "DMARC"
-msgstr "DMARC"
-
-msgid "DKIM"
-msgstr "DKIM"
-
-msgid "Email"
-msgstr "Email"
-
-msgid "IP"
-msgstr "IP"
-
-msgid "passed"
-msgstr "superati"
-
-msgid "warnings"
-msgstr "avvisi"
-
-msgid "errors"
-msgstr "errori"
+#: includes/class-dashboard.php:668
+#, fuzzy
+msgid "DNSBL Blacklist Check"
+msgstr "blacklist controllate"
 
 # Recent scans
+#: includes/class-dashboard.php:693 includes/class-dashboard.php:762
 msgid "Recent scans"
 msgstr "Scansioni recenti"
 
-msgid "Last 5 scans"
+#: includes/class-dashboard.php:695 includes/class-dashboard.php:940
+msgid "Email Monitor"
+msgstr "Monitor Email"
+
+#: includes/class-dashboard.php:733
+msgid "Custom IP Monitor not configured"
+msgstr ""
+
+#: includes/class-dashboard.php:736
+msgid ""
+"Monitor a separate IP (e.g. your VPS, SMTP relay or web server). This is "
+"independent from your email monitor."
+msgstr ""
+
+#: includes/class-dashboard.php:739
+#, fuzzy
+msgid "Add IP to Monitor"
+msgstr "Monitor IP"
+
+#: includes/class-dashboard.php:743
+msgid "Configure IP monitor:"
+msgstr ""
+
+#: includes/class-dashboard.php:745 includes/class-dashboard.php:988
+#, fuzzy
+msgid "IP Address"
+msgstr "Indirizzo IP"
+
+#: includes/class-dashboard.php:749 includes/class-dashboard.php:993
+msgid "Save"
+msgstr ""
+
+#: includes/class-dashboard.php:752 includes/class-dashboard.php:996
+msgid "Cancel"
+msgstr "Annulla"
+
+#: includes/class-dashboard.php:754 includes/class-dashboard.php:998
+msgid "Saving..."
+msgstr "Salvataggio in corso..."
+
+#: includes/class-dashboard.php:798
+#, fuzzy, php-format
+msgid "Last %d scans"
 msgstr "Ultime 5 scansioni"
 
+#: includes/class-dashboard.php:906
 msgid "No scans yet. Click \"Run Diagnosis\" above."
 msgstr "Nessuna scansione ancora. Clicca \"Esegui Diagnosi\" qui sopra."
 
-# Log table
-msgid "Date"
-msgstr "Data"
+#: includes/class-dashboard.php:915
+msgid "Not analyzed yet"
+msgstr "Non ancora analizzato"
 
-msgid "Status"
-msgstr "Stato"
+#: includes/class-dashboard.php:918
+msgid "All checks passed"
+msgstr "Tutti i controlli superati"
 
-msgid "Technical Details"
-msgstr "Dettagli Tecnici"
+#: includes/class-dashboard.php:919 includes/class-dashboard.php:1109
+#: includes/class-loader.php:153
+msgid "warnings"
+msgstr "avvisi"
 
-msgid "No logs found."
-msgstr "Nessun log trovato."
+#: includes/class-dashboard.php:920 includes/class-dashboard.php:1110
+#: includes/class-loader.php:154
+msgid "errors"
+msgstr "errori"
+
+#: includes/class-dashboard.php:940
+msgid "IP Monitor"
+msgstr "Monitor IP"
+
+#: includes/class-dashboard.php:942
+msgid "Auto-detected mail server IP"
+msgstr "IP server di posta rilevato automaticamente"
+
+#: includes/class-dashboard.php:943
+msgid "Manual IP address"
+msgstr "Indirizzo IP manuale"
+
+#: includes/class-dashboard.php:948 includes/class-loader.php:132
+msgid "📧 Run Email Diagnosis"
+msgstr "📧 Esegui Diagnosi Email"
+
+#: includes/class-dashboard.php:949 includes/class-loader.php:133
+msgid "🌐 Run IP Diagnosis"
+msgstr "🌐 Esegui Diagnosi IP"
+
+#: includes/class-dashboard.php:956
+msgid "Auto-detects your mail server IP via MX lookup and runs full checks."
+msgstr ""
+"Rileva automaticamente l'IP del server di posta tramite MX lookup ed esegue "
+"tutti i controlli."
+
+#: includes/class-dashboard.php:957
+msgid ""
+"Monitors a SEPARATE IP (your mail server is already covered by the email "
+"monitor above)."
+msgstr ""
+"Monitora un IP SEPARATO (il tuo server di posta è già coperto dal monitor "
+"email qui sopra)."
+
+# IPv4/IPv6 tooltips
+#: includes/class-dashboard.php:962
+msgid ""
+"IPv4: DNSBL (9 blacklist) + PTR reverse DNS. For GeoIP and WHOIS use the DNS "
+"& IP Tools tab."
+msgstr ""
+"IPv4: DNSBL (9 blacklist) + PTR reverse DNS. Per GeoIP e WHOIS usa la scheda "
+"DNS e Strumenti IP."
+
+#: includes/class-dashboard.php:964
+msgid ""
+"IPv6: PTR reverse DNS only. DNSBL checks are not available (only 1 of 9 "
+"blacklists supports IPv6). For GeoIP and WHOIS use the DNS & IP Tools tab."
+msgstr ""
+"IPv6: solo PTR reverse DNS. I controlli DNSBL non sono disponibili (solo 1 "
+"blacklist su 9 supporta IPv6). Per GeoIP e WHOIS usa la scheda DNS e "
+"Strumenti IP."
+
+#: includes/class-dashboard.php:974
+msgid "Edit this monitor"
+msgstr "Modifica questo monitor"
+
+#: includes/class-dashboard.php:982
+msgid "Edit monitor settings:"
+msgstr "Modifica impostazioni monitor:"
+
+#: includes/class-dashboard.php:985
+msgid "Email da monitorare"
+msgstr "Email da monitorare"
+
+#: includes/class-dashboard.php:1017
+#, fuzzy
+msgid "Auto-detected IP:"
+msgstr "IP server di posta rilevato automaticamente"
+
+#: includes/class-dashboard.php:1020
+msgid "via MX lookup"
+msgstr ""
+
+#: includes/class-dashboard.php:1028
+msgid "Not configured. Click ✏️ to set up."
+msgstr "Non configurato. Clicca ✏️ per impostare."
+
+#: includes/class-dashboard.php:1051
+msgid "No scan results yet."
+msgstr "Nessun risultato di scansione ancora."
+
+#: includes/class-dashboard.php:1086
+msgid "Contextual guide and documentation"
+msgstr "Guida e documentazione contestuale"
+
+#: includes/class-dashboard.php:1090
+msgid "Last scan"
+msgstr "Ultima scansione"
+
+# DNS Analyzer
+#: includes/class-dashboard.php:1099
+msgid "Not analyzed yet."
+msgstr "Non ancora analizzato."
+
+#: includes/class-dashboard.php:1108 includes/class-loader.php:152
+msgid "passed"
+msgstr "superati"
+
+#: includes/class-dashboard.php:1154 includes/class-loader.php:158
+msgid "Detected providers:"
+msgstr "Provider rilevati:"
+
+#: includes/class-dashboard.php:1175
+msgid "AI report unavailable."
+msgstr "Report AI non disponibile."
+
+#: includes/class-dashboard.php:1224
+msgid "Strengths"
+msgstr ""
+
+#: includes/class-dashboard.php:1235
+msgid "Next steps"
+msgstr ""
 
 # DNS Tools tab
+#: includes/class-dashboard.php:1264
 msgid "Domain to analyze"
 msgstr "Dominio da analizzare"
 
-msgid "Enter any domain to check its SPF, DMARC and DKIM records at once."
-msgstr "Inserisci un dominio per controllare i record SPF, DMARC e DKIM in una volta sola."
-
+#: includes/class-dashboard.php:1271 includes/class-loader.php:157
 msgid "Analyze All Records"
 msgstr "Analizza Tutti i Record"
 
-msgid "Analyze"
-msgstr "Analizza"
+#: includes/class-dashboard.php:1275
+msgid "Enter any domain to check its SPF, DMARC and DKIM records at once."
+msgstr ""
+"Inserisci un dominio per controllare i record SPF, DMARC e DKIM in una volta "
+"sola."
 
-msgid "Analyzing..."
-msgstr "Analisi in corso..."
+#: includes/class-dashboard.php:1279
+#, php-format
+msgid "Auto-detected from Email Monitor: %s"
+msgstr "Rilevato automaticamente dal Monitor Email: %s"
 
-msgid "Analysis failed."
-msgstr "Analisi fallita."
-
-msgid "Detected providers: %s"
-msgstr "Provider rilevati: %s"
-
-msgid "Optional — if DKIM auto-detection fails, enter your selector manually."
-msgstr "Opzionale — se il rilevamento automatico DKIM fallisce, inserisci manualmente il selettore."
-
+#: includes/class-dashboard.php:1290 includes/class-dashboard.php:1417
 msgid "DKIM Selector"
 msgstr "Selettore DKIM"
 
+#: includes/class-dashboard.php:1298
+msgid "Optional — if DKIM auto-detection fails, enter your selector manually."
+msgstr ""
+"Opzionale — se il rilevamento automatico DKIM fallisce, inserisci "
+"manualmente il selettore."
+
 # IP Analysis section
+#: includes/class-dashboard.php:1317
 msgid "IP Analysis"
 msgstr "Analisi IP"
 
-msgid "Analyze any IPv4 or IPv6 address with PTR, GeoIP and WHOIS lookups. DNSBL checks require IPv4 (8 of 9 blacklists do not support IPv6)."
-msgstr "Analizza qualsiasi indirizzo IPv4 o IPv6 con ricerche PTR, GeoIP e WHOIS. I controlli DNSBL richiedono IPv4 (8 blacklist su 9 non supportano IPv6)."
+#: includes/class-dashboard.php:1319
+msgid ""
+"Analyze any IPv4 or IPv6 address with PTR, GeoIP and WHOIS lookups. DNSBL "
+"checks require IPv4 (8 of 9 blacklists do not support IPv6)."
+msgstr ""
+"Analizza qualsiasi indirizzo IPv4 o IPv6 con ricerche PTR, GeoIP e WHOIS. I "
+"controlli DNSBL richiedono IPv4 (8 blacklist su 9 non supportano IPv6)."
 
+#: includes/class-dashboard.php:1325
 msgid "IP address to analyze"
 msgstr "Indirizzo IP da analizzare"
 
-msgid "Enter any IPv4 address to check DNSBL blacklists, PTR record, geolocation and WHOIS info."
-msgstr "Inserisci un indirizzo IPv4 per controllare blacklist DNSBL, record PTR, geolocalizzazione e informazioni WHOIS."
-
+#: includes/class-dashboard.php:1331 includes/class-loader.php:159
 msgid "Analyze IP"
 msgstr "Analizza IP"
 
+#: includes/class-dashboard.php:1335
+msgid ""
+"Enter any IPv4 address to check DNSBL blacklists, PTR record, geolocation "
+"and WHOIS info."
+msgstr ""
+"Inserisci un indirizzo IPv4 per controllare blacklist DNSBL, record PTR, "
+"geolocalizzazione e informazioni WHOIS."
+
+#: includes/class-dashboard.php:1342
 msgid "blacklists checked"
 msgstr "blacklist controllate"
 
-msgid "DNSBL"
-msgstr "DNSBL"
-
+#: includes/class-dashboard.php:1343
 msgid "Reverse DNS"
 msgstr "DNS inverso"
 
-msgid "PTR / Reverse DNS"
-msgstr "PTR / DNS inverso"
-
+#: includes/class-dashboard.php:1343
 msgid "Hostname lookup"
 msgstr "Ricerca hostname"
 
-msgid "GeoIP"
-msgstr "GeoIP"
-
+#: includes/class-dashboard.php:1344
 msgid "Location & ISP"
 msgstr "Posizione e ISP"
 
-msgid "WHOIS"
-msgstr "WHOIS"
-
+#: includes/class-dashboard.php:1345
 msgid "IP block info"
 msgstr "Info blocco IP"
 
-msgid "IP is listed on one or more blacklists!"
-msgstr "L'IP è presente in una o più blacklist!"
+#: includes/class-dashboard.php:1362
+msgid "Analyze"
+msgstr "Analizza"
 
-msgid "IP is clean on all checked blacklists."
-msgstr "L'IP è pulito su tutte le blacklist controllate."
+#: includes/class-dashboard.php:1368
+msgid "Enter a domain and click \"Analyze All Records\"."
+msgstr ""
 
-msgid "No DNSBL results."
-msgstr "Nessun risultato DNSBL."
+#: includes/class-dashboard.php:1389
+msgid "Enter an IP address and click \"Analyze IP\"."
+msgstr ""
 
-msgid "No PTR record found"
-msgstr "Nessun record PTR trovato"
+# Advanced tab
+#: includes/class-dashboard.php:1409
+msgid "DKIM Configuration"
+msgstr "Configurazione DKIM"
 
-msgid "PTR record found"
-msgstr "Record PTR trovato"
+#: includes/class-dashboard.php:1410
+msgid ""
+"The DKIM selector is used to automatically detect your DKIM DNS record. If "
+"auto-detection fails, you can set it here."
+msgstr ""
+"Il selettore DKIM viene usato per rilevare automaticamente il record DKIM. "
+"Se il rilevamento automatico fallisce, puoi impostarlo qui."
 
-# IPv4/IPv6 tooltips
-msgid "IPv4: DNSBL (9 blacklist) + PTR reverse DNS. For GeoIP and WHOIS use the DNS & IP Tools tab."
-msgstr "IPv4: DNSBL (9 blacklist) + PTR reverse DNS. Per GeoIP e WHOIS usa la scheda DNS e Strumenti IP."
+#: includes/class-dashboard.php:1421
+msgid ""
+"Optional. If DKIM auto-detection does not find your selector, enter it here. "
+"Common examples: google, selector1, mail, dkim."
+msgstr ""
+"Opzionale. Se il rilevamento automatico DKIM non trova il selettore, "
+"inseriscilo qui. Esempi comuni: google, selector1, mail, dkim."
 
-msgid "IPv6: PTR reverse DNS only. DNSBL checks are not available (only 1 of 9 blacklists supports IPv6). For GeoIP and WHOIS use the DNS & IP Tools tab."
-msgstr "IPv6: solo PTR reverse DNS. I controlli DNSBL non sono disponibili (solo 1 blacklist su 9 supporta IPv6). Per GeoIP e WHOIS usa la scheda DNS e Strumenti IP."
+#: includes/class-dashboard.php:1428
+msgid "Alert Configuration"
+msgstr "Configurazione Avvisi"
+
+#: includes/class-dashboard.php:1429
+msgid "Configure where and when to receive email notifications."
+msgstr ""
+
+#: includes/class-dashboard.php:1433
+msgid "Alert Email"
+msgstr "Email per gli avvisi"
+
+#: includes/class-dashboard.php:1438
+msgid ""
+"Where to send email alerts when the monitors detect issues. This is a global "
+"setting shared by both Email and IP monitors."
+msgstr ""
+"Dove inviare gli avvisi email quando i monitor rilevano problemi. Questa è "
+"un'impostazione globale condivisa da entrambi i monitor (Email e IP)."
+
+#: includes/class-dashboard.php:1440
+msgid ""
+"Currently using the WordPress admin email. You can change it to any email "
+"address."
+msgstr ""
+"Attualmente stai usando l'email amministrativa di WordPress. Puoi cambiarla "
+"con qualsiasi indirizzo email."
+
+#: includes/class-dashboard.php:1446
+msgid "Notification Level"
+msgstr ""
+
+#: includes/class-dashboard.php:1455
+msgid ""
+"Choose which types of problems trigger an email notification. \"Errors "
+"only\" means you will only receive emails for critical problems like "
+"blacklist listings, DKIM errors, or scan failures — warnings like PTR or "
+"DMARC configuration suggestions will be shown only on the dashboard."
+msgstr ""
+
+#: includes/class-dashboard.php:1463
+msgid "AI Configuration (Gemini API)"
+msgstr "Configurazione AI (API Gemini)"
+
+#: includes/class-dashboard.php:1464
+msgid ""
+"Configure your Google Gemini API key and model for AI-powered deliverability "
+"analysis."
+msgstr ""
+"Configura la tua chiave API Gemini per l'analisi AI della deliverability."
+
+#: includes/class-dashboard.php:1468
+msgid "Gemini API Key"
+msgstr "Chiave API Gemini"
+
+#: includes/class-dashboard.php:1473
+msgid "Get your free API key from"
+msgstr "Ottieni la tua chiave API gratuita da"
+
+#: includes/class-dashboard.php:1475
+msgid "You can also define"
+msgstr "Puoi anche definire"
+
+#: includes/class-dashboard.php:1476 includes/class-dashboard.php:1506
+msgid "in wp-config.php."
+msgstr "in wp-config.php."
+
+# GDPR notice
+#: includes/class-dashboard.php:1479
+msgid "GDPR Notice:"
+msgstr "Avviso GDPR:"
+
+#: includes/class-dashboard.php:1480
+msgid ""
+"Domain data (name, IP, DNS records) will be sent to Google Gemini API. By "
+"using an API key you accept"
+msgstr ""
+"I dati del dominio (nome, IP, record DNS) verranno inviati all'API Google "
+"Gemini. Usando una chiave API accetti"
+
+#: includes/class-dashboard.php:1481
+msgid "Google's terms"
+msgstr "i termini di Google"
+
+#: includes/class-dashboard.php:1482
+msgid ""
+"For full GDPR compliance use a paid Google Cloud account which includes a "
+"Data Processing Agreement."
+msgstr ""
+"Per la piena conformità GDPR utilizza un account Google Cloud a pagamento "
+"che include un Data Processing Agreement."
+
+#: includes/class-dashboard.php:1488
+msgid "AI Model"
+msgstr "Modello AI"
+
+#: includes/class-dashboard.php:1492
+msgid "Default (gemini-3.1-flash-lite)"
+msgstr "Predefinito (gemini-3.1-flash-lite)"
+
+#: includes/class-dashboard.php:1501 includes/class-loader.php:179
+msgid "Fetch Models"
+msgstr "Carica Modelli"
+
+#: includes/class-dashboard.php:1505
+msgid "Choose a model. You can also set"
+msgstr "Scegli un modello. Puoi anche impostare"
+
+#: includes/class-dashboard.php:1508
+msgid "Save your AI API key first to see available models."
+msgstr "Salva prima la chiave API AI per vedere i modelli disponibili."
+
+#: includes/class-dashboard.php:1518
+msgid "Uninstall Behavior"
+msgstr "Comportamento alla Disinstallazione"
+
+#: includes/class-dashboard.php:1519
+msgid ""
+"Choose what happens to plugin data when you delete the plugin from the "
+"Plugins screen."
+msgstr ""
+"Scegli cosa succede ai dati del plugin quando elimini il plugin dalla "
+"schermata Plugin."
+
+#: includes/class-dashboard.php:1523
+msgid "Data cleanup"
+msgstr "Pulizia dati"
+
+#: includes/class-dashboard.php:1527
+msgid "Delete all data on uninstall"
+msgstr "Elimina tutti i dati alla disinstallazione"
+
+#: includes/class-dashboard.php:1530
+msgid ""
+"When enabled, all plugin tables, options and scheduled tasks will be removed "
+"when the plugin is deleted. Disable this to keep your data in the database "
+"if you plan to reinstall the plugin in the future."
+msgstr ""
+"Quando abilitato, tutte le tabelle, opzioni e attività programmate verranno "
+"rimosse. Disabilita per mantenere i dati se pensi di reinstallare il plugin "
+"in futuro."
+
+#: includes/class-dashboard.php:1538
+msgid "Save Settings"
+msgstr "Salva Impostazioni"
+
+#: includes/class-dashboard.php:1556
+msgid "Configure an email monitor first to enable AI analysis."
+msgstr "Configura prima un monitor email per abilitare l'analisi AI."
+
+#: includes/class-dashboard.php:1569
+#, php-format
+msgid ""
+"AI analysis requires a Gemini API key. Configure it in the <a href=\"%s\" "
+"style=\"color:#2271b1; text-decoration:underline;\">Advanced tab</a>."
+msgstr ""
+
+# AI sections
+#: includes/class-dashboard.php:1576
+msgid "AI Deliverability Analysis"
+msgstr "Analisi AI della Deliverability"
+
+#: includes/class-dashboard.php:1578 includes/class-loader.php:136
+msgid "Analyze with AI"
+msgstr "Analizza con AI"
+
+#: includes/class-dashboard.php:1587
+msgid ""
+"Click \"Analyze with AI\" to get a full deliverability report with "
+"recommendations."
+msgstr ""
+"Clicca \"Analizza con AI\" per ottenere un report completo di deliverability "
+"con raccomandazioni."
+
+#: includes/class-dashboard.php:1608
+#, php-format
+msgid ""
+"AI chat requires a Gemini API key. Configure it in the <a href=\"%s\" "
+"style=\"color:#2271b1; text-decoration:underline;\">Advanced tab</a>."
+msgstr ""
+
+#: includes/class-dashboard.php:1616
+msgid "Chat with AI"
+msgstr "Chatta con AI"
+
+#: includes/class-dashboard.php:1617
+msgid "Ask anything about email deliverability"
+msgstr "Chiedi qualsiasi cosa sulla deliverability delle email"
+
+#: includes/class-dashboard.php:1620
+msgid "Ask a question below to get started."
+msgstr ""
+
+#: includes/class-dashboard.php:1623
+msgid "e.g. Come posso configurare SPF per il mio dominio?"
+msgstr ""
+
+#: includes/class-dashboard.php:1625 includes/class-loader.php:139
+msgid "Send"
+msgstr "Invia"
+
+# Export / Support tab
+#: includes/class-dashboard.php:1647
+msgid "Export Diagnostic Report"
+msgstr "Esporta Report Diagnostico"
+
+#: includes/class-dashboard.php:1649
+msgid ""
+"Download a complete JSON report with all scan data, DNS configuration and "
+"settings. Share it with PointNet support or an external AI for "
+"troubleshooting."
+msgstr ""
+"Scarica un report JSON completo con tutti i dati di scansione, "
+"configurazione DNS e impostazioni. Condividilo con il supporto PointNet o "
+"un'AI esterna per il troubleshooting."
+
+#: includes/class-dashboard.php:1654
+msgid "Privacy notice:"
+msgstr "Avviso privacy:"
+
+#: includes/class-dashboard.php:1655
+msgid ""
+"The report contains your monitored email address and server IPs. Share it "
+"only with authorized personnel."
+msgstr ""
+"Il report contiene l'indirizzo email monitorato e gli IP dei server. "
+"Condividilo solo con personale autorizzato."
+
+#: includes/class-dashboard.php:1661
+msgid "Anonymize email/IP (replace with placeholders)"
+msgstr "Anonimizza email/IP (sostituisci con placeholder)"
+
+#: includes/class-dashboard.php:1664
+msgid "Download Report (JSON)"
+msgstr "Scarica Report (JSON)"
+
+#: includes/class-dashboard.php:1681
+msgid "by"
+msgstr ""
+
+#: includes/class-dashboard.php:1783 includes/class-dashboard.php:1798
+#: includes/class-dashboard.php:1824
+msgid "Please wait 30 seconds between scans."
+msgstr ""
+
+#: includes/class-dashboard.php:2087
+msgid "DMARC & TLS Aggregate Reports Reader"
+msgstr ""
+
+#: includes/class-dashboard.php:2090
+msgid ""
+"Upload DMARC aggregate report files (.xml, .gz, .zip) and TLSRPT TLS reports "
+"(.json, .json.gz, .zip) sent by Gmail, Outlook, Yahoo, etc. PointNet Mail "
+"Guard automatically uncompresses, detects and stores full email "
+"authentication and MTA-STS TLS delivery analytics."
+msgstr ""
+
+#: includes/class-dashboard.php:2097
+msgid ""
+"Drag & drop DMARC (.xml) or TLSRPT (.json) report files here, or click to "
+"browse"
+msgstr ""
+
+#: includes/class-dashboard.php:2100
+msgid ""
+"Supported formats: DMARC XML (.xml, .gz, .zip) and TLSRPT JSON "
+"(.json, .json.gz, .gz, .zip)"
+msgstr ""
+
+#: includes/class-dashboard.php:2106
+msgid "Select DMARC / TLSRPT Report Files"
+msgstr ""
+
+#: includes/class-dashboard.php:2122
+msgid "Automatic Email Ingestion (IMAP Mailbox)"
+msgstr ""
+
+#: includes/class-dashboard.php:2135
+msgid "Fetch Reports Now"
+msgstr ""
+
+#: includes/class-dashboard.php:2141
+msgid ""
+"Configure a dedicated mailbox (e.g. dmarc-reports@domain.com) to "
+"automatically download and process incoming DMARC and TLSRPT report "
+"attachments."
+msgstr ""
+
+#: includes/class-dashboard.php:2166
+msgid "Username / Email"
+msgstr ""
+
+#: includes/class-dashboard.php:2174
+msgid "Mailbox Folder"
+msgstr ""
+
+#: includes/class-dashboard.php:2189
+msgid "Delete email from server (Recommended for dedicated mailboxes)"
+msgstr ""
+
+#: includes/class-dashboard.php:2190
+msgid "Mark as read (\\Seen)"
+msgstr ""
+
+#: includes/class-dashboard.php:2197
+msgid "Test Connection"
+msgstr ""
+
+#: includes/class-dashboard.php:2200
+#, fuzzy
+msgid "Save IMAP Settings"
+msgstr "Salva Impostazioni"
+
+#: includes/class-dashboard.php:2227
+msgid "How to receive automatic DMARC and TLSRPT reports"
+msgstr ""
+
+#: includes/class-dashboard.php:2230
+msgid ""
+"To enable automatic reporting from major email receivers (Google, Microsoft, "
+"Yahoo), publish the following DNS TXT records for your domain:"
+msgstr ""
+
+#: includes/class-dashboard.php:2235
+msgid "1. DMARC Aggregate Reports (RFC 7489)"
+msgstr ""
+
+#: includes/class-dashboard.php:2241
+msgid "2. MTA-STS TLS Reports (RFC 8460)"
+msgstr ""
+
+#: includes/class-dashboard.php:2255
+msgid "Total Reports Imported"
+msgstr ""
+
+#: includes/class-dashboard.php:2259
+msgid "DMARC Evaluated Emails"
+msgstr ""
+
+#: includes/class-dashboard.php:2265
+msgid "DMARC Pass Rate"
+msgstr ""
+
+#: includes/class-dashboard.php:2269
+msgid "MTA-STS TLS Sessions"
+msgstr ""
+
+#: includes/class-dashboard.php:2275
+msgid "TLS Delivery Success"
+msgstr ""
+
+#: includes/class-dashboard.php:2281
+msgid "DMARC Aggregate Reports (RFC 7489)"
+msgstr ""
+
+#: includes/class-dashboard.php:2285
+msgid ""
+"No DMARC reports imported yet. Use the upload box above to upload your first "
+"report file."
+msgstr ""
+
+#: includes/class-dashboard.php:2291 includes/class-dashboard.php:2409
+msgid "Reporting Org"
+msgstr ""
+
+#: includes/class-dashboard.php:2292 includes/class-mailer.php:97
+msgid "Domain"
+msgstr "Dominio"
+
+# WHOIS fields
+#: includes/class-dashboard.php:2293 includes/class-dashboard.php:2411
+#, fuzzy
+msgid "Date Range"
+msgstr "Intervallo IP"
+
+#: includes/class-dashboard.php:2294
+#, fuzzy
+msgid "Total Emails"
+msgstr "Email per gli avvisi"
+
+# Pass / Warning / Error labels
+#: includes/class-dashboard.php:2295
+#, fuzzy
+msgid "Pass Rate"
+msgstr "Superato"
+
+#: includes/class-dashboard.php:2296 includes/class-dashboard.php:2415
+msgid "Imported On"
+msgstr ""
+
+#: includes/class-dashboard.php:2297 includes/class-dashboard.php:2416
+msgid "Actions"
+msgstr ""
+
+#: includes/class-dashboard.php:2328 includes/class-dashboard.php:2452
+msgid "Details"
+msgstr ""
+
+#: includes/class-dashboard.php:2339
+msgid "Sender IPs & Authentication Breakdown"
+msgstr ""
+
+#: includes/class-dashboard.php:2341
+msgid "No sender IP details found."
+msgstr ""
+
+#: includes/class-dashboard.php:2346
+#, fuzzy
+msgid "Source IP"
+msgstr "Fonte"
 
 # GeoIP fields
+#: includes/class-dashboard.php:2347 includes/class-loader.php:166
 msgid "Country"
 msgstr "Paese"
 
+# GeoIP fields
+#: includes/class-dashboard.php:2348
+#, fuzzy
+msgid "Count"
+msgstr "Paese"
+
+#: includes/class-dashboard.php:2349
+msgid "Disposition"
+msgstr ""
+
+#: includes/class-dashboard.php:2350
+#, fuzzy
+msgid "SPF Result"
+msgstr "Risultati DNSBL"
+
+#: includes/class-dashboard.php:2351
+#, fuzzy
+msgid "DKIM Result"
+msgstr "Risultati DNSBL"
+
+#: includes/class-dashboard.php:2352
+msgid "Header From"
+msgstr ""
+
+#: includes/class-dashboard.php:2399
+msgid "TLSRPT Reports (RFC 8460 - MTA-STS / DANE TLS)"
+msgstr ""
+
+#: includes/class-dashboard.php:2403
+msgid ""
+"No TLSRPT TLS reports imported yet. Upload a .json or .json.gz report file "
+"above."
+msgstr ""
+
+#: includes/class-dashboard.php:2410
+#, fuzzy
+msgid "Policy Domain"
+msgstr "Dominio"
+
+#: includes/class-dashboard.php:2412
+msgid "Success Sessions"
+msgstr ""
+
+#: includes/class-dashboard.php:2413
+msgid "Failures"
+msgstr ""
+
+#: includes/class-dashboard.php:2414
+msgid "Success Rate"
+msgstr ""
+
+#: includes/class-dashboard.php:2463
+msgid "MTA-STS Policies & TLS Session Delivery Breakdown"
+msgstr ""
+
+#: includes/class-dashboard.php:2492
+#, fuzzy
+msgid "Failure Details:"
+msgstr "Dettagli Tecnici"
+
+#: includes/class-dashboard.php:2496
+msgid "Result Type"
+msgstr ""
+
+#: includes/class-dashboard.php:2497
+msgid "Sending MTA IP"
+msgstr ""
+
+#: includes/class-dashboard.php:2498
+msgid "Receiving IP / MX"
+msgstr ""
+
+#: includes/class-dashboard.php:2499
+msgid "Failed Count"
+msgstr ""
+
+#: includes/class-dashboard.php:2500
+msgid "Additional Info"
+msgstr ""
+
+#: includes/class-dashboard.php:2510
+msgid "No TLS failures reported for this policy."
+msgstr ""
+
+#: includes/class-dashboard.php:2675
+msgid "No valid file uploaded. Please select an XML, JSON, .gz, or .zip file."
+msgstr ""
+
+#: includes/class-dashboard.php:2681
+msgid "Unable to read uploaded report file."
+msgstr ""
+
+#: includes/class-dashboard.php:2715
+#, php-format
+msgid "TLSRPT Report ID \"%s\" from %s has already been imported."
+msgstr ""
+
+#: includes/class-dashboard.php:2737
+msgid "Failed to save TLSRPT report to database."
+msgstr ""
+
+#: includes/class-dashboard.php:2757
+#, php-format
+msgid ""
+"TLSRPT (MTA-STS TLS) Report successfully imported! (%d successful sessions, "
+"%d failed)."
+msgstr ""
+
+#: includes/class-dashboard.php:2780
+#, php-format
+msgid "DMARC Report ID \"%s\" from %s has already been imported."
+msgstr ""
+
+#: includes/class-dashboard.php:2804
+#, fuzzy
+msgid "Failed to save DMARC report to database."
+msgstr "Impossibile ottenere risposta."
+
+#: includes/class-dashboard.php:2839
+#, php-format
+msgid "DMARC Report successfully imported! (%d messages evaluated, %d passed)."
+msgstr ""
+
+#: includes/class-dashboard.php:2850 includes/class-dashboard.php:2869
+msgid "Invalid report ID."
+msgstr ""
+
+#: includes/class-dashboard.php:2860
+#, fuzzy
+msgid "Report deleted successfully."
+msgstr "Modelli aggiornati con successo."
+
+#: includes/class-dashboard.php:2879
+#, fuzzy
+msgid "TLS report deleted successfully."
+msgstr "Modelli aggiornati con successo."
+
+#: includes/class-dnsbl.php:57
+msgid "ℹ️ IPv6"
+msgstr ""
+
+#: includes/class-dnsbl.php:57
+msgid "DNSBL checks are IPv4 only. PTR and other checks are shown below."
+msgstr ""
+
+# Scan error strings
+#: includes/class-dnssec.php:40 includes/class-dnssec.php:48
+#, fuzzy
+msgid "Invalid Domain"
+msgstr "Indirizzo email non valido."
+
+#: includes/class-dnssec.php:41 includes/class-dnssec.php:49
+#, fuzzy
+msgid "Please provide a valid domain name."
+msgstr "Inserisci un indirizzo email valido per gli avvisi."
+
+#: includes/class-dnssec.php:107
+msgid "DNSSEC Validation Failure (SERVFAIL)"
+msgstr ""
+
+#: includes/class-dnssec.php:108
+msgid ""
+"DNS server returned SERVFAIL. The DNSSEC signature chain is broken or "
+"invalid for this domain."
+msgstr ""
+
+#: includes/class-dnssec.php:117
+msgid "DNSSEC Active & Validated"
+msgstr ""
+
+#: includes/class-dnssec.php:118
+msgid ""
+"DNSSEC is fully configured with valid DS records and authenticated data (AD) "
+"flag."
+msgstr ""
+
+#: includes/class-dnssec.php:127
+msgid "DNSSEC Active (DS Present)"
+msgstr ""
+
+#: includes/class-dnssec.php:128
+#, fuzzy
+msgid "DS records found for domain."
+msgstr "Nessun record MX trovato per il dominio: %s"
+
+#: includes/class-dnssec.php:137
+msgid "DNSSEC Not Active"
+msgstr ""
+
+#: includes/class-dnssec.php:138
+msgid ""
+"No DS records found for this domain. Enable DNSSEC at your domain registrar "
+"and DNS provider for enhanced security."
+msgstr ""
+
+#: includes/class-dnssec.php:148
+#, php-format
+msgid "Found %d DS Record(s)"
+msgstr ""
+
+#: includes/class-dnssec.php:149
+msgid "Delegation Signer (DS) record is present at parent TLD registry."
+msgstr ""
+
+#: includes/class-dnssec.php:156
+msgid "Missing DS Record"
+msgstr ""
+
+#: includes/class-dnssec.php:157
+msgid "No DS record delegating DNSSEC trust to this domain."
+msgstr ""
+
+#: includes/class-dnssec.php:167
+#, php-format
+msgid "Found %d DNSKEY Record(s)"
+msgstr ""
+
+#: includes/class-dnssec.php:168
+msgid "Public Zone Signing Keys (ZSK/KSK) found in DNS."
+msgstr ""
+
+#: includes/class-dnssec.php:174
+msgid "No Public DNSKEY Records"
+msgstr ""
+
+#: includes/class-dnssec.php:175
+#, fuzzy
+msgid "DNSKEY records not returned in response."
+msgstr "L'AI ha restituito una risposta vuota."
+
+#: includes/class-geoip.php:41 includes/class-scanner.php:127
+#: includes/class-whois.php:42
+#, fuzzy, php-format
+msgid "Invalid IP address: %s"
+msgstr "Indirizzo IPv4 non valido: %s"
+
+# API error strings
+#: includes/class-geoip.php:61
+#, php-format
+msgid "GeoIP lookup failed: %s"
+msgstr "GeoIP lookup fallito: %s"
+
+#: includes/class-geoip.php:73
+#, php-format
+msgid "GeoIP lookup returned HTTP %d"
+msgstr "GeoIP lookup ha restituito HTTP %d"
+
+#: includes/class-geoip.php:85
+msgid "Invalid response from GeoIP service."
+msgstr "Risposta non valida dal servizio GeoIP."
+
+#: includes/class-geoip.php:92
+msgid "IP address not found."
+msgstr "Indirizzo IP non trovato."
+
+#: includes/class-imap-fetcher.php:43
+msgid "IMAP Host, Username, and Password are required."
+msgstr ""
+
+# API error strings
+#: includes/class-imap-fetcher.php:51 includes/class-imap-fetcher.php:83
+#, fuzzy, php-format
+msgid "IMAP Connection Failed: %s"
+msgstr "GeoIP lookup fallito: %s"
+
+#: includes/class-imap-fetcher.php:59
+msgid "Successfully connected and authenticated to IMAP server!"
+msgstr ""
+
+#: includes/class-imap-fetcher.php:75
+msgid ""
+"IMAP configuration is incomplete. Please configure Host, Username, and "
+"Password."
+msgstr ""
+
+#: includes/class-imap-fetcher.php:108
+msgid "No new unread report emails found in mailbox."
+msgstr ""
+
+#: includes/class-imap-fetcher.php:187
+#, php-format
+msgid ""
+"IMAP Fetch Completed: %d report(s) imported, %d duplicate(s) skipped, %d "
+"error(s)."
+msgstr ""
+
+#: includes/class-loader.php:129
+msgid "Running..."
+msgstr "Analisi in corso..."
+
+#: includes/class-loader.php:131
+msgid "Scan failed."
+msgstr "Scansione fallita."
+
+#: includes/class-loader.php:134
+msgid "Analyzing..."
+msgstr "Analisi in corso..."
+
+#: includes/class-loader.php:135
+msgid "Analyzing email configuration with AI..."
+msgstr "Analisi configurazione email con AI in corso..."
+
+#: includes/class-loader.php:137
+msgid "AI analysis failed."
+msgstr "Analisi AI fallita."
+
+#: includes/class-loader.php:138
+msgid "You"
+msgstr "Tu"
+
+#: includes/class-loader.php:140
+msgid "Failed to get response."
+msgstr "Impossibile ottenere risposta."
+
+#: includes/class-loader.php:141
+msgid "Network error. Please try again."
+msgstr "Errore di rete. Riprova."
+
+#: includes/class-loader.php:142
+msgid "Enter a valid email first (Step 1)."
+msgstr "Inserisci prima un'email valida (Passo 1)."
+
+#: includes/class-loader.php:143
+msgid "Detecting DKIM selector..."
+msgstr "Rilevamento selettore DKIM in corso..."
+
+#: includes/class-loader.php:145
+msgid "DKIM selector detected:"
+msgstr "Selettore DKIM rilevato:"
+
+#: includes/class-loader.php:146
+msgid "DKIM selector found:"
+msgstr "Selettore DKIM trovato:"
+
+#: includes/class-loader.php:147
+msgid ""
+"Could not auto-detect DKIM selector. You can enter it manually if you know "
+"it, or leave empty."
+msgstr ""
+"Impossibile rilevare automaticamente il selettore DKIM. Puoi inserirlo "
+"manualmente se lo conosci, o lasciarlo vuoto."
+
+#: includes/class-loader.php:148
+msgid "Save failed."
+msgstr "Salvataggio fallito."
+
+#: includes/class-loader.php:149
+msgid "Uploading and parsing DMARC report..."
+msgstr ""
+
+#: includes/class-loader.php:150
+msgid "Are you sure you want to delete this report?"
+msgstr ""
+
+#: includes/class-loader.php:151
+msgid "Analysis failed."
+msgstr "Analisi fallita."
+
+# Pass / Warning / Error labels
+#: includes/class-loader.php:155
+msgid "Pass"
+msgstr "Superato"
+
+#: includes/class-loader.php:156
+msgid "Warning"
+msgstr "Avviso"
+
+#: includes/class-loader.php:160
+msgid "IP is listed on one or more blacklists!"
+msgstr "L'IP è presente in una o più blacklist!"
+
+#: includes/class-loader.php:161
+msgid "IP is clean on all checked blacklists."
+msgstr "L'IP è pulito su tutte le blacklist controllate."
+
+#: includes/class-loader.php:162
+msgid "No DNSBL results."
+msgstr "Nessun risultato DNSBL."
+
+#: includes/class-loader.php:163
+msgid "No PTR record found"
+msgstr "Nessun record PTR trovato"
+
+#: includes/class-loader.php:164
+msgid "PTR record found"
+msgstr "Record PTR trovato"
+
+#: includes/class-loader.php:165
+msgid "IP"
+msgstr "IP"
+
+#: includes/class-loader.php:167
 msgid "Region"
 msgstr "Regione"
 
+#: includes/class-loader.php:168
 msgid "City"
 msgstr "Città"
 
+#: includes/class-loader.php:169
 msgid "ISP"
 msgstr "ISP"
 
+#: includes/class-loader.php:170
 msgid "Organization"
 msgstr "Organizzazione"
 
+#: includes/class-loader.php:171
 msgid "ASN"
 msgstr "ASN"
 
 # WHOIS fields
+#: includes/class-loader.php:172
 msgid "IP Range"
 msgstr "Intervallo IP"
 
+#: includes/class-loader.php:173
 msgid "Net Name"
 msgstr "Nome Rete"
 
+#: includes/class-loader.php:174
 msgid "Person"
 msgstr "Persona"
 
+#: includes/class-loader.php:175
 msgid "Email"
 msgstr "Email"
 
+#: includes/class-loader.php:176
 msgid "Source"
 msgstr "Fonte"
 
-msgid "Network error."
-msgstr "Errore di rete."
-
-msgid "Network error. Please try again."
-msgstr "Errore di rete. Riprova."
-
-# Advanced tab
-msgid "DKIM Configuration"
-msgstr "Configurazione DKIM"
-
-msgid "The DKIM selector is used to automatically detect your DKIM DNS record. If auto-detection fails, you can set it here."
-msgstr "Il selettore DKIM viene usato per rilevare automaticamente il record DKIM. Se il rilevamento automatico fallisce, puoi impostarlo qui."
-
-msgid "Optional. If DKIM auto-detection does not find your selector, enter it here. Common examples: google, selector1, mail, dkim."
-msgstr "Opzionale. Se il rilevamento automatico DKIM non trova il selettore, inseriscilo qui. Esempi comuni: google, selector1, mail, dkim."
-
-msgid "Leave empty to auto-detect"
-msgstr "Lascia vuoto per rilevamento automatico"
-
-msgid "AI Configuration (Gemini API)"
-msgstr "Configurazione AI (API Gemini)"
-
-msgid "Configure your Google Gemini API key and model for AI-powered deliverability analysis."
-msgstr "Configura la tua chiave API Gemini per l'analisi AI della deliverability."
-
-msgid "Gemini API Key"
-msgstr "Chiave API Gemini"
-
-msgid "Get your free API key from"
-msgstr "Ottieni la tua chiave API gratuita da"
-
-msgid "You can also define"
-msgstr "Puoi anche definire"
-
-msgid "in wp-config.php."
-msgstr "in wp-config.php."
-
-msgid "AI Model"
-msgstr "Modello AI"
-
-msgid "Default (gemini-3.1-flash-lite)"
-msgstr "Predefinito (gemini-3.1-flash-lite)"
-
-msgid "Choose a model. You can also set"
-msgstr "Scegli un modello. Puoi anche impostare"
-
-msgid "Save your AI API key first to see available models."
-msgstr "Salva prima la chiave API AI per vedere i modelli disponibili."
-
-msgid "Fetch Models"
-msgstr "Carica Modelli"
-
-msgid "Fetching available models..."
-msgstr "Caricamento modelli disponibili..."
-
+#: includes/class-loader.php:177
 msgid "Loading..."
 msgstr "Caricamento in corso..."
 
+#: includes/class-loader.php:178
+msgid "Fetching available models..."
+msgstr "Caricamento modelli disponibili..."
+
+#: includes/class-loader.php:180
 msgid "Models updated successfully."
 msgstr "Modelli aggiornati con successo."
 
+#: includes/class-loader.php:181
 msgid "No models found. Make sure your API key is valid."
 msgstr "Nessun modello trovato. Assicurati che la chiave API sia valida."
 
+#: includes/class-loader.php:182
 msgid "Failed to fetch models. Check your API key."
 msgstr "Caricamento modelli fallito. Controlla la chiave API."
 
-msgid "Uninstall Behavior"
-msgstr "Comportamento alla Disinstallazione"
+#: includes/class-logger.php:123
+msgid "No logs found."
+msgstr "Nessun log trovato."
 
-msgid "Choose what happens to plugin data when you delete the plugin from the Plugins screen."
-msgstr "Scegli cosa succede ai dati del plugin quando elimini il plugin dalla schermata Plugin."
-
-msgid "Data cleanup"
-msgstr "Pulizia dati"
-
-msgid "Delete all data on uninstall"
-msgstr "Elimina tutti i dati alla disinstallazione"
-
-msgid "When enabled, all plugin tables, options and scheduled tasks will be removed when the plugin is deleted. Disable this to keep your data in the database if you plan to reinstall the plugin in the future."
-msgstr "Quando abilitato, tutte le tabelle, opzioni e attività programmate verranno rimosse. Disabilita per mantenere i dati se pensi di reinstallare il plugin in futuro."
-
-# GDPR notice
-msgid "GDPR Notice:"
-msgstr "Avviso GDPR:"
-
-msgid "Domain data (name, IP, DNS records) will be sent to Google Gemini API. By using an API key you accept"
-msgstr "I dati del dominio (nome, IP, record DNS) verranno inviati all'API Google Gemini. Usando una chiave API accetti"
-
-msgid "Google's terms"
-msgstr "i termini di Google"
-
-msgid "For full GDPR compliance use a paid Google Cloud account which includes a Data Processing Agreement."
-msgstr "Per la piena conformità GDPR utilizza un account Google Cloud a pagamento che include un Data Processing Agreement."
-
-# Export / Support tab
-msgid "Export Diagnostic Report"
-msgstr "Esporta Report Diagnostico"
-
-msgid "Download a complete JSON report with all scan data, DNS configuration and settings. Share it with PointNet support or an external AI for troubleshooting."
-msgstr "Scarica un report JSON completo con tutti i dati di scansione, configurazione DNS e impostazioni. Condividilo con il supporto PointNet o un'AI esterna per il troubleshooting."
-
-msgid "Privacy notice:"
-msgstr "Avviso privacy:"
-
-msgid "The report contains your monitored email address and server IPs. Share it only with authorized personnel."
-msgstr "Il report contiene l'indirizzo email monitorato e gli IP dei server. Condividilo solo con personale autorizzato."
-
-msgid "Anonymize email/IP (replace with placeholders)"
-msgstr "Anonimizza email/IP (sostituisci con placeholder)"
-
-msgid "Download Report (JSON)"
-msgstr "Scarica Report (JSON)"
-
-# AI sections
-msgid "AI Deliverability Analysis"
-msgstr "Analisi AI della Deliverability"
-
-msgid "Analyze with AI"
-msgstr "Analizza con AI"
-
-msgid "Click \"Analyze with AI\" to get a full deliverability report with recommendations."
-msgstr "Clicca \"Analizza con AI\" per ottenere un report completo di deliverability con raccomandazioni."
-
-msgid "Configure an email monitor first to enable AI analysis."
-msgstr "Configura prima un monitor email per abilitare l'analisi AI."
-
-msgid "AI report unavailable."
-msgstr "Report AI non disponibile."
-
-msgid "AI analysis failed."
-msgstr "Analisi AI fallita."
-
-msgid "AI not configured. Add your Gemini API key in Settings."
-msgstr "AI non configurata. Aggiungi la tua chiave API Gemini nelle Impostazioni."
-
-msgid "AI returned an empty response."
-msgstr "L'AI ha restituito una risposta vuota."
-
-msgid "AI response could not be parsed."
-msgstr "Impossibile analizzare la risposta dell'AI."
-
-msgid "No domain configured. Save an email address in Settings first."
-msgstr "Nessun dominio configurato. Salva prima un indirizzo email."
-
-msgid "Analyzing email configuration with AI..."
-msgstr "Analisi configurazione email con AI in corso..."
-
-msgid "Chat with AI"
-msgstr "Chatta con AI"
-
-msgid "Ask anything about email deliverability"
-msgstr "Chiedi qualsiasi cosa sulla deliverability delle email"
-
-msgid "Send"
-msgstr "Invia"
-
-msgid "You"
-msgstr "Tu"
-
-msgid "Failed to get response."
-msgstr "Impossibile ottenere risposta."
-
-msgid "Enter a valid email first (Step 1)."
-msgstr "Inserisci prima un'email valida (Passo 1)."
-
-msgid "Detecting DKIM selector..."
-msgstr "Rilevamento selettore DKIM in corso..."
-
-msgid "Detect"
-msgstr "Rileva"
-
-msgid "DKIM selector detected:"
-msgstr "Selettore DKIM rilevato:"
-
-msgid "DKIM selector found:"
-msgstr "Selettore DKIM trovato:"
-
-msgid "Could not auto-detect DKIM selector. You can enter it manually if you know it, or leave empty."
-msgstr "Impossibile rilevare automaticamente il selettore DKIM. Puoi inserirlo manualmente se lo conosci, o lasciarlo vuoto."
-
-# Pass / Warning / Error labels
-msgid "Pass"
-msgstr "Superato"
-
-msgid "Warning"
-msgstr "Avviso"
-
-msgid "Error"
-msgstr "Errore"
-
-# PointNet promo
-msgid "Need professional help with email deliverability?"
-msgstr "Hai bisogno di aiuto professionale con la deliverability?"
-
-msgid "PointNet offers SPF/DMARC/DKIM setup, dedicated mail server configuration and deliverability consulting."
-msgstr "PointNet offre configurazione SPF/DMARC/DKIM, server di posta dedicato e consulenza sulla deliverability."
-
-msgid "Contact PointNet →"
-msgstr "Contatta PointNet →"
-
-# Scan error strings
-msgid "Invalid email address."
-msgstr "Indirizzo email non valido."
-
-msgid "No MX records found for domain: %s"
-msgstr "Nessun record MX trovato per il dominio: %s"
-
-msgid "Could not resolve MX host to IP: %s"
-msgstr "Impossibile risolvere l'host MX in IP: %s"
-
-msgid "MX host did not resolve to a valid IPv4 address: %s"
-msgstr "L'host MX non ha risolto in un indirizzo IPv4 valido: %s"
-
-msgid "Invalid IPv4 address: %s"
-msgstr "Indirizzo IPv4 non valido: %s"
-
-# API error strings
-msgid "GeoIP lookup failed: %s"
-msgstr "GeoIP lookup fallito: %s"
-
-msgid "GeoIP lookup returned HTTP %d"
-msgstr "GeoIP lookup ha restituito HTTP %d"
-
-msgid "Invalid response from GeoIP service."
-msgstr "Risposta non valida dal servizio GeoIP."
-
-msgid "IP address not found."
-msgstr "Indirizzo IP non trovato."
-
-msgid "Invalid response from WHOIS service."
-msgstr "Risposta non valida dal servizio WHOIS."
-
-msgid "WHOIS lookup failed: %s"
-msgstr "WHOIS lookup fallito: %s"
-
-msgid "WHOIS lookup returned HTTP %d"
-msgstr "WHOIS lookup ha restituito HTTP %d"
-
-# Mailer alert strings
-msgid "PointNet Mail Guard — ALERT"
-msgstr "PointNet Mail Guard — AVVISO"
-
+#: includes/class-mailer.php:48
+#, php-format
 msgid "⚠️ PointNet ALERT: scan error for %s"
 msgstr "⚠️ PointNet AVVISO: errore di scansione per %s"
 
-msgid "⚠️ PointNet ALERT: %s — %s"
+#: includes/class-mailer.php:64 includes/class-mailer.php:71
+#, fuzzy, php-format
+msgid "⚠️ PointNet ALERT: %1$s — %2$s"
 msgstr "⚠️ PointNet AVVISO: %s — %s"
 
+#: includes/class-mailer.php:79
+#, php-format
 msgid "⚠️ PointNet ALERT: %s — issue detected"
 msgstr "⚠️ PointNet AVVISO: %s — problema rilevato"
 
+# Mailer alert strings
+#: includes/class-mailer.php:86
+msgid "PointNet Mail Guard — ALERT"
+msgstr "PointNet Mail Guard — AVVISO"
+
+#: includes/class-mailer.php:90
 msgid "Scan error"
 msgstr "Errore di scansione"
 
+#: includes/class-mailer.php:91
 msgid "Target"
 msgstr "Destinazione"
 
+#: includes/class-mailer.php:96
 msgid "Email checked"
 msgstr "Email verificata"
 
-msgid "Domain"
-msgstr "Dominio"
-
+#: includes/class-mailer.php:98
 msgid "Mail server"
 msgstr "Server di posta"
 
+#: includes/class-mailer.php:99
 msgid "Mail server IP"
 msgstr "IP server di posta"
 
+#: includes/class-mailer.php:100
 msgid "WordPress IP"
 msgstr "IP WordPress"
 
+#: includes/class-mailer.php:101
 msgid "Server setup"
 msgstr "Configurazione server"
 
+#: includes/class-mailer.php:103
 msgid "SHARED (mail and WordPress on same server)"
 msgstr "CONDIVISO (posta e WordPress sullo stesso server)"
 
+#: includes/class-mailer.php:104
 msgid "SEPARATE (dedicated mail server)"
 msgstr "SEPARATO (server di posta dedicato)"
 
-msgid "Scan time"
-msgstr "Ora scansione"
-
+#: includes/class-mailer.php:107
 msgid "IP address"
 msgstr "Indirizzo IP"
 
+#: includes/class-mailer.php:110
+msgid "Scan time"
+msgstr "Ora scansione"
+
+#: includes/class-mailer.php:112
 msgid "IP is listed on one or more blacklists."
 msgstr "L'IP è presente in una o più blacklist."
 
+#: includes/class-mailer.php:113
 msgid "PTR (reverse DNS) is not configured."
 msgstr "Il PTR (reverse DNS) non è configurato."
 
+#: includes/class-mailer.php:116
 msgid "SPF record is missing."
 msgstr "Il record SPF è assente."
 
+#: includes/class-mailer.php:117
 msgid "SPF record is invalid."
 msgstr "Il record SPF non è valido."
 
+#: includes/class-mailer.php:118
+#, fuzzy
+msgid "SPF record has warnings."
+msgstr "Il record SPF è assente."
+
+# Advanced tab
+#: includes/class-mailer.php:123
+#, fuzzy
+msgid "DMARC configuration has issues."
+msgstr "Configurazione DKIM"
+
+#: includes/class-mailer.php:126
+#, fuzzy
+msgid "DKIM key problem detected."
+msgstr "Selettore DKIM rilevato:"
+
+#: includes/class-mailer.php:130
+#, fuzzy
+msgid "MTA-STS policy is missing."
+msgstr "Il record SPF è assente."
+
+#: includes/class-mailer.php:132
+msgid "MTA-STS policy has warnings."
+msgstr ""
+
+#: includes/class-mailer.php:136
 msgid "DNSBL Results"
 msgstr "Risultati DNSBL"
 
+#: includes/class-mailer.php:141
 msgid "PTR Check"
 msgstr "Verifica PTR"
 
+#: includes/class-mailer.php:143
 msgid "WARNING: not configured"
 msgstr "ATTENZIONE: non configurato"
 
+#: includes/class-mailer.php:147
 msgid "SPF Check"
 msgstr "Verifica SPF"
 
+#: includes/class-mailer.php:151
 msgid "MISSING — no SPF record found"
 msgstr "ASSENTE — nessun record SPF trovato"
 
+#: includes/class-mailer.php:153
 msgid "INVALID"
 msgstr "NON VALIDO"
 
-# DKIM onboarding strings
-msgid "Step 4: DKIM Selector (optional)"
-msgstr "Passo 4: Selettore DKIM (opzionale)"
+#: includes/class-mailer.php:155
+msgid "WARNING"
+msgstr ""
 
-msgid "If known, enter your DKIM selector. Leave empty to auto-detect."
-msgstr "Se lo conosci, inserisci il selettore DKIM. Lascia vuoto per rilevamento automatico."
+#: includes/class-mailer.php:160
+#, fuzzy
+msgid "DMARC Check"
+msgstr "Verifica PTR"
 
-# Welcome wizard
-msgid "Welcome to PointNet Mail Guard!"
-msgstr "Benvenuto in PointNet Mail Guard!"
+#: includes/class-mailer.php:169
+#, fuzzy
+msgid "DKIM Check"
+msgstr "Verifica PTR"
 
-msgid "Email da monitorare"
-msgstr "Email da monitorare"
+#: includes/class-mailer.php:178
+#, fuzzy
+msgid "MTA-STS Check"
+msgstr "Verifica PTR"
 
-msgid "Email address to receive alerts when problems are detected."
-msgstr "Indirizzo email per ricevere gli avvisi quando vengono rilevati problemi."
+# Scan error strings
+#: includes/class-mx.php:46
+msgid "Invalid email address."
+msgstr "Indirizzo email non valido."
 
-msgid "Alert Email"
-msgstr "Email per gli avvisi"
+#: includes/class-mx.php:61
+#, php-format
+msgid "No MX records found for domain: %s"
+msgstr "Nessun record MX trovato per il dominio: %s"
 
-msgid "Alert Configuration"
-msgstr "Configurazione Avvisi"
+#: includes/class-mx.php:78
+#, php-format
+msgid "Could not resolve MX host to IP: %s"
+msgstr "Impossibile risolvere l'host MX in IP: %s"
 
-msgid "Where to send email alerts when the monitors detect issues. This is a global setting shared by both Email and IP monitors."
-msgstr "Dove inviare gli avvisi email quando i monitor rilevano problemi. Questa è un'impostazione globale condivisa da entrambi i monitor (Email e IP)."
+#: includes/class-mx.php:88
+#, php-format
+msgid "MX host did not resolve to a valid IPv4 address: %s"
+msgstr "L'host MX non ha risolto in un indirizzo IPv4 valido: %s"
 
-msgid "Currently using the WordPress admin email. You can change it to any email address."
-msgstr "Attualmente stai usando l'email amministrativa di WordPress. Puoi cambiarla con qualsiasi indirizzo email."
+#: includes/class-whois.php:64
+#, php-format
+msgid "WHOIS lookup failed: %s"
+msgstr "WHOIS lookup fallito: %s"
 
-msgid "Set up your first monitor in just 2 minutes. Follow the steps below:"
-msgstr "Configura il primo monitor in soli 2 minuti. Segui i passaggi qui sotto:"
+#: includes/class-whois.php:76
+#, php-format
+msgid "WHOIS lookup returned HTTP %d"
+msgstr "WHOIS lookup ha restituito HTTP %d"
+
+#: includes/class-whois.php:88
+msgid "Invalid response from WHOIS service."
+msgstr "Risposta non valida dal servizio WHOIS."
+
+#~ msgid "Monitors"
+#~ msgstr "Monitor"
+
+#~ msgid "Alert email"
+#~ msgstr "Email per gli avvisi"
+
+#~ msgid "Run Diagnosis Now"
+#~ msgstr "Esegui Diagnosi Ora"
+
+#~ msgid "SPF"
+#~ msgstr "SPF"
+
+#~ msgid "DMARC"
+#~ msgstr "DMARC"
+
+#~ msgid "DKIM"
+#~ msgstr "DKIM"
+
+# Log table
+#~ msgid "Date"
+#~ msgstr "Data"
+
+#~ msgid "Status"
+#~ msgstr "Stato"
+
+#~ msgid "Detected providers: %s"
+#~ msgstr "Provider rilevati: %s"
+
+#~ msgid "DNSBL"
+#~ msgstr "DNSBL"
+
+#~ msgid "PTR / Reverse DNS"
+#~ msgstr "PTR / DNS inverso"
+
+#~ msgid "GeoIP"
+#~ msgstr "GeoIP"
+
+#~ msgid "WHOIS"
+#~ msgstr "WHOIS"
+
+#~ msgid "Network error."
+#~ msgstr "Errore di rete."
+
+#~ msgid "No domain configured. Save an email address in Settings first."
+#~ msgstr "Nessun dominio configurato. Salva prima un indirizzo email."
+
+#~ msgid "Error"
+#~ msgstr "Errore"
+
+# PointNet promo
+#~ msgid "Need professional help with email deliverability?"
+#~ msgstr "Hai bisogno di aiuto professionale con la deliverability?"
+
+#~ msgid ""
+#~ "PointNet offers SPF/DMARC/DKIM setup, dedicated mail server configuration "
+#~ "and deliverability consulting."
+#~ msgstr ""
+#~ "PointNet offre configurazione SPF/DMARC/DKIM, server di posta dedicato e "
+#~ "consulenza sulla deliverability."
+
+#~ msgid "Contact PointNet →"
+#~ msgstr "Contatta PointNet →"
+
+#~ msgid "Email address to receive alerts when problems are detected."
+#~ msgstr ""
+#~ "Indirizzo email per ricevere gli avvisi quando vengono rilevati problemi."

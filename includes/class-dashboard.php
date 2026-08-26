@@ -281,21 +281,21 @@ class PN_Mailguard_Dashboard {
                 <div class="pn-doc-drawer-title-wrap">
                     <span id="pn-doc-drawer-icon" class="pn-doc-drawer-icon">🔐</span>
                     <div>
-                        <h3 id="pn-doc-drawer-title" class="pn-doc-drawer-title"><?php esc_html_e('Documentazione Contestuale', 'pointnet-mailguard'); ?></h3>
-                        <span id="pn-doc-drawer-subtitle" class="pn-doc-drawer-subtitle"><?php esc_html_e('Guida alla sicurezza DNS & Email', 'pointnet-mailguard'); ?></span>
+                        <h3 id="pn-doc-drawer-title" class="pn-doc-drawer-title"><?php esc_html_e('Contextual Documentation', 'pointnet-mailguard'); ?></h3>
+                        <span id="pn-doc-drawer-subtitle" class="pn-doc-drawer-subtitle"><?php esc_html_e('DNS & Email Security Guide', 'pointnet-mailguard'); ?></span>
                     </div>
                 </div>
-                <button type="button" id="pn-doc-drawer-close" class="pn-doc-drawer-close" aria-label="<?php esc_attr_e('Chiudi', 'pointnet-mailguard'); ?>">&times;</button>
+                <button type="button" id="pn-doc-drawer-close" class="pn-doc-drawer-close" aria-label="<?php esc_attr_e('Close', 'pointnet-mailguard'); ?>">&times;</button>
             </div>
             <div id="pn-doc-drawer-content" class="pn-doc-drawer-content">
                 <!-- Populated dynamically by admin.js -->
             </div>
             <div class="pn-doc-drawer-footer">
                 <a id="pn-doc-drawer-tool-link" href="<?php echo esc_url(admin_url('admin.php?page=pn-mailguard&tab=dnstools')); ?>" class="button button-primary">
-                    🔍 <?php esc_html_e('Apri Strumento Analisi Live', 'pointnet-mailguard'); ?>
+                    🔍 <?php esc_html_e('Open Live Analysis Tool', 'pointnet-mailguard'); ?>
                 </a>
                 <button type="button" class="button button-secondary pn-doc-drawer-close-btn">
-                    <?php esc_html_e('Chiudi', 'pointnet-mailguard'); ?>
+                    <?php esc_html_e('Close', 'pointnet-mailguard'); ?>
                 </button>
             </div>
         </div>
@@ -601,11 +601,11 @@ class PN_Mailguard_Dashboard {
                         }
                     }
                     if ($dnsbl_has_listed):
-                        echo '<span class="pn-doc-badge" data-docs="dnsbl" style="background:#fbeaea;color:#a30000;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">✗ DNSBL ℹ️</span>';
+                        echo '<span class="pn-doc-badge" data-docs="dnsbl" style="background:#fbeaea;color:#a30000;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">✗ DNSBL ℹ️</span>';
                     elseif ($dnsbl_has_data):
-                        echo '<span class="pn-doc-badge" data-docs="dnsbl" style="background:#edfaef;color:#00a32a;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">✓ DNSBL ℹ️</span>';
+                        echo '<span class="pn-doc-badge" data-docs="dnsbl" style="background:#edfaef;color:#00a32a;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">✓ DNSBL ℹ️</span>';
                     else:
-                        echo '<span class="pn-doc-badge" data-docs="dnsbl" style="background:#f0f0f0;color:#999;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">DNSBL — ℹ️</span>';
+                        echo '<span class="pn-doc-badge" data-docs="dnsbl" style="background:#f0f0f0;color:#999;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">DNSBL — ℹ️</span>';
                     endif;
                     ?>
                     <?php
@@ -626,9 +626,9 @@ class PN_Mailguard_Dashboard {
                         elseif ($mx_ip_warn): $bg = '#fff8e5'; $txt = '#996800'; $icon = '⚠';
                         else: $bg = '#edfaef'; $txt = '#00a32a'; $icon = '✓';
                         endif;
-                        echo '<span class="pn-doc-badge" data-docs="ip" style="background:' . esc_attr($bg) . ';color:' . esc_attr($txt) . ';font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">' . esc_html($icon) . ' IP ' . esc_html($mx_ip_label) . ' ℹ️</span>';
+                        echo '<span class="pn-doc-badge" data-docs="ip" style="background:' . esc_attr($bg) . ';color:' . esc_attr($txt) . ';font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;white-space:nowrap;cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">' . esc_html($icon) . ' IP ' . esc_html($mx_ip_label) . ' ℹ️</span>';
                     else:
-                        echo '<span class="pn-doc-badge" data-docs="ip" style="background:#f0f0f0;color:#999;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">IP — ℹ️</span>';
+                        echo '<span class="pn-doc-badge" data-docs="ip" style="background:#f0f0f0;color:#999;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px;cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">IP — ℹ️</span>';
                     endif;
                     ?>
                 </div>
@@ -700,7 +700,7 @@ class PN_Mailguard_Dashboard {
 
     private static function badge(string $label, $data, string $type = ''): void {
         if (!$data) {
-            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#f0f0f0; color:#999; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">' . esc_html($label) . ' — ℹ️</span>';
+            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#f0f0f0; color:#999; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">' . esc_html($label) . ' — ℹ️</span>';
             return;
         }
         $status_class = match ($data['status']) {
@@ -709,11 +709,11 @@ class PN_Mailguard_Dashboard {
             default            => 'warning',
         };
         if ($status_class === 'passed') {
-            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#edfaef; color:#00a32a; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">✓ ' . esc_html($label) . ' ℹ️</span>';
+            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#edfaef; color:#00a32a; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">✓ ' . esc_html($label) . ' ℹ️</span>';
         } elseif ($status_class === 'error') {
-            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#fbeaea; color:#a30000; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">✗ ' . esc_html($label) . ' ℹ️</span>';
+            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#fbeaea; color:#a30000; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">✗ ' . esc_html($label) . ' ℹ️</span>';
         } else {
-            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#fff8e5; color:#996800; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Clicca per la guida contestuale', 'pointnet-mailguard') . '">⚠ ' . esc_html($label) . ' ℹ️</span>';
+            echo '<span class="pn-doc-badge" data-docs="' . esc_attr($type) . '" style="background:#fff8e5; color:#996800; font-size:11px; font-weight:600; padding:3px 10px; border-radius:4px; cursor:pointer;" title="' . esc_attr__('Click for contextual guide', 'pointnet-mailguard') . '">⚠ ' . esc_html($label) . ' ℹ️</span>';
         }
     }
 
@@ -1083,7 +1083,7 @@ class PN_Mailguard_Dashboard {
                 <span style="font-size:14px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
                     <span style="font-size:18px;"><?php echo esc_html($icon); ?></span>
                     <?php echo esc_html($label . ' Analyzer'); ?>
-                    <button type="button" class="pn-doc-badge" data-docs="<?php echo esc_attr($type); ?>" style="background:none; border:none; color:#2271b1; cursor:pointer; font-size:13px; padding:0 2px; line-height:1;" title="<?php esc_attr_e('Guida e documentazione contestuale', 'pointnet-mailguard'); ?>">ℹ️</button>
+                    <button type="button" class="pn-doc-badge" data-docs="<?php echo esc_attr($type); ?>" style="background:none; border:none; color:#2271b1; cursor:pointer; font-size:13px; padding:0 2px; line-height:1;" title="<?php esc_attr_e('Contextual guide and documentation', 'pointnet-mailguard'); ?>">ℹ️</button>
                 </span>
                 <span style="font-size:11px; color:#999;">
                     <?php
