@@ -124,6 +124,7 @@ class PN_Mailguard_Loader {
 
         // Localized strings and data for JS
         wp_localize_script('pn-mailguard-admin', 'pnMailguard', [
+            'adminUrl'           => admin_url('admin.php?page=pn-mailguard'),
             'nonce'              => wp_create_nonce('pn_mailguard_ajax_nonce'),
             'running'            => __('Running...', 'pointnet-mailguard'),
             'runScheduled'       => __('Run Scheduled Scan Now', 'pointnet-mailguard'),

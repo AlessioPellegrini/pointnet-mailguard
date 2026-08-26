@@ -135,6 +135,7 @@ Planned improvements for upcoming releases:
 * New: Added DNSSEC Analyzer card to DNS & IP Tools tab with instant DoH analysis
 * New: Integrated DNSSEC Findings into AI deliverability analysis and AI Chat context (Google Gemini API)
 * New: Export / Support JSON report now includes DNSSEC configuration
+* New: Off-Canvas Contextual Documentation Drawer — interactive knowledge base for SPF, DMARC, DKIM, MTA-STS, DNSSEC, DNSBL, and IP/PTR
 * Improved: Capped DNS Record Status cards grid to max 4 columns in Email & MX Monitor with responsive breakpoints
 * New: Automated IMAP Email Ingestion — fetch DMARC aggregate XML and TLSRPT JSON report attachments (.zip, .gz, .xml, .json) automatically from an IMAP mailbox
 * New: Custom IMAP configuration — configurable host, port (993/143), encryption (SSL/TLS/Plain), username, encrypted password, and mailbox (e.g. INBOX)

@@ -708,4 +708,178 @@ jQuery(document).ready(function($) {
                   .show();
         });
     });
+
+    // -------------------------------------------------------------------------
+    // Contextual Documentation Drawer (Off-Canvas Knowledge Base)
+    // -------------------------------------------------------------------------
+    var pnKnowledgeBase = {
+        spf: {
+            icon: '🔐',
+            title: 'SPF (Sender Policy Framework)',
+            subtitle: 'Autenticazione Mittente & Prevenzione Spoofing',
+            tab: 'dnstools',
+            summary: 'L\'SPF (RFC 7208) è un record DNS di tipo TXT che elenca gli indirizzi IP e i server di posta autorizzati a inviare email per conto del tuo dominio.',
+            whyItMatters: 'Senza SPF, chiunque può inviare email falsificando il tuo indirizzo mittente (email spoofing). Provider come Gmail, Microsoft 365 e Yahoo scartano o contrassegnano come SPAM le email prive di record SPF valido.',
+            keyPoints: [
+                '<strong>Definisce i mittenti validi:</strong> Specifica IP fisso, subnet o meccanismi <code>include:</code> per servizi esterni (es. Google Workspace, Brevo, Mailchimp).',
+                '<strong>Qualificatore finale:</strong> Deve terminare con <code>-all</code> (Hardfail - consigliato) o <code>~all</code> (Softfail - fase di test). Evita <code>+all</code>.',
+                '<strong>Limite dei 10 Lookup:</strong> La valutazione del record SPF non deve superare 10 interrogazioni DNS (lookups) per evitare errori permanenti (Permerror).'
+            ],
+            remediation: 'Verifica la sintassi del record SPF nello strumento <em>DNS & IP Tools</em> per assicurarti che tutti i mittenti legittimi siano censiti.'
+        },
+        dmarc: {
+            icon: '📋',
+            title: 'DMARC (Domain-based Reporting)',
+            subtitle: 'Politica di Protezione & Reportistica Aggregata',
+            tab: 'dmarcreports',
+            summary: 'Il DMARC (RFC 7489) si basa su SPF e DKIM per istruire i server destinatari su come gestire i messaggi non autenticati e consente di ricevere report di analisi (RUA/RUF).',
+            whyItMatters: 'È lo standard definitivo contro il Phishing e l\'usurpazione di dominio. Senza DMARC i server di posta non sanno se bloccare le email fraudolente inviate a tuo nome.',
+            keyPoints: [
+                '<strong>Politica <code>p=none</code>:</strong> Modalità monitoraggio (raccoglie report senza bloccare alcuna email).',
+                '<strong>Politica <code>p=quarantine</code>:</strong> Sposta nello SPAM del destinatario le email non autenticate.',
+                '<strong>Politica <code>p=reject</code>:</strong> Blocca del tutto la consegna dei messaggi non autenticati (massima protezione).',
+                '<strong>Report aggregati RUA:</strong> Specifica <code>rua=mailto:...</code> per analizzare i report nel tab <em>DMARC Reports</em>.'
+            ],
+            remediation: 'Attiva il record TXT DMARC su <code>_dmarc.tuodominio.com</code> e usa la sezione <em>DMARC Reports</em> del plugin per monitorare i report ricevuti.'
+        },
+        dkim: {
+            icon: '🔑',
+            title: 'DKIM (DomainKeys Identified Mail)',
+            subtitle: 'Firma Digitale Crittografica delle Email',
+            tab: 'dnstools',
+            summary: 'Il DKIM (RFC 6376) aggiunge una firma crittografica invisibile all\'intestazione delle email inviate. Il destinatario usa la chiave pubblica pubblicata nel tuo DNS per verificarla.',
+            whyItMatters: 'Assicura che l\'email sia stata realmente inviata dal tuo server e garantisce che il contenuto del messaggio non sia stato alterato durante il transito.',
+            keyPoints: [
+                '<strong>Selettore (Selector):</strong> Il nome della chiave pubblicata nel DNS (es. <code>default._domainkey.tuodominio.com</code>).',
+                '<strong>Chiave Pubblica & Privata:</strong> La chiave privata firma l\'email sul server, la chiave pubblica nel DNS ne permette la decifratura e verifica.',
+                '<strong>Provider Pubblici:</strong> Servizi come Gmail o Outlook usano selettori proprietari quando invii tramite la loro webmail.'
+            ],
+            remediation: 'Imposta il selettore DKIM nelle impostazioni del plugin o usa il rilevamento automatico nel tab <em>DNS & IP Tools</em> per verificare la firma.'
+        },
+        mtasts: {
+            icon: '🛡️',
+            title: 'MTA-STS (MTA Strict Transport Security)',
+            subtitle: 'Cifratura Forzata connessioni SMTP TLS (RFC 8461)',
+            tab: 'dnstools',
+            summary: 'L\'MTA-STS obbliga i server di posta mittenti a stabilire connessioni cifrate sicure (TLS/SSL) con certificato valido prima di consegnare email al tuo dominio.',
+            whyItMatters: 'Impedisce gli attacchi Man-in-the-Middle (MitM) ed evita attacchi di "Downgrade TLS" (STARTTLS stripping) dove un attaccante forza la comunicazione in chiaro.',
+            keyPoints: [
+                '<strong>Record DNS TXT:</strong> Pubblicato su <code>_mta-sts.tuodominio.com</code> con valore <code>v=STSv1; id=YYYYMMDDnn;</code>.',
+                '<strong>Policy File HTTPS:</strong> Servito su <code>https://mta-sts.tuodominio.com/.well-known/mta-sts.txt</code> con gli host MX e <code>mode: enforce</code>.',
+                '<strong>TLS-RPT (RFC 8460):</strong> Abilita la ricezione dei report sugli errori di cifratura TLS via email.'
+            ],
+            remediation: 'Verifica la presenza sia del record DNS che del file HTTPS tramite il controllo MTA-STS nel tab <em>DNS & IP Tools</em>.'
+        },
+        dnssec: {
+            icon: '🔒',
+            title: 'DNSSEC (DNS Security Extensions)',
+            subtitle: 'Autenticazione & Integrità delle Risposte DNS',
+            tab: 'dnstools',
+            summary: 'Il DNSSEC aggiunge firme digitali crittografiche a tutti i record DNS del tuo dominio per attestare che la risposta proviene dal server autorevole autentico.',
+            whyItMatters: 'Protegge il tuo dominio e i tuoi utenti contro attacchi di DNS Spoofing e DNS Cache Poisoning (dirottamento verso server malevoli).',
+            keyPoints: [
+                '<strong>Record DS (Delegation Signer):</strong> Pubblicato nel Registro TLD principale (.it, .com, .net, ecc.).',
+                '<strong>Record DNSKEY:</strong> Chiavi di zona (ZSK/KSK) gestite sul tuo server DNS.',
+                '<strong>Flag AD (Authenticated Data):</strong> Attesta che la catena di fiducia dal registro TLD al dominio è valida.'
+            ],
+            remediation: 'Attiva il DNSSEC presso il tuo provider DNS (es. Cloudflare, Aruba, Route53) e registra la chiave DS nel pannello del Registrar.'
+        },
+        dnsbl: {
+            icon: '🚨',
+            title: 'DNSBL / RBL (Blacklist IP Server)',
+            subtitle: 'Reputazione dell\'Indirizzo IP Mail Server',
+            tab: 'dnstools',
+            summary: 'Le DNSBL (DNS Blacklists) sono database di reputazione in tempo reale usati dai provider email per bloccare messaggi da IP associati a SPAM o malware.',
+            whyItMatters: 'Se l\'indirizzo IP del tuo server di posta viene inserito in una blacklist (es. Spamhaus, Barracuda), le tue email verranno rifiutate immediatamente dai destinatari.',
+            keyPoints: [
+                '<strong>Rilevamento Automatico:</strong> Il plugin interroga 9 delle principali blacklist internazionali ad ogni scansione.',
+                '<strong>Cause di Blacklisting:</strong> Invio incontrollato di spam, form sul sito abusati da bot, malware sul server o account violati.',
+                '<strong>Procedura di Delisting:</strong> Ogni blacklist offre un portale ufficiale per richiedere la rimozione dopo aver risolto la causa.'
+            ],
+            remediation: 'Se l\'IP risulta in blacklist, usa lo strumento <em>DNS & IP Tools</em> per identificare la lista ed avviare la procedura di de-listing.'
+        },
+        ip: {
+            icon: '🌐',
+            title: 'IP Server & Reverse DNS (PTR)',
+            subtitle: 'Identificazione Server & Risoluzione Inversa',
+            tab: 'dnstools',
+            summary: 'L\'indirizzo IP identifica il tuo server di posta (record MX). Il record PTR (Reverse DNS) mappa l\'indirizzo IP nel rispettivo nome host di dominio.',
+            whyItMatters: 'I server destinatari (Gmail, M365, Yahoo) controllano il "Reverse DNS". Se l\'IP non ha un record PTR valido corrispondente al nome host, l\'email viene contrassegnata come SPAM.',
+            keyPoints: [
+                '<strong>Coerenza Host-IP:</strong> Il record PTR dell\'IP deve puntare a un FQDN valido (es. <code>mail.tuodominio.com</code>).',
+                '<strong>Gestione dal Provider:</strong> Si configura solitamente nel pannello del provider della macchina/IP (VPS, Hetzner, AWS, Aruba, DigitalOcean).',
+                '<strong>IPv4 vs IPv6:</strong> Entrambi i protocolli richiedono la configurazione corretta del Reverse DNS.'
+            ],
+            remediation: 'Controlla che l\'IP del tuo mail server risolva correttamente in un hostname valido tramite l\'analisi PTR nel tab <em>DNS & IP Tools</em>.'
+        }
+    };
+
+    $(document).on('click', '[data-docs]', function(e) {
+        e.preventDefault();
+        var key = $(this).attr('data-docs');
+        var data = pnKnowledgeBase[key];
+        if (!data) return;
+
+        $('#pn-doc-drawer-icon').text(data.icon);
+        $('#pn-doc-drawer-title').text(data.title);
+        $('#pn-doc-drawer-subtitle').text(data.subtitle);
+
+        var html = '';
+        
+        // Section 1: In Sintesi
+        html += '<div class="pn-doc-section">';
+        html += '<div class="pn-doc-heading">📖 Cos\'è e a cosa serve</div>';
+        html += '<p style="margin:0 0 10px;">' + data.summary + '</p>';
+        html += '</div>';
+
+        // Section 2: Perché è importante
+        html += '<div class="pn-doc-section">';
+        html += '<div class="pn-doc-heading">⚡ Perché è fondamentale</div>';
+        html += '<p style="margin:0;">' + data.whyItMatters + '</p>';
+        html += '</div>';
+
+        // Section 3: Punti Chiave
+        if (data.keyPoints && data.keyPoints.length) {
+            html += '<div class="pn-doc-section">';
+            html += '<div class="pn-doc-heading">🎯 Punti Chiave & Regole</div>';
+            html += '<ul style="margin:0; padding-left:18px; line-height:1.6;">';
+            data.keyPoints.forEach(function(item) {
+                html += '<li style="margin-bottom:6px;">' + item + '</li>';
+            });
+            html += '</ul>';
+            html += '</div>';
+        }
+
+        // Section 4: Guida Rapida & Soluzione
+        html += '<div class="pn-doc-section">';
+        html += '<div class="pn-doc-heading">💡 Come verificare e risolvere</div>';
+        html += '<div class="pn-doc-box">' + data.remediation + '</div>';
+        html += '</div>';
+
+        $('#pn-doc-drawer-content').html(html);
+
+        // Update action button link
+        var targetUrl = (pnMailguard.adminUrl || 'admin.php?page=pn-mailguard') + '&tab=' + (data.tab || 'dnstools');
+        $('#pn-doc-drawer-tool-link').attr('href', targetUrl);
+
+        // Show drawer & backdrop
+        $('#pn-doc-drawer-backdrop').addClass('active');
+        $('#pn-doc-drawer').addClass('active');
+    });
+
+    function closePnDocDrawer() {
+        $('#pn-doc-drawer-backdrop').removeClass('active');
+        $('#pn-doc-drawer').removeClass('active');
+    }
+
+    $(document).on('click', '#pn-doc-drawer-close, .pn-doc-drawer-close-btn, #pn-doc-drawer-backdrop', function(e) {
+        e.preventDefault();
+        closePnDocDrawer();
+    });
+
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            closePnDocDrawer();
+        }
+    });
 });
