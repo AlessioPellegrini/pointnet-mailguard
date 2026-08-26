@@ -55,6 +55,7 @@ class PN_Mailguard_Scanner {
             $d = PN_Mailguard_DKIM::autodetect($mx['domain']);
             if (!empty($d['selector'])) {
                 $dkim_sel = $d['selector'];
+                update_option('pn_mailguard_dkim_selector', $dkim_sel);
             }
         }
         $dkim_status = 'missing';
@@ -171,6 +172,13 @@ class PN_Mailguard_Scanner {
 
         if (empty($selector)) {
             $selector = get_option('pn_mailguard_dkim_selector', '');
+        }
+        if (empty($selector) && !PN_Mailguard_DKIM::is_public_provider($domain)) {
+            $d = PN_Mailguard_DKIM::autodetect($domain);
+            if (!empty($d['selector'])) {
+                $selector = $d['selector'];
+                update_option('pn_mailguard_dkim_selector', $selector);
+            }
         }
         $dkim_data = null;
         if (!empty($selector)) {

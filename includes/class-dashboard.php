@@ -78,10 +78,15 @@ class PN_Mailguard_Dashboard {
             }
         }
 
-        // Save DKIM selector and Gemini config (from onboarding or advanced tab)
-        $dkim_selector = isset($_POST['pn_mailguard_dkim_selector']) ? sanitize_text_field(wp_unslash($_POST['pn_mailguard_dkim_selector'])) : '';
-        $gemini_model  = isset($_POST['pn_mailguard_gemini_model']) ? sanitize_text_field(wp_unslash($_POST['pn_mailguard_gemini_model'])) : '';
-        update_option('pn_mailguard_dkim_selector', $dkim_selector);
+        // Save DKIM selector if present in POST (from onboarding or advanced tab)
+        if (isset($_POST['pn_mailguard_dkim_selector'])) {
+            $dkim_selector = sanitize_text_field(wp_unslash($_POST['pn_mailguard_dkim_selector']));
+            update_option('pn_mailguard_dkim_selector', $dkim_selector);
+        }
+        if (isset($_POST['pn_mailguard_gemini_model'])) {
+            $gemini_model = sanitize_text_field(wp_unslash($_POST['pn_mailguard_gemini_model']));
+            update_option('pn_mailguard_gemini_model', $gemini_model);
+        }
 
         // Encrypt Gemini API key before storing in the database.
         // The HTML password field shows "********" as placeholder when a key is already saved.
@@ -507,11 +512,26 @@ class PN_Mailguard_Dashboard {
                 return null;
             };
             $last_details = $last_email->details ?? '';
-            if (!$spf_data)    $spf_data    = $parse_status($last_details, 'SPF')    ?? ['status' => 'missing'];
-            if (!$dmarc_data)  $dmarc_data  = $parse_status($last_details, 'DMARC')  ?? ['status' => 'missing'];
-            if (!$dkim_data)   $dkim_data   = $parse_status($last_details, 'DKIM')   ?? ['status' => 'missing'];
-            if (!$mtasts_data) $mtasts_data = $parse_status($last_details, 'MTA-STS') ?? ['status' => 'missing'];
+            if ((!$spf_data || empty($spf_data['checks'])) && $domain)       $spf_data    = PN_Mailguard_SPF::analyze($domain);
+            if ((!$dmarc_data || empty($dmarc_data['checks'])) && $domain)   $dmarc_data  = PN_Mailguard_DMARC::analyze($domain);
+            if ((!$mtasts_data || empty($mtasts_data['checks'])) && $domain) $mtasts_data = PN_Mailguard_MTA_STS::analyze($domain);
             if ((!$dnssec_data || empty($dnssec_data['checks'])) && $domain) $dnssec_data = PN_Mailguard_Dnssec::analyze($domain);
+
+            if ((!$dkim_data || empty($dkim_data['checks'])) && $domain) {
+                $sel = get_option('pn_mailguard_dkim_selector', '');
+                if (empty($sel) && !PN_Mailguard_DKIM::is_public_provider($domain)) {
+                    $d = PN_Mailguard_DKIM::autodetect($domain);
+                    if (!empty($d['selector'])) {
+                        $sel = $d['selector'];
+                        update_option('pn_mailguard_dkim_selector', $sel);
+                    }
+                }
+                if (!empty($sel)) {
+                    $dkim_data = PN_Mailguard_DKIM::analyze($domain, $sel);
+                } elseif (!$dkim_data) {
+                    $dkim_data = $parse_status($last_details, 'DKIM') ?? ['status' => 'missing'];
+                }
+            }
         }
 
         // Extract DNSBL results from last email log
