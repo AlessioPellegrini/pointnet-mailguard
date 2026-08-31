@@ -165,8 +165,8 @@ class PN_Mailguard_Imap_Fetcher {
                     }
                 }
 
-                // Apply action after import (delete vs mark read)
-                if ($email_has_success || empty($attachments)) {
+                // Apply action after import (delete vs mark read) - only when successfully processed
+                if ($email_has_success) {
                     if ($cfg['action_after'] === 'delete') {
                         self::mark_deleted($stream, $msg_num);
                     } else {
@@ -628,13 +628,19 @@ class PN_Mailguard_Imap_Fetcher {
         }
 
         foreach ($raw_parts as $part) {
-            $header_body_split = preg_split('/\r?\n\r?\n/', $part, 2);
-            if (count($header_body_split) < 2) {
+            $trimmed_part = ltrim($part);
+            if (empty($trimmed_part)) {
                 continue;
             }
 
-            $headers = $header_body_split[0];
-            $body    = $header_body_split[1];
+            $header_body_split = preg_split('/\r?\n\r?\n/', $trimmed_part, 2);
+            if (count($header_body_split) < 2) {
+                $headers = '';
+                $body    = $trimmed_part;
+            } else {
+                $headers = $header_body_split[0];
+                $body    = $header_body_split[1];
+            }
 
             // Look for attachment filename or Content-Type matching report formats
             $filename = '';
@@ -668,7 +674,15 @@ class PN_Mailguard_Imap_Fetcher {
             } elseif ($encoding === 'quoted-printable') {
                 $content = quoted_printable_decode($body);
             } else {
-                $content = $body;
+                $clean = preg_replace('/--\s*$/', '', trim($body));
+                $clean_b64 = preg_replace('/[^A-Za-z0-9+\/=]/', '', $clean);
+                $try_b64 = (!empty($clean_b64) && strlen($clean_b64) % 4 === 0) ? base64_decode($clean_b64) : false;
+                if ($try_b64 !== false && (str_starts_with($try_b64, "\x1f\x8b") || str_starts_with($try_b64, "PK\x03\x04") || str_contains($try_b64, '<feedback'))) {
+                    $content = $try_b64;
+                    $is_report = true;
+                } else {
+                    $content = $body;
+                }
             }
 
             // If not marked by headers, verify if payload itself is GZIP, ZIP, XML or JSON
