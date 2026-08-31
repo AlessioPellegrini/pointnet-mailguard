@@ -586,17 +586,35 @@ class PN_Mailguard_Imap_Fetcher {
 
         // If no boundary found, handle as single-part payload
         if (empty($boundaries)) {
-            $header_body_split = preg_split('/\r?\n\r?\n/', $raw_mime, 2);
-            $headers = $header_body_split[0] ?? '';
-            $body    = $header_body_split[1] ?? $raw_mime;
+            $filename = 'dmarc_report.zip';
+            if (preg_match('/filename=[\'"]?([^\'";\r\n]+)[\'"]?/i', $raw_mime, $fnm)) {
+                $filename = trim($fnm[1]);
+            }
+
+            // In single-part emails, anchor at Content-Transfer-Encoding / Content-Type to bypass any blank lines in upstream headers
+            $cte_pos = stripos($raw_mime, 'content-transfer-encoding:');
+            if ($cte_pos === false) {
+                $cte_pos = stripos($raw_mime, 'content-type:');
+            }
+
+            if ($cte_pos !== false) {
+                $after_cte = substr($raw_mime, $cte_pos);
+                $header_body_split = preg_split('/\r?\n\r?\n/', $after_cte, 2);
+                $headers = substr($raw_mime, 0, $cte_pos) . ($header_body_split[0] ?? '');
+                $body    = $header_body_split[1] ?? '';
+            } else {
+                $header_body_split = preg_split('/\r?\n\r?\n/', $raw_mime, 2);
+                $headers = $header_body_split[0] ?? '';
+                $body    = $header_body_split[1] ?? $raw_mime;
+            }
 
             $encoding = '';
-            if (preg_match('/content-transfer-encoding:\s*([a-z0-9\-]+)/i', $headers, $em)) {
+            if (preg_match('/content-transfer-encoding:\s*([a-z0-9\-]+)/i', $raw_mime, $em)) {
                 $encoding = strtolower(trim($em[1]));
             }
 
             $content = $body;
-            if ($encoding === 'base64') {
+            if ($encoding === 'base64' || preg_match('/^[A-Za-z0-9+\/=\s\r\n]{50,}$/', trim($body))) {
                 $clean = preg_replace('/--\s*$/', '', trim($body));
                 $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $clean);
                 $content = base64_decode($clean);
@@ -604,9 +622,11 @@ class PN_Mailguard_Imap_Fetcher {
                 $content = quoted_printable_decode($body);
             }
 
-            $trimmed = ltrim($content);
-            if (str_starts_with($content, "\x1f\x8b") || str_starts_with($content, "PK\x03\x04") || str_starts_with($trimmed, '<?xml') || str_starts_with($trimmed, '{') || str_contains($trimmed, '<feedback')) {
-                $attachments[] = ['filename' => 'report_payload', 'content' => $content];
+            if ($content !== false && !empty($content)) {
+                $trimmed = ltrim($content);
+                if (str_starts_with($content, "\x1f\x8b") || str_starts_with($content, "PK\x03\x04") || str_starts_with($trimmed, '<?xml') || str_starts_with($trimmed, '{') || str_contains($trimmed, '<feedback')) {
+                    $attachments[] = ['filename' => $filename, 'content' => $content];
+                }
             }
             return $attachments;
         }
