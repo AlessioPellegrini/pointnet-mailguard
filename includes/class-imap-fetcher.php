@@ -141,7 +141,9 @@ class PN_Mailguard_Imap_Fetcher {
 
                 if (empty($attachments)) {
                     $failed++;
-                    $errors[] = "Msg #{$msg_num}: No valid DMARC or TLSRPT report attachment found.";
+                    $len = strlen($raw_email);
+                    $preview = substr(preg_replace('/\s+/', ' ', trim($raw_email)), 0, 70);
+                    $errors[] = sprintf("Msg #%d (%d bytes, \"%s...\"): No valid DMARC or TLSRPT attachment found.", $msg_num, $len, $preview);
                     continue;
                 }
 
@@ -708,7 +710,7 @@ class PN_Mailguard_Imap_Fetcher {
 
         // Universal Fallback 1: Direct scan for Base64 ZIP archives (UEsDB is PK\x03\x04 in Base64)
         if (empty($attachments)) {
-            if (preg_match_all('/(UEsDB[A-Za-z0-9+\/=\s]{50,})/s', $raw_mime, $zip_matches)) {
+            if (preg_match_all('/(UEsDB[A-Za-z0-9+\/=\r\n\s]{30,})/s', $raw_mime, $zip_matches)) {
                 foreach ($zip_matches[1] as $zm) {
                     $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $zm);
                     $decoded = base64_decode($clean);
@@ -724,7 +726,7 @@ class PN_Mailguard_Imap_Fetcher {
 
         // Universal Fallback 2: Direct scan for Base64 GZIP archives (H4sI is \x1f\x8b\x08 in Base64)
         if (empty($attachments)) {
-            if (preg_match_all('/(H4sI[A-Za-z0-9+\/=\s]{50,})/s', $raw_mime, $gz_matches)) {
+            if (preg_match_all('/(H4sI[A-Za-z0-9+\/=\r\n\s]{30,})/s', $raw_mime, $gz_matches)) {
                 foreach ($gz_matches[1] as $gm) {
                     $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $gm);
                     $decoded = base64_decode($clean);
