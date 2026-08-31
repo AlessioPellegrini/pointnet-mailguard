@@ -708,39 +708,30 @@ class PN_Mailguard_Imap_Fetcher {
             }
         }
 
-        // Universal Fallback 1: Direct scan for Base64 ZIP archives (UEsDB is PK\x03\x04 in Base64)
+        // Universal Base64 Block Scanner: Scans any multi-line Base64 block in the email
         if (empty($attachments)) {
-            if (preg_match_all('/(UEsDB[A-Za-z0-9+\/=\r\n\s]{30,})/s', $raw_mime, $zip_matches)) {
-                foreach ($zip_matches[1] as $zm) {
-                    $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $zm);
+            if (preg_match_all('/([A-Za-z0-9+\/]{30,}[\r\n\sA-Za-z0-9+\/=]{40,})/s', $raw_mime, $b64_blocks)) {
+                foreach ($b64_blocks[1] as $block) {
+                    $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $block);
+                    if (empty($clean) || strlen($clean) < 40) continue;
                     $decoded = base64_decode($clean);
-                    if ($decoded !== false && str_starts_with($decoded, "PK\x03\x04")) {
-                        $attachments[] = [
-                            'filename' => 'dmarc_report.zip',
-                            'content'  => $decoded,
-                        ];
+                    if ($decoded === false || strlen($decoded) < 10) continue;
+
+                    $trimmed = ltrim($decoded);
+                    if (str_starts_with($decoded, "PK\x03\x04")) {
+                        $attachments[] = ['filename' => 'dmarc_report.zip', 'content' => $decoded];
+                    } elseif (str_starts_with($decoded, "\x1f\x8b")) {
+                        $attachments[] = ['filename' => 'dmarc_report.xml.gz', 'content' => $decoded];
+                    } elseif (str_starts_with($trimmed, '<?xml') || str_contains($trimmed, '<feedback')) {
+                        $attachments[] = ['filename' => 'dmarc_report.xml', 'content' => $decoded];
+                    } elseif (str_starts_with($trimmed, '{') && (str_contains($trimmed, 'organization-name') || str_contains($trimmed, 'policies'))) {
+                        $attachments[] = ['filename' => 'tlsrpt_report.json', 'content' => $decoded];
                     }
                 }
             }
         }
 
-        // Universal Fallback 2: Direct scan for Base64 GZIP archives (H4sI is \x1f\x8b\x08 in Base64)
-        if (empty($attachments)) {
-            if (preg_match_all('/(H4sI[A-Za-z0-9+\/=\r\n\s]{30,})/s', $raw_mime, $gz_matches)) {
-                foreach ($gz_matches[1] as $gm) {
-                    $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $gm);
-                    $decoded = base64_decode($clean);
-                    if ($decoded !== false && str_starts_with($decoded, "\x1f\x8b")) {
-                        $attachments[] = [
-                            'filename' => 'dmarc_report.xml.gz',
-                            'content'  => $decoded,
-                        ];
-                    }
-                }
-            }
-        }
-
-        // Universal Fallback 3: Direct scan for embedded XML feedback element
+        // Direct scan for raw (unencoded) XML feedback element
         if (empty($attachments)) {
             if (preg_match('/(<feedback[\s>].*?<\/feedback>)/is', $raw_mime, $xml_m)) {
                 $attachments[] = [
