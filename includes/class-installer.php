@@ -55,7 +55,7 @@ class PN_Mailguard_Installer {
             $wpdb->prepare("SHOW COLUMNS FROM %i LIKE 'mtasts_data'", $ai_table)
         );
         if (empty($column)) {
-            $wpdb->query("ALTER TABLE {$ai_table} ADD COLUMN mtasts_data longtext AFTER dkim_data");
+            $wpdb->query($wpdb->prepare("ALTER TABLE %i ADD COLUMN mtasts_data longtext AFTER dkim_data", $ai_table));
         }
     }
 

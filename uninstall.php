@@ -9,15 +9,18 @@ $pn_mailguard_cleanup = get_option('pn_mailguard_uninstall_cleanup', '1'); // ph
 if ($pn_mailguard_cleanup === '1') {
 
     // 1. Drop all plugin tables
-    // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_log_email");
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_log_ip");
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_ai_results");
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_dmarc_records");
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_dmarc_reports");
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_tls_records");
-    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}pointnet_mailguard_tls_reports");
-    // phpcs:enable
+    $pn_mailguard_tables = [ // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+        $wpdb->prefix . 'pointnet_mailguard_log_email',
+        $wpdb->prefix . 'pointnet_mailguard_log_ip',
+        $wpdb->prefix . 'pointnet_mailguard_ai_results',
+        $wpdb->prefix . 'pointnet_mailguard_dmarc_records',
+        $wpdb->prefix . 'pointnet_mailguard_dmarc_reports',
+        $wpdb->prefix . 'pointnet_mailguard_tls_records',
+        $wpdb->prefix . 'pointnet_mailguard_tls_reports',
+    ];
+    foreach ($pn_mailguard_tables as $pn_mailguard_table) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+        $wpdb->query($wpdb->prepare("DROP TABLE IF EXISTS %i", $pn_mailguard_table));
+    }
 
     // 2. Delete all plugin options and transients
     $pn_mailguard_options = [ // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound

@@ -470,20 +470,6 @@ class PN_Mailguard_Dashboard {
                 </div>
             </form>
         </div>
-
-        <script>
-        // Auto-fill alert email from monitored email step
-        document.getElementById('onboarding-email').addEventListener('input', function() {
-            var alertField = document.getElementById('onboarding-alert-email');
-            if (alertField && !alertField._userEdited) {
-                alertField.value = this.value;
-            }
-        });
-        document.getElementById('onboarding-alert-email').addEventListener('input', function() {
-            this._userEdited = true;
-        });
-        </script>
-
         <?php
     }
 
@@ -944,7 +930,7 @@ class PN_Mailguard_Dashboard {
                         <?php endif; ?>
                         </div>
                         <div style="margin-left:14px; display:flex; flex-wrap:wrap; gap:3px;">
-                            <?php echo $badges_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- all content is hardcoded or escaped above ?>
+                            <?php echo wp_kses($badges_html, ['span' => ['style' => [], 'class' => [], 'data-docs' => [], 'title' => []]]); ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -2305,7 +2291,7 @@ class PN_Mailguard_Dashboard {
                 <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('DMARC Evaluated Emails', 'pointnet-mailguard'); ?></div>
             </div>
             <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; text-align:center;">
-                <div style="font-size:26px; font-weight:700; color:<?php echo $dmarc_pass_rate >= 90 ? '#00a32a' : ($dmarc_pass_rate >= 70 ? '#dba617' : '#d63638'); ?>;">
+                <div style="font-size:26px; font-weight:700; color:<?php echo esc_attr($dmarc_pass_rate >= 90 ? '#00a32a' : ($dmarc_pass_rate >= 70 ? '#dba617' : '#d63638')); ?>;">
                     <?php echo esc_html($dmarc_pass_rate); ?>%
                 </div>
                 <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('DMARC Pass Rate', 'pointnet-mailguard'); ?></div>
@@ -2315,7 +2301,7 @@ class PN_Mailguard_Dashboard {
                 <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('MTA-STS TLS Sessions', 'pointnet-mailguard'); ?></div>
             </div>
             <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; text-align:center;">
-                <div style="font-size:26px; font-weight:700; color:<?php echo $tls_success_rate >= 95 ? '#00a32a' : ($tls_success_rate >= 80 ? '#dba617' : '#d63638'); ?>;">
+                <div style="font-size:26px; font-weight:700; color:<?php echo esc_attr($tls_success_rate >= 95 ? '#00a32a' : ($tls_success_rate >= 80 ? '#dba617' : '#d63638')); ?>;">
                     <?php echo esc_html($tls_success_rate); ?>%
                 </div>
                 <div style="font-size:12px; color:#666; margin-top:4px; font-weight:600;"><?php esc_html_e('TLS Delivery Success', 'pointnet-mailguard'); ?></div>
@@ -2479,7 +2465,7 @@ class PN_Mailguard_Dashboard {
                             <td style="text-align:center; font-weight:700; color:#00a32a;">
                                 <?php echo esc_html(number_format_i18n($trep->successful_sessions)); ?>
                             </td>
-                            <td style="text-align:center; font-weight:700; color:<?php echo $trep->failed_sessions > 0 ? '#d63638' : '#666'; ?>;">
+                            <td style="text-align:center; font-weight:700; color:<?php echo esc_attr($trep->failed_sessions > 0 ? '#d63638' : '#666'); ?>;">
                                 <?php echo esc_html(number_format_i18n($trep->failed_sessions)); ?>
                             </td>
                             <td style="text-align:center;">
@@ -2587,129 +2573,6 @@ class PN_Mailguard_Dashboard {
                 </table>
             <?php endif; ?>
         </div>
-
-        <script>
-        jQuery(document).ready(function($) {
-            var dropzone = $('#pn-dmarc-dropzone');
-            var fileInput = $('#pn-dmarc-file-input');
-            var statusDiv = $('#pn-dmarc-upload-status');
-
-            $('#pn-dmarc-browse-btn, #pn-dmarc-dropzone').on('click', function(e) {
-                if (e.target.id !== 'pn-dmarc-file-input') {
-                    fileInput.trigger('click');
-                }
-            });
-
-            dropzone.on('dragover dragenter', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                dropzone.css('background', '#e1eeef');
-            }).on('dragleave drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                dropzone.css('background', '#f0f6ff');
-            });
-
-            dropzone.on('drop', function(e) {
-                var files = e.originalEvent.dataTransfer.files;
-                if (files.length > 0) {
-                    uploadReports(files);
-                }
-            });
-
-            fileInput.on('change', function() {
-                if (this.files.length > 0) {
-                    uploadReports(this.files);
-                }
-            });
-
-            async function uploadReports(files) {
-                var total = files.length;
-                var successCount = 0;
-                var errorCount = 0;
-                var errors = [];
-
-                statusDiv.css('color', '#2271b1').show();
-
-                for (var i = 0; i < total; i++) {
-                    var file = files[i];
-                    statusDiv.html('⏳ Processamento file <strong>' + (i + 1) + ' di ' + total + '</strong> (' + file.name + ')...');
-
-                    var formData = new FormData();
-                    formData.append('action', 'pn_mailguard_upload_dmarc_report');
-                    formData.append('nonce', pnMailguard.nonce);
-                    formData.append('dmarc_file', file);
-
-                    try {
-                        let response = await $.ajax({
-                            url: ajaxurl,
-                            type: 'POST',
-                            data: formData,
-                            contentType: false,
-                            processData: false
-                        });
-
-                        if (response.success) {
-                            successCount++;
-                        } else {
-                            errorCount++;
-                            errors.push(file.name + ': ' + (response.data.message || 'Upload fallito'));
-                        }
-                    } catch (err) {
-                        errorCount++;
-                        errors.push(file.name + ': Errore di rete');
-                    }
-                }
-
-                if (errorCount === 0) {
-                    statusDiv.css('color', '#00a32a').html('✅ ' + (total === 1 ? 'Report importato con successo!' : total + ' report importati con successo!'));
-                    setTimeout(function() { location.reload(); }, 1200);
-                } else if (successCount > 0) {
-                    statusDiv.css('color', '#dba617').html('⚠️ Importati ' + successCount + ' report su ' + total + '. ' + errorCount + ' errore/i:<br>' + errors.join('<br>'));
-                    setTimeout(function() { location.reload(); }, 3500);
-                } else {
-                    statusDiv.css('color', '#d63638').html('✗ Importazione fallita:<br>' + errors.join('<br>'));
-                }
-            }
-
-            $('.pn-toggle-details-btn').on('click', function() {
-                var targetId = $(this).data('target');
-                $('#' + targetId).toggle();
-            });
-
-            $('.pn-delete-report-btn').on('click', function() {
-                if (!confirm(pnMailguard.confirmDeleteReport || 'Are you sure you want to delete this report?')) return;
-                var reportId = $(this).data('id');
-                $.post(ajaxurl, {
-                    action: 'pn_mailguard_delete_dmarc_report',
-                    nonce: pnMailguard.nonce,
-                    report_id: reportId
-                }, function(res) {
-                    if (res.success) {
-                        location.reload();
-                    } else {
-                        alert(res.data.message || 'Delete failed');
-                    }
-                });
-            });
-
-            $('.pn-delete-tls-report-btn').on('click', function() {
-                if (!confirm(pnMailguard.confirmDeleteReport || 'Are you sure you want to delete this report?')) return;
-                var reportId = $(this).data('id');
-                $.post(ajaxurl, {
-                    action: 'pn_mailguard_delete_tls_report',
-                    nonce: pnMailguard.nonce,
-                    report_id: reportId
-                }, function(res) {
-                    if (res.success) {
-                        location.reload();
-                    } else {
-                        alert(res.data.message || 'Delete failed');
-                    }
-                });
-            });
-        });
-        </script>
         <?php
     }
 

@@ -916,4 +916,149 @@ jQuery(document).ready(function($) {
             closePnDocDrawer();
         }
     });
+
+    // -------------------------------------------------------------------------
+    // Onboarding — Auto-fill Alert Email
+    // -------------------------------------------------------------------------
+    $(document).on('input', '#onboarding-email', function() {
+        var alertField = document.getElementById('onboarding-alert-email');
+        if (alertField && !alertField._userEdited) {
+            alertField.value = this.value;
+        }
+    });
+    $(document).on('input', '#onboarding-alert-email', function() {
+        this._userEdited = true;
+    });
+
+    // -------------------------------------------------------------------------
+    // Reports Reader — DMARC & TLSRPT Upload (Drag & Drop) & Actions
+    // -------------------------------------------------------------------------
+    $(document).on('click', '#pn-dmarc-browse-btn, #pn-dmarc-dropzone', function(e) {
+        if (e.target.id !== 'pn-dmarc-file-input') {
+            $('#pn-dmarc-file-input').trigger('click');
+        }
+    });
+
+    $(document).on('dragover dragenter', '#pn-dmarc-dropzone', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).css('background', '#e1eeef');
+    });
+
+    $(document).on('dragleave drop', '#pn-dmarc-dropzone', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).css('background', '#f0f6ff');
+    });
+
+    $(document).on('drop', '#pn-dmarc-dropzone', function(e) {
+        var files = e.originalEvent.dataTransfer.files;
+        if (files.length > 0) {
+            uploadReports(files);
+        }
+    });
+
+    $(document).on('change', '#pn-dmarc-file-input', function() {
+        if (this.files.length > 0) {
+            uploadReports(this.files);
+        }
+    });
+
+    async function uploadReports(files) {
+        var total = files.length;
+        var successCount = 0;
+        var errorCount = 0;
+        var errors = [];
+        var statusDiv = $('#pn-dmarc-upload-status');
+
+        statusDiv.css('color', '#2271b1').show();
+
+        for (var i = 0; i < total; i++) {
+            var file = files[i];
+            var progressMsg = (pnMailguard.uploadingFile || 'Processing file %1$s of %2$s (%3$s)...')
+                .replace('%1$s', i + 1)
+                .replace('%2$s', total)
+                .replace('%3$s', escHtml(file.name));
+            statusDiv.html('⏳ ' + progressMsg);
+
+            var formData = new FormData();
+            formData.append('action', 'pn_mailguard_upload_dmarc_report');
+            formData.append('nonce', pnMailguard.nonce);
+            formData.append('dmarc_file', file);
+
+            try {
+                let response = await $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false
+                });
+
+                if (response.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                    errors.push(file.name + ': ' + (response.data && response.data.message ? response.data.message : (pnMailguard.uploadFailedGeneric || 'Upload failed')));
+                }
+            } catch (err) {
+                errorCount++;
+                errors.push(file.name + ': ' + (pnMailguard.networkError || 'Network error'));
+            }
+        }
+
+        if (errorCount === 0) {
+            var successMsg = total === 1
+                ? (pnMailguard.uploadSuccessSingle || 'Report imported successfully!')
+                : (pnMailguard.uploadSuccessMultiple || '%d reports imported successfully!').replace('%d', total);
+            statusDiv.css('color', '#00a32a').html('✅ ' + successMsg);
+            setTimeout(function() { location.reload(); }, 1200);
+        } else if (successCount > 0) {
+            var partialMsg = (pnMailguard.uploadPartial || 'Imported %1$s of %2$s reports. %3$s error(s):')
+                .replace('%1$s', successCount)
+                .replace('%2$s', total)
+                .replace('%3$s', errorCount);
+            statusDiv.css('color', '#dba617').html('⚠️ ' + partialMsg + '<br>' + errors.map(escHtml).join('<br>'));
+            setTimeout(function() { location.reload(); }, 3500);
+        } else {
+            statusDiv.css('color', '#d63638').html('✗ ' + (pnMailguard.uploadFailed || 'Import failed:') + '<br>' + errors.map(escHtml).join('<br>'));
+        }
+    }
+
+    $(document).on('click', '.pn-toggle-details-btn', function() {
+        var targetId = $(this).data('target');
+        $('#' + targetId).toggle();
+    });
+
+    $(document).on('click', '.pn-delete-report-btn', function() {
+        if (!confirm(pnMailguard.confirmDeleteReport || 'Are you sure you want to delete this report?')) return;
+        var reportId = $(this).data('id');
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_delete_dmarc_report',
+            nonce: pnMailguard.nonce,
+            report_id: reportId
+        }, function(res) {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.data && res.data.message ? res.data.message : (pnMailguard.deleteFailed || 'Delete failed'));
+            }
+        });
+    });
+
+    $(document).on('click', '.pn-delete-tls-report-btn', function() {
+        if (!confirm(pnMailguard.confirmDeleteReport || 'Are you sure you want to delete this report?')) return;
+        var reportId = $(this).data('id');
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_delete_tls_report',
+            nonce: pnMailguard.nonce,
+            report_id: reportId
+        }, function(res) {
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.data && res.data.message ? res.data.message : (pnMailguard.deleteFailed || 'Delete failed'));
+            }
+        });
+    });
 });
