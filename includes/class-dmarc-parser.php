@@ -59,17 +59,27 @@ class PN_Mailguard_Dmarc_Parser {
         }
 
         // 1. GZIP check (magic bytes \x1f\x8b)
-        if (str_starts_with($raw, "\x1f\x8b") || str_starts_with($data, "\x1f\x8b")) {
-            $gz_data = str_starts_with($raw, "\x1f\x8b") ? $raw : $data;
+        $gz_pos = strpos($data, "\x1f\x8b");
+        if ($gz_pos !== false) {
+            $gz_data = substr($data, $gz_pos);
             if (function_exists('gzdecode')) {
                 $decompressed = @gzdecode($gz_data);
                 if ($decompressed !== false) {
                     return $decompressed;
                 }
             }
-            // Fallback via gzinflate if gzdecode fails
             if (function_exists('gzinflate') && strlen($gz_data) > 10) {
                 $decompressed = @gzinflate(substr($gz_data, 10));
+                if ($decompressed !== false) {
+                    return $decompressed;
+                }
+                $decompressed = @gzinflate($gz_data);
+                if ($decompressed !== false) {
+                    return $decompressed;
+                }
+            }
+            if (function_exists('gzuncompress')) {
+                $decompressed = @gzuncompress($gz_data);
                 if ($decompressed !== false) {
                     return $decompressed;
                 }
@@ -77,8 +87,9 @@ class PN_Mailguard_Dmarc_Parser {
         }
 
         // 2. ZIP check (magic bytes PK\x03\x04)
-        if ((str_starts_with($raw, "PK\x03\x04") || str_starts_with($data, "PK\x03\x04")) && class_exists('ZipArchive')) {
-            $zip_data = str_starts_with($raw, "PK\x03\x04") ? $raw : $data;
+        $zip_pos = strpos($data, "PK\x03\x04");
+        if ($zip_pos !== false && class_exists('ZipArchive')) {
+            $zip_data = substr($data, $zip_pos);
             $tmp = tempnam(sys_get_temp_dir(), 'dmarc_zip_');
             if ($tmp !== false) {
                 file_put_contents($tmp, $zip_data);

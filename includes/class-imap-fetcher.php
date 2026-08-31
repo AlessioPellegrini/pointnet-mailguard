@@ -546,7 +546,7 @@ class PN_Mailguard_Imap_Fetcher {
     /**
      * Extract attachment files from a raw RFC822 MIME message string.
      * Supports multipart/report (RFC 7489), multipart/mixed, multipart/alternative,
-     * and single-part payloads (.zip, .gz, .xml, .json).
+     * nested multiparts, and single-part payloads (.zip, .gz, .xml, .json).
      *
      * @param string $raw_mime
      * @return array Array of ['filename' => string, 'content' => string]
@@ -555,7 +555,6 @@ class PN_Mailguard_Imap_Fetcher {
         $attachments = [];
 
         // 1. Check for MIME boundary parameter across single or multi-line folded headers
-        // Matches boundary in multipart/report, multipart/mixed, etc., with any preceding parameters (e.g. report-type=feedback-report)
         $boundary = null;
         if (preg_match('/content-type:[^;]*multipart\/[a-z0-9\-_]+.*?[;\s]boundary=[\'"]?([^\'";\r\n]+)[\'"]?/is', $raw_mime, $bm)) {
             $boundary = trim($bm[1]);
@@ -575,16 +574,18 @@ class PN_Mailguard_Imap_Fetcher {
                 $encoding = strtolower(trim($em[1]));
             }
 
-            $decoded = $body;
+            $content = $body;
             if ($encoding === 'base64') {
-                $decoded = base64_decode(trim($body));
+                $clean = preg_replace('/--\s*$/', '', trim($body));
+                $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $clean);
+                $content = base64_decode($clean);
             } elseif ($encoding === 'quoted-printable') {
-                $decoded = quoted_printable_decode($body);
+                $content = quoted_printable_decode($body);
             }
 
-            $trimmed = ltrim($decoded);
-            if (str_starts_with($decoded, "\x1f\x8b") || str_starts_with($decoded, "PK\x03\x04") || str_starts_with($trimmed, '<?xml') || str_starts_with($trimmed, '{') || str_contains($trimmed, '<feedback')) {
-                $attachments[] = ['filename' => 'report_payload', 'content' => $decoded];
+            $trimmed = ltrim($content);
+            if (str_starts_with($content, "\x1f\x8b") || str_starts_with($content, "PK\x03\x04") || str_starts_with($trimmed, '<?xml') || str_starts_with($trimmed, '{') || str_contains($trimmed, '<feedback')) {
+                $attachments[] = ['filename' => 'report_payload', 'content' => $content];
             }
             return $attachments;
         }
@@ -605,6 +606,15 @@ class PN_Mailguard_Imap_Fetcher {
 
             $headers = $header_body_split[0];
             $body    = $header_body_split[1];
+
+            // If sub-part is itself multipart, extract recursively
+            if (preg_match('/content-type:[^;]*multipart\/[a-z0-9\-_]+.*?[;\s]boundary=[\'"]?([^\'";\r\n]+)[\'"]?/is', $headers, $sub_bm) || preg_match('/boundary=[\'"]?([^\'";\r\n]+)[\'"]?/i', $headers, $sub_bm)) {
+                $sub_attachments = self::extract_attachments($part);
+                foreach ($sub_attachments as $sub_att) {
+                    $attachments[] = $sub_att;
+                }
+                continue;
+            }
 
             // Look for attachment filename or Content-Type matching report formats
             $filename = '';
@@ -630,14 +640,15 @@ class PN_Mailguard_Imap_Fetcher {
                 $encoding = strtolower(trim($em[1]));
             }
 
-            // Strip trailing delimiter artifacts
-            $clean_body = preg_replace('/\r?\n--$/', '', $body);
-
-            $content = $clean_body;
+            // Decode payload cleanly
             if ($encoding === 'base64') {
-                $content = base64_decode(trim($clean_body));
+                $clean = preg_replace('/--\s*$/', '', trim($body));
+                $clean = preg_replace('/[^A-Za-z0-9+\/=]/', '', $clean);
+                $content = base64_decode($clean);
             } elseif ($encoding === 'quoted-printable') {
-                $content = quoted_printable_decode($clean_body);
+                $content = quoted_printable_decode($body);
+            } else {
+                $content = $body;
             }
 
             // If not marked by headers, verify if payload itself is GZIP, ZIP, XML or JSON
