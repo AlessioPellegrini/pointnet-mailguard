@@ -545,6 +545,8 @@ class PN_Mailguard_Imap_Fetcher {
 
     /**
      * Extract attachment files from a raw RFC822 MIME message string.
+     * Supports multipart/report (RFC 7489), multipart/mixed, multipart/alternative,
+     * and single-part payloads (.zip, .gz, .xml, .json).
      *
      * @param string $raw_mime
      * @return array Array of ['filename' => string, 'content' => string]
@@ -552,24 +554,54 @@ class PN_Mailguard_Imap_Fetcher {
     private static function extract_attachments(string $raw_mime): array {
         $attachments = [];
 
-        // Simple MIME boundary parser
-        if (!preg_match('/content-type:\s*multipart\/[a-z\-]+;\s*boundary=[\'"]?([^\'";\r\n]+)[\'"]?/i', $raw_mime, $bm)) {
-            // Check if entire email payload is compressed or XML/JSON body
-            $trimmed = ltrim($raw_mime);
-            if (str_starts_with($raw_mime, "\x1f\x8b") || str_starts_with($raw_mime, "PK\x03\x04") || str_starts_with($trimmed, '<?xml') || str_starts_with($trimmed, '{')) {
-                $attachments[] = ['filename' => 'report_payload', 'content' => $raw_mime];
+        // 1. Check for MIME boundary parameter across single or multi-line folded headers
+        // Matches boundary in multipart/report, multipart/mixed, etc., with any preceding parameters (e.g. report-type=feedback-report)
+        $boundary = null;
+        if (preg_match('/content-type:[^;]*multipart\/[a-z0-9\-_]+.*?[;\s]boundary=[\'"]?([^\'";\r\n]+)[\'"]?/is', $raw_mime, $bm)) {
+            $boundary = trim($bm[1]);
+        } elseif (preg_match('/boundary=[\'"]?([^\'";\r\n]+)[\'"]?/i', $raw_mime, $bm)) {
+            $boundary = trim($bm[1]);
+        }
+
+        // 2. Handle Non-Multipart / Single-part emails
+        if (!$boundary) {
+            $header_body_split = preg_split('/\r?\n\r?\n/', $raw_mime, 2);
+            $headers = $header_body_split[0] ?? '';
+            $body    = $header_body_split[1] ?? $raw_mime;
+
+            // Check Content-Transfer-Encoding
+            $encoding = '';
+            if (preg_match('/content-transfer-encoding:\s*([a-z0-9\-]+)/i', $headers, $em)) {
+                $encoding = strtolower(trim($em[1]));
+            }
+
+            $decoded = $body;
+            if ($encoding === 'base64') {
+                $decoded = base64_decode(trim($body));
+            } elseif ($encoding === 'quoted-printable') {
+                $decoded = quoted_printable_decode($body);
+            }
+
+            $trimmed = ltrim($decoded);
+            if (str_starts_with($decoded, "\x1f\x8b") || str_starts_with($decoded, "PK\x03\x04") || str_starts_with($trimmed, '<?xml') || str_starts_with($trimmed, '{') || str_contains($trimmed, '<feedback')) {
+                $attachments[] = ['filename' => 'report_payload', 'content' => $decoded];
             }
             return $attachments;
         }
 
-        $boundary = $bm[1];
+        // 3. Handle Multipart emails
         $parts = explode('--' . $boundary, $raw_mime);
 
         foreach ($parts as $part) {
-            if (empty(trim($part)) || str_starts_with(trim($part), '--')) continue;
+            $trimmed_part = trim($part);
+            if (empty($trimmed_part) || str_starts_with($trimmed_part, '--')) {
+                continue;
+            }
 
             $header_body_split = preg_split('/\r?\n\r?\n/', $part, 2);
-            if (count($header_body_split) < 2) continue;
+            if (count($header_body_split) < 2) {
+                continue;
+            }
 
             $headers = $header_body_split[0];
             $body    = $header_body_split[1];
@@ -583,27 +615,43 @@ class PN_Mailguard_Imap_Fetcher {
             }
 
             $is_report = false;
-            if (!empty($filename) && preg_match('/\.(xml|json|gz|zip)$/i', $filename)) {
+            if (!empty($filename) && preg_match('/\.(xml|json|gz|zip|z)$/i', $filename)) {
                 $is_report = true;
-            } elseif (preg_match('/content-type:\s*(application\/zip|application\/x-zip|application\/gzip|application\/x-gzip|application\/xml|text\/xml|application\/json)/i', $headers)) {
+            } elseif (preg_match('/content-type:\s*(application\/zip|application\/x-zip|application\/x-zip-compressed|application\/gzip|application\/x-gzip|application\/octet-stream|application\/xml|text\/xml|application\/json|application\/tlsrpt\+gzip|application\/tlsrpt\+json)/i', $headers)) {
                 $is_report = true;
-                if (empty($filename)) $filename = 'report_attachment';
+                if (empty($filename)) {
+                    $filename = 'report_attachment';
+                }
             }
 
-            if ($is_report) {
-                // Check transfer encoding
-                $encoding = '';
-                if (preg_match('/content-transfer-encoding:\s*([a-z0-9\-]+)/i', $headers, $em)) {
-                    $encoding = strtolower(trim($em[1]));
-                }
+            // Check transfer encoding
+            $encoding = '';
+            if (preg_match('/content-transfer-encoding:\s*([a-z0-9\-]+)/i', $headers, $em)) {
+                $encoding = strtolower(trim($em[1]));
+            }
 
-                $content = $body;
-                if ($encoding === 'base64') {
-                    $content = base64_decode($body);
-                } elseif ($encoding === 'quoted-printable') {
-                    $content = quoted_printable_decode($body);
-                }
+            // Strip trailing delimiter artifacts
+            $clean_body = preg_replace('/\r?\n--$/', '', $body);
 
+            $content = $clean_body;
+            if ($encoding === 'base64') {
+                $content = base64_decode(trim($clean_body));
+            } elseif ($encoding === 'quoted-printable') {
+                $content = quoted_printable_decode($clean_body);
+            }
+
+            // If not marked by headers, verify if payload itself is GZIP, ZIP, XML or JSON
+            if (!$is_report) {
+                $raw_trim = ltrim($content);
+                if (str_starts_with($content, "\x1f\x8b") || str_starts_with($content, "PK\x03\x04") || str_starts_with($raw_trim, '<?xml') || str_contains($raw_trim, '<feedback') || (str_starts_with($raw_trim, '{') && str_contains($raw_trim, 'organization-name'))) {
+                    $is_report = true;
+                    if (empty($filename)) {
+                        $filename = 'report_payload';
+                    }
+                }
+            }
+
+            if ($is_report && !empty($content)) {
                 $attachments[] = [
                     'filename' => $filename,
                     'content'  => $content,
