@@ -645,11 +645,14 @@ jQuery(document).ready(function($) {
     // -------------------------------------------------------------------------
     // Reports Reader — IMAP Test & Fetch Now
     // -------------------------------------------------------------------------
-    $(document).on('click', '#pn-imap-test-btn', function() {
+    $(document).on('click', '#pn-imap-test-btn', function(e) {
+        if (e && e.preventDefault) e.preventDefault();
         var btn = $(this);
         var status = $('#pn-imap-status');
         btn.prop('disabled', true).text('⏳ Testing...');
-        status.hide().removeClass('notice-error notice-success');
+        status.css({ color: '#2271b1', background: '#f0f6ff', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c8d7e1' })
+              .text('⏳ ' + (pnMailguard.testingConnection || 'Connecting to IMAP server...'))
+              .show();
 
         $.post(ajaxurl, {
             action: 'pn_mailguard_test_imap',
@@ -672,19 +675,26 @@ jQuery(document).ready(function($) {
                       .text('❌ ' + (res.data && res.data.message ? res.data.message : 'Connection failed.'))
                       .show();
             }
-        }).fail(function() {
+        }).fail(function(xhr) {
             btn.prop('disabled', false).text('🔌 Test Connection');
+            var errMsg = pnMailguard.networkError || 'Network error';
+            if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                errMsg = xhr.responseJSON.data.message;
+            }
             status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
-                  .text('❌ ' + (pnMailguard.networkError || 'Network error'))
+                  .text('❌ ' + errMsg)
                   .show();
         });
     });
 
-    $(document).on('click', '#onboarding-imap-test-btn', function() {
+    $(document).on('click', '#onboarding-imap-test-btn', function(e) {
+        if (e && e.preventDefault) e.preventDefault();
         var btn = $(this);
         var status = $('#onboarding-imap-status');
         btn.prop('disabled', true).text('⏳ Testing...');
-        status.hide();
+        status.css({ color: '#2271b1', background: '#f0f6ff', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c8d7e1' })
+              .text('⏳ ' + (pnMailguard.testingConnection || 'Connecting to IMAP server...'))
+              .show();
 
         $.post(ajaxurl, {
             action: 'pn_mailguard_test_imap',
@@ -706,10 +716,14 @@ jQuery(document).ready(function($) {
                       .text('❌ ' + (res.data && res.data.message ? res.data.message : 'Connection failed.'))
                       .show();
             }
-        }).fail(function() {
+        }).fail(function(xhr) {
             btn.prop('disabled', false).text('🧪 Test IMAP Connection');
+            var errMsg = pnMailguard.networkError || 'Network error';
+            if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                errMsg = xhr.responseJSON.data.message;
+            }
             status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
-                  .text('❌ ' + (pnMailguard.networkError || 'Network error'))
+                  .text('❌ ' + errMsg)
                   .show();
         });
     });

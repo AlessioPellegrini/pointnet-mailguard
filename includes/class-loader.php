@@ -105,12 +105,18 @@ class PN_Mailguard_Loader {
             return;
         }
 
+        $css_file = PN_MAILGUARD_PLUGIN_DIR . 'assets/admin.css';
+        $js_file  = PN_MAILGUARD_PLUGIN_DIR . 'assets/admin.js';
+
+        $css_ver = file_exists($css_file) ? (string) filemtime($css_file) : PN_MAILGUARD_VERSION;
+        $js_ver  = file_exists($js_file) ? (string) filemtime($js_file) : PN_MAILGUARD_VERSION;
+
         // CSS
         wp_enqueue_style(
             'pn-mailguard-admin',
             PN_MAILGUARD_PLUGIN_URL . 'assets/admin.css',
             [],
-            PN_MAILGUARD_VERSION
+            $css_ver
         );
 
         // JavaScript
@@ -118,7 +124,7 @@ class PN_Mailguard_Loader {
             'pn-mailguard-admin',
             PN_MAILGUARD_PLUGIN_URL . 'assets/admin.js',
             ['jquery'],
-            PN_MAILGUARD_VERSION,
+            $js_ver,
             true // load in footer
         );
 
@@ -139,6 +145,7 @@ class PN_Mailguard_Loader {
             'send'               => __('Send', 'pointnet-mailguard'),
             'chatFailed'         => __('Failed to get response.', 'pointnet-mailguard'),
             'networkError'       => __('Network error. Please try again.', 'pointnet-mailguard'),
+            'testingConnection'  => __('Connecting to IMAP server...', 'pointnet-mailguard'),
             'enterEmailFirst'    => __('Enter a valid email first (Step 1).', 'pointnet-mailguard'),
             'detectingDkim'      => __('Detecting DKIM selector...', 'pointnet-mailguard'),
             'detect'             => __('Detect', 'pointnet-mailguard'),
