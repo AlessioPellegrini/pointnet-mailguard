@@ -2246,6 +2246,16 @@ class PN_Mailguard_Dashboard {
                             Failed: <strong><?php echo esc_html($last_summary['failed'] ?? 0); ?></strong>
                         <?php endif; ?>
                     </div>
+                    <?php if (!empty($last_summary['errors']) && is_array($last_summary['errors'])): ?>
+                        <div style="margin-top:8px; padding:8px 12px; background:#fbeaea; border:1px solid #f5c6cb; border-radius:4px; font-size:11px; color:#d63638; max-height:120px; overflow-y:auto;">
+                            <strong><?php esc_html_e('Fetch Details / Error Log:', 'pointnet-mailguard'); ?></strong>
+                            <ul style="margin:4px 0 0 16px; padding:0; list-style-type:disc;">
+                                <?php foreach ($last_summary['errors'] as $err): ?>
+                                    <li><?php echo esc_html($err); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>

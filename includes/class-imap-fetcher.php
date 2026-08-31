@@ -125,8 +125,14 @@ class PN_Mailguard_Imap_Fetcher {
                 $raw_email = self::read_literal_response($stream, $tag);
 
                 if (empty($raw_email)) {
+                    // Fallback to standard BODY[] if server rejects or doesn't support PEEK
+                    $tag = self::send_command($stream, "FETCH {$msg_num} (BODY[])");
+                    $raw_email = self::read_literal_response($stream, $tag);
+                }
+
+                if (empty($raw_email)) {
                     $failed++;
-                    $errors[] = "Msg #{$msg_num}: Failed to fetch email payload.";
+                    $errors[] = "Msg #{$msg_num}: Failed to fetch email payload from IMAP server.";
                     continue;
                 }
 
@@ -483,16 +489,16 @@ class PN_Mailguard_Imap_Fetcher {
 
     /**
      * Read literal response for FETCH BODY payload with stream_select to prevent busy-wait and timeouts.
+     * Supports both RFC 3501 ({size}) and RFC 7888 ({size+}) literal indicators.
      */
     private static function read_literal_response($stream, string $tag): string {
         $buffer = '';
-        $literal_bytes = null;
 
         while (!feof($stream)) {
             $line = fgets($stream);
             if ($line === false) break;
 
-            if ($literal_bytes === null && preg_match('/\{(\d+)\}\r?\n?$/', $line, $m)) {
+            if (preg_match('/\{(\d+)\+?\}\s*$/', $line, $m)) {
                 $literal_bytes = intval($m[1]);
                 $read_so_far = 0;
                 while ($read_so_far < $literal_bytes && !feof($stream)) {
