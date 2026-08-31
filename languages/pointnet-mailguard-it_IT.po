@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PointNet Mail Guard 1.7.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 18:45+0200\n"
+"POT-Creation-Date: 2026-08-31 18:47+0200\n"
 "PO-Revision-Date: 2026-07-13 22:00+0200\n"
 "Last-Translator: PointNet Lab\n"
 "Language-Team: Italian\n"
@@ -899,8 +899,8 @@ msgid "Automatic Email Ingestion (IMAP Mailbox)"
 msgstr ""
 
 #: includes/class-dashboard.php:2167
-msgid "Empty DMARC Database"
-msgstr "Svuota Database DMARC"
+msgid "Empty Database (DMARC & TLS)"
+msgstr "Svuota Database (DMARC e TLS)"
 
 #: includes/class-dashboard.php:2170
 msgid "Fetch Reports Now"
@@ -913,7 +913,8 @@ msgid ""
 "attachments."
 msgstr ""
 "Configura una casella di posta dedicata (es. dmarc-reports@dominio.com) per "
-"scaricare ed elaborare automaticamente gli allegati dei report DMARC e TLSRPT."
+"scaricare ed elaborare automaticamente gli allegati dei report DMARC e "
+"TLSRPT."
 
 #: includes/class-dashboard.php:2201
 msgid "Username / Email"
@@ -1756,6 +1757,9 @@ msgstr "WHOIS lookup ha restituito HTTP %d"
 #: includes/class-whois.php:88
 msgid "Invalid response from WHOIS service."
 msgstr "Risposta non valida dal servizio WHOIS."
+
+#~ msgid "Empty DMARC Database"
+#~ msgstr "Svuota Database DMARC"
 
 #~ msgid "Fetch Details / Error Log:"
 #~ msgstr "Dettagli Fetch / Registro Errori:"

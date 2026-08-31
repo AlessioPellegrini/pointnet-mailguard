@@ -2164,7 +2164,7 @@ class PN_Mailguard_Dashboard {
                     </h3>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <button type="button" id="pn-reset-dmarc-btn" class="button button-link-delete button-small" style="color:#d63638; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
-                            🗑️ <?php esc_html_e('Empty DMARC Database', 'pointnet-mailguard'); ?>
+                            🗑️ <?php esc_html_e('Empty Database (DMARC & TLS)', 'pointnet-mailguard'); ?>
                         </button>
                         <button type="button" id="pn-imap-fetch-btn" class="button button-secondary button-small" style="display:inline-flex; align-items:center; gap:4px;">
                             🔄 <?php esc_html_e('Fetch Reports Now', 'pointnet-mailguard'); ?>
