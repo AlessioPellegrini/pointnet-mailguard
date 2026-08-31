@@ -88,32 +88,56 @@ class PN_Mailguard_Dmarc_Parser {
 
         // 2. ZIP check (magic bytes PK\x03\x04)
         $zip_pos = strpos($data, "PK\x03\x04");
-        if ($zip_pos !== false && class_exists('ZipArchive')) {
+        if ($zip_pos !== false) {
             $zip_data = substr($data, $zip_pos);
-            $tmp = tempnam(sys_get_temp_dir(), 'dmarc_zip_');
-            if ($tmp !== false) {
-                file_put_contents($tmp, $zip_data);
-                $zip = new ZipArchive();
-                $xml = false;
 
-                if ($zip->open($tmp) === true) {
-                    for ($i = 0; $i < $zip->numFiles; $i++) {
-                        $filename = $zip->getNameIndex($i);
-                        if (preg_match('/\.xml$/i', $filename) || str_contains($filename, 'xml')) {
-                            $xml = $zip->getFromIndex($i);
-                            break;
+            // Method A: ZipArchive if extension enabled
+            if (class_exists('ZipArchive')) {
+                $tmp = tempnam(sys_get_temp_dir(), 'dmarc_zip_');
+                if ($tmp !== false) {
+                    file_put_contents($tmp, $zip_data);
+                    $zip = new ZipArchive();
+                    $xml = false;
+
+                    if ($zip->open($tmp) === true) {
+                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $filename = $zip->getNameIndex($i);
+                            if (preg_match('/\.xml$/i', $filename) || str_contains($filename, 'xml')) {
+                                $xml = $zip->getFromIndex($i);
+                                break;
+                            }
                         }
+                        if ($xml === false && $zip->numFiles > 0) {
+                            // Fallback: get first file in zip
+                            $xml = $zip->getFromIndex(0);
+                        }
+                        $zip->close();
                     }
-                    if ($xml === false && $zip->numFiles > 0) {
-                        // Fallback: get first file in zip
-                        $xml = $zip->getFromIndex(0);
-                    }
-                    $zip->close();
-                }
-                @unlink($tmp);
+                    @unlink($tmp);
 
-                if ($xml !== false) {
-                    return $xml;
+                    if ($xml !== false) {
+                        return $xml;
+                    }
+                }
+            }
+
+            // Method B: Native Pure PHP PKZIP parser with gzinflate (zero-dependency fallback)
+            if (strlen($zip_data) > 30) {
+                $comp_method = unpack('v', substr($zip_data, 8, 2))[1] ?? 8;
+                $fn_len      = unpack('v', substr($zip_data, 26, 2))[1] ?? 0;
+                $extra_len   = unpack('v', substr($zip_data, 28, 2))[1] ?? 0;
+                $payload     = substr($zip_data, 30 + $fn_len + $extra_len);
+
+                if ($comp_method === 8 && function_exists('gzinflate')) {
+                    $unzipped = @gzinflate($payload);
+                    if ($unzipped !== false) {
+                        return $unzipped;
+                    }
+                } elseif ($comp_method === 0) {
+                    $c_size = unpack('V', substr($zip_data, 18, 4))[1] ?? 0;
+                    if ($c_size > 0) {
+                        return substr($payload, 0, $c_size);
+                    }
                 }
             }
         }
