@@ -67,6 +67,7 @@ class PN_Mailguard_Imap_Fetcher {
      * @return array Result summary with counts of imported, skipped, failed reports
      */
     public static function fetch_reports(?array $config = null): array {
+        @set_time_limit(180);
         $cfg = $config ?? self::get_config();
 
         if (empty($cfg['host']) || empty($cfg['username']) || empty($cfg['password'])) {
@@ -486,7 +487,7 @@ class PN_Mailguard_Imap_Fetcher {
     }
 
     /**
-     * Read literal response for FETCH BODY payload.
+     * Read literal response for FETCH BODY payload with stream_select to prevent busy-wait and timeouts.
      */
     private static function read_literal_response($stream, string $tag): string {
         $buffer = '';
@@ -500,15 +501,30 @@ class PN_Mailguard_Imap_Fetcher {
                 $literal_bytes = intval($m[1]);
                 $read_so_far = 0;
                 while ($read_so_far < $literal_bytes && !feof($stream)) {
-                    $chunk = fread($stream, min(8192, $literal_bytes - $read_so_far));
-                    if ($chunk === false) break;
+                    $to_read = min(8192, $literal_bytes - $read_so_far);
+                    $chunk = fread($stream, $to_read);
+                    if ($chunk === false) {
+                        break;
+                    }
+                    if ($chunk === '') {
+                        $read_fds = [$stream];
+                        $write_fds = null;
+                        $except_fds = null;
+                        $num_changed = @stream_select($read_fds, $write_fds, $except_fds, 5);
+                        if ($num_changed === false || $num_changed === 0) {
+                            // Socket timed out waiting for next packet
+                            break;
+                        }
+                        continue;
+                    }
                     $buffer .= $chunk;
                     $read_so_far += strlen($chunk);
                 }
                 continue;
             }
 
-            if (str_starts_with(trim($line), "{$tag} OK") || str_starts_with(trim($line), "{$tag} NO") || str_starts_with(trim($line), "{$tag} BAD")) {
+            $trimmed = trim($line);
+            if (str_starts_with($trimmed, "{$tag} OK") || str_starts_with($trimmed, "{$tag} NO") || str_starts_with($trimmed, "{$tag} BAD")) {
                 break;
             }
         }
