@@ -119,58 +119,63 @@ class PN_Mailguard_Imap_Fetcher {
         $errors = [];
 
         foreach ($msg_numbers as $msg_num) {
-            // Fetch raw email RFC822 content without marking as read immediately (peek)
-            $tag = self::send_command($stream, "FETCH {$msg_num} (BODY.PEEK[])");
-            $raw_email = self::read_literal_response($stream, $tag);
+            try {
+                // Fetch raw email RFC822 content without marking as read immediately (peek)
+                $tag = self::send_command($stream, "FETCH {$msg_num} (BODY.PEEK[])");
+                $raw_email = self::read_literal_response($stream, $tag);
 
-            if (empty($raw_email)) {
-                $failed++;
-                $errors[] = "Msg #{$msg_num}: Failed to fetch email payload.";
-                continue;
-            }
-
-            // Extract attachments from raw MIME message
-            $attachments = self::extract_attachments($raw_email);
-
-            if (empty($attachments)) {
-                // If no attachments found, mark read or handle
-                if ($cfg['action_after'] === 'delete') {
-                    self::mark_deleted($stream, $msg_num);
-                } else {
-                    self::mark_seen($stream, $msg_num);
-                }
-                continue;
-            }
-
-            $email_has_success = false;
-
-            foreach ($attachments as $att) {
-                $filename = $att['filename'];
-                $content  = $att['content'];
-
-                if (empty($content)) continue;
-
-                // Process attachment with DMARC and TLSRPT parsers
-                $res = self::import_attachment($content);
-                if ($res['status'] === 'success') {
-                    $imported++;
-                    $email_has_success = true;
-                } elseif ($res['status'] === 'duplicate') {
-                    $duplicates++;
-                    $email_has_success = true;
-                } else {
+                if (empty($raw_email)) {
                     $failed++;
-                    $errors[] = "File {$filename}: " . ($res['message'] ?? 'Import failed');
+                    $errors[] = "Msg #{$msg_num}: Failed to fetch email payload.";
+                    continue;
                 }
-            }
 
-            // Apply action after import (delete vs mark read)
-            if ($email_has_success || empty($attachments)) {
-                if ($cfg['action_after'] === 'delete') {
-                    self::mark_deleted($stream, $msg_num);
-                } else {
-                    self::mark_seen($stream, $msg_num);
+                // Extract attachments from raw MIME message
+                $attachments = self::extract_attachments($raw_email);
+
+                if (empty($attachments)) {
+                    // If no attachments found, mark read or handle
+                    if ($cfg['action_after'] === 'delete') {
+                        self::mark_deleted($stream, $msg_num);
+                    } else {
+                        self::mark_seen($stream, $msg_num);
+                    }
+                    continue;
                 }
+
+                $email_has_success = false;
+
+                foreach ($attachments as $att) {
+                    $filename = $att['filename'];
+                    $content  = $att['content'];
+
+                    if (empty($content)) continue;
+
+                    // Process attachment with DMARC and TLSRPT parsers
+                    $res = self::import_attachment($content);
+                    if ($res['status'] === 'success') {
+                        $imported++;
+                        $email_has_success = true;
+                    } elseif ($res['status'] === 'duplicate') {
+                        $duplicates++;
+                        $email_has_success = true;
+                    } else {
+                        $failed++;
+                        $errors[] = "File {$filename}: " . ($res['message'] ?? 'Import failed');
+                    }
+                }
+
+                // Apply action after import (delete vs mark read)
+                if ($email_has_success || empty($attachments)) {
+                    if ($cfg['action_after'] === 'delete') {
+                        self::mark_deleted($stream, $msg_num);
+                    } else {
+                        self::mark_seen($stream, $msg_num);
+                    }
+                }
+            } catch (\Throwable $e) {
+                $failed++;
+                $errors[] = "Msg #{$msg_num} Exception: " . $e->getMessage();
             }
         }
 
@@ -556,7 +561,7 @@ class PN_Mailguard_Imap_Fetcher {
     /**
      * Extract attachment files from a raw RFC822 MIME message string.
      * Supports multipart/report (RFC 7489), multipart/mixed, multipart/alternative,
-     * nested multiparts, and single-part payloads (.zip, .gz, .xml, .json).
+     * and single-part payloads (.zip, .gz, .xml, .json) in a safe, non-recursive manner.
      *
      * @param string $raw_mime
      * @return array Array of ['filename' => string, 'content' => string]
@@ -564,21 +569,23 @@ class PN_Mailguard_Imap_Fetcher {
     private static function extract_attachments(string $raw_mime): array {
         $attachments = [];
 
-        // 1. Check for MIME boundary parameter across single or multi-line folded headers
-        $boundary = null;
-        if (preg_match('/content-type:[^;]*multipart\/[a-z0-9\-_]+.*?[;\s]boundary=[\'"]?([^\'";\r\n]+)[\'"]?/is', $raw_mime, $bm)) {
-            $boundary = trim($bm[1]);
-        } elseif (preg_match('/boundary=[\'"]?([^\'";\r\n]+)[\'"]?/i', $raw_mime, $bm)) {
-            $boundary = trim($bm[1]);
+        // Collect all unique MIME boundaries in the message
+        $boundaries = [];
+        if (preg_match_all('/boundary=[\'"]?([^\'";\r\n]+)[\'"]?/i', $raw_mime, $all_bm)) {
+            foreach ($all_bm[1] as $b) {
+                $b = trim($b);
+                if (!empty($b) && !in_array($b, $boundaries, true)) {
+                    $boundaries[] = $b;
+                }
+            }
         }
 
-        // 2. Handle Non-Multipart / Single-part emails
-        if (!$boundary) {
+        // If no boundary found, handle as single-part payload
+        if (empty($boundaries)) {
             $header_body_split = preg_split('/\r?\n\r?\n/', $raw_mime, 2);
             $headers = $header_body_split[0] ?? '';
             $body    = $header_body_split[1] ?? $raw_mime;
 
-            // Check Content-Transfer-Encoding
             $encoding = '';
             if (preg_match('/content-transfer-encoding:\s*([a-z0-9\-]+)/i', $headers, $em)) {
                 $encoding = strtolower(trim($em[1]));
@@ -600,15 +607,27 @@ class PN_Mailguard_Imap_Fetcher {
             return $attachments;
         }
 
-        // 3. Handle Multipart emails
-        $parts = explode('--' . $boundary, $raw_mime);
-
-        foreach ($parts as $part) {
-            $trimmed_part = trim($part);
-            if (empty($trimmed_part) || str_starts_with($trimmed_part, '--')) {
-                continue;
+        // Split message iteratively across all discovered boundaries
+        $raw_parts = [$raw_mime];
+        foreach ($boundaries as $b) {
+            $next_parts = [];
+            foreach ($raw_parts as $rp) {
+                if (str_contains($rp, '--' . $b)) {
+                    $splits = explode('--' . $b, $rp);
+                    foreach ($splits as $s) {
+                        $s_trimmed = trim($s);
+                        if (!empty($s_trimmed) && !str_starts_with($s_trimmed, '--')) {
+                            $next_parts[] = $s;
+                        }
+                    }
+                } else {
+                    $next_parts[] = $rp;
+                }
             }
+            $raw_parts = $next_parts;
+        }
 
+        foreach ($raw_parts as $part) {
             $header_body_split = preg_split('/\r?\n\r?\n/', $part, 2);
             if (count($header_body_split) < 2) {
                 continue;
@@ -616,15 +635,6 @@ class PN_Mailguard_Imap_Fetcher {
 
             $headers = $header_body_split[0];
             $body    = $header_body_split[1];
-
-            // If sub-part is itself multipart, extract recursively
-            if (preg_match('/content-type:[^;]*multipart\/[a-z0-9\-_]+.*?[;\s]boundary=[\'"]?([^\'";\r\n]+)[\'"]?/is', $headers, $sub_bm) || preg_match('/boundary=[\'"]?([^\'";\r\n]+)[\'"]?/i', $headers, $sub_bm)) {
-                $sub_attachments = self::extract_attachments($part);
-                foreach ($sub_attachments as $sub_att) {
-                    $attachments[] = $sub_att;
-                }
-                continue;
-            }
 
             // Look for attachment filename or Content-Type matching report formats
             $filename = '';

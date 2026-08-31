@@ -132,21 +132,18 @@ class PN_Mailguard_Dmarc_Parser {
             return self::parse_xml_fallback($xml_string);
         }
 
-        // Prevent XXE vulnerabilities
+        // Prevent XXE vulnerabilities safely across PHP versions
         $use_errors = libxml_use_internal_errors(true);
-        $entity_loader = function_exists('libxml_disable_entity_loader') ? @libxml_disable_entity_loader(true) : null;
 
-        $xml = simplexml_load_string($xml_string, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
-
-        if ($entity_loader !== null && function_exists('libxml_disable_entity_loader')) {
-            @libxml_disable_entity_loader($entity_loader);
+        try {
+            $xml = simplexml_load_string($xml_string, 'SimpleXMLElement', LIBXML_NONET);
+        } catch (\Throwable $e) {
+            $xml = false;
         }
 
         if ($xml === false) {
-            $errors = libxml_get_errors();
             libxml_clear_errors();
             libxml_use_internal_errors($use_errors);
-            // If SimpleXML fails or has issues, fallback to string parser
             return self::parse_xml_fallback($xml_string);
         }
 
