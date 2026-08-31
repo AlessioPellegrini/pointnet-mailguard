@@ -116,7 +116,7 @@ class PN_Mailguard_Logger {
                 echo '<tr>';
                 echo '<td>' . esc_html($log->scan_date) . '</td>';
                 echo '<td style="color:' . esc_attr($color) . ';font-weight:bold;">' . esc_html($log->status) . '</td>';
-                echo '<td style="font-family:monospace; font-size:11px; line-height:1.6;">' . self::format_terminal_details($log->details) . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- format_terminal_details() escapes HTML internally
+                echo '<td style="font-family:monospace; font-size:11px; line-height:1.6;">' . wp_kses(self::format_terminal_details($log->details), ['span' => ['style' => []], 'br' => []]) . '</td>';
                 echo '</tr>';
             }
         } else {
