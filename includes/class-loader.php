@@ -146,6 +146,7 @@ class PN_Mailguard_Loader {
             'chatFailed'         => __('Failed to get response.', 'pointnet-mailguard'),
             'networkError'       => __('Network error. Please try again.', 'pointnet-mailguard'),
             'testingConnection'  => __('Connecting to IMAP server...', 'pointnet-mailguard'),
+            'fetchingReports'    => __('Fetching and processing reports from mailbox...', 'pointnet-mailguard'),
             'enterEmailFirst'    => __('Enter a valid email first (Step 1).', 'pointnet-mailguard'),
             'detectingDkim'      => __('Detecting DKIM selector...', 'pointnet-mailguard'),
             'detect'             => __('Detect', 'pointnet-mailguard'),

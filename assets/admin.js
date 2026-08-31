@@ -728,11 +728,14 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $(document).on('click', '#pn-imap-fetch-btn', function() {
+    $(document).on('click', '#pn-imap-fetch-btn', function(e) {
+        if (e && e.preventDefault) e.preventDefault();
         var btn = $(this);
         var status = $('#pn-imap-status');
         btn.prop('disabled', true).text('⏳ Fetching...');
-        status.hide().removeClass('notice-error notice-success');
+        status.css({ color: '#2271b1', background: '#f0f6ff', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c8d7e1' })
+              .text('⏳ ' + (pnMailguard.fetchingReports || 'Fetching and processing reports from mailbox...'))
+              .show();
 
         $.post(ajaxurl, {
             action: 'pn_mailguard_fetch_imap_now',
@@ -749,10 +752,16 @@ jQuery(document).ready(function($) {
                       .text('❌ ' + (res.data && res.data.message ? res.data.message : 'Fetch failed.'))
                       .show();
             }
-        }).fail(function() {
+        }).fail(function(xhr) {
             btn.prop('disabled', false).text('🔄 Fetch Reports Now');
+            var errMsg = pnMailguard.networkError || 'Network error';
+            if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                errMsg = xhr.responseJSON.data.message;
+            } else if (xhr && xhr.responseText) {
+                errMsg = xhr.responseText.substring(0, 200);
+            }
             status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
-                  .text('❌ ' + (pnMailguard.networkError || 'Network error'))
+                  .text('❌ ' + errMsg)
                   .show();
         });
     });

@@ -2717,12 +2717,6 @@ class PN_Mailguard_Dashboard {
 
             // Insert record items
             foreach ($parsed['records'] as $rec) {
-                $country_code = '';
-                if (class_exists('PN_Mailguard_GeoIP')) {
-                    $geoip = PN_Mailguard_GeoIP::lookup($rec['source_ip']);
-                    $country_code = $geoip['country_code'] ?? '';
-                }
-
                 $wpdb->insert(
                     $table_records,
                     [
@@ -2735,7 +2729,7 @@ class PN_Mailguard_Dashboard {
                         'header_from'   => $rec['header_from'],
                         'envelope_from' => $rec['envelope_from'],
                         'envelope_to'   => $rec['envelope_to'],
-                        'country_code'  => $country_code,
+                        'country_code'  => '',
                         'auth_details'  => wp_json_encode([
                             'dkim' => $rec['dkim_results'],
                             'spf'  => $rec['spf_results'],
