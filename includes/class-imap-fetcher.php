@@ -117,6 +117,8 @@ class PN_Mailguard_Imap_Fetcher {
         $duplicates = 0;
         $failed = 0;
         $errors = [];
+        $imported_list = [];
+        $duplicates_list = [];
 
         foreach ($msg_numbers as $msg_num) {
             try {
@@ -159,13 +161,15 @@ class PN_Mailguard_Imap_Fetcher {
                     $res = self::import_attachment($content);
                     if ($res['status'] === 'success') {
                         $imported++;
+                        $imported_list[] = "Msg #{$msg_num}: " . ($res['message'] ?? 'Imported');
                         $email_has_success = true;
                     } elseif ($res['status'] === 'duplicate') {
                         $duplicates++;
+                        $duplicates_list[] = "Msg #{$msg_num}: " . ($res['message'] ?? 'Duplicate skipped');
                         $email_has_success = true;
                     } else {
                         $failed++;
-                        $errors[] = "File {$filename}: " . ($res['message'] ?? 'Import failed');
+                        $errors[] = "Msg #{$msg_num} ({$filename}): " . ($res['message'] ?? 'Import failed');
                     }
                 }
 
@@ -191,7 +195,7 @@ class PN_Mailguard_Imap_Fetcher {
 
         self::disconnect($stream);
 
-        self::update_fetch_status($imported, $duplicates, $failed, $errors);
+        self::update_fetch_status($imported, $duplicates, $failed, $errors, $imported_list, $duplicates_list);
 
         $msg = sprintf(
             __('IMAP Fetch Completed: %d report(s) imported, %d duplicate(s) skipped, %d error(s).', 'pointnet-mailguard'),
@@ -201,12 +205,14 @@ class PN_Mailguard_Imap_Fetcher {
         );
 
         return [
-            'success'   => true,
-            'message'   => $msg,
-            'imported'  => $imported,
-            'duplicates'=> $duplicates,
-            'failed'    => $failed,
-            'errors'    => $errors,
+            'success'        => true,
+            'message'        => $msg,
+            'imported'       => $imported,
+            'duplicates'     => $duplicates,
+            'failed'         => $failed,
+            'errors'         => $errors,
+            'imported_list'  => $imported_list,
+            'duplicates_list'=> $duplicates_list,
         ];
     }
 
@@ -246,7 +252,12 @@ class PN_Mailguard_Imap_Fetcher {
                     $wpdb->prepare("SELECT id FROM %i WHERE report_id = %s AND org_name = %s LIMIT 1", $table_tls_rep, $meta['report_id'], $meta['org_name'])
                 );
                 if ($exists) {
-                    return ['status' => 'duplicate', 'message' => 'Already imported'];
+                    return [
+                        'status'    => 'duplicate',
+                        'report_id' => $meta['report_id'],
+                        'org_name'  => $meta['org_name'],
+                        'message'   => sprintf(__('Duplicate TLSRPT Report ID "%s" from %s (Already in DB)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name']),
+                    ];
                 }
             }
 
@@ -287,7 +298,12 @@ class PN_Mailguard_Imap_Fetcher {
                 );
             }
 
-            return ['status' => 'success', 'message' => 'TLSRPT imported'];
+            return [
+                'status'    => 'success',
+                'report_id' => $meta['report_id'],
+                'org_name'  => $meta['org_name'],
+                'message'   => sprintf(__('Imported TLSRPT Report ID "%s" from %s (%d sessions)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name'], $sum['successful_sessions'] ?? 0),
+            ];
         } else {
             // DMARC XML
             $parsed = PN_Mailguard_Dmarc_Parser::parse($raw_bytes);
@@ -306,7 +322,12 @@ class PN_Mailguard_Imap_Fetcher {
                     $wpdb->prepare("SELECT id FROM %i WHERE report_id = %s AND org_name = %s LIMIT 1", $table_reports, $meta['report_id'], $meta['org_name'])
                 );
                 if ($exists) {
-                    return ['status' => 'duplicate', 'message' => 'Already imported'];
+                    return [
+                        'status'    => 'duplicate',
+                        'report_id' => $meta['report_id'],
+                        'org_name'  => $meta['org_name'],
+                        'message'   => sprintf(__('Duplicate DMARC Report ID "%s" from %s (Already in DB)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name']),
+                    ];
                 }
             }
 
@@ -356,7 +377,12 @@ class PN_Mailguard_Imap_Fetcher {
                 );
             }
 
-            return ['status' => 'success', 'message' => 'DMARC imported'];
+            return [
+                'status'    => 'success',
+                'report_id' => $meta['report_id'],
+                'org_name'  => $meta['org_name'],
+                'message'   => sprintf(__('Imported DMARC Report ID "%s" from %s (%d msgs)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name'], $sum['total_messages'] ?? 0),
+            ];
         }
     }
 
@@ -767,13 +793,15 @@ class PN_Mailguard_Imap_Fetcher {
     /**
      * Store status of last fetch operation in WP options.
      */
-    private static function update_fetch_status(int $imported, int $duplicates, int $failed, array $errors): void {
+    private static function update_fetch_status(int $imported, int $duplicates, int $failed, array $errors, array $imported_list = [], array $duplicates_list = []): void {
         update_option('pn_mailguard_imap_last_fetch_time', current_time('mysql'));
         update_option('pn_mailguard_imap_last_fetch_summary', [
-            'imported'   => $imported,
-            'duplicates' => $duplicates,
-            'failed'     => $failed,
-            'errors'     => $errors,
+            'imported'        => $imported,
+            'duplicates'      => $duplicates,
+            'failed'          => $failed,
+            'errors'          => $errors,
+            'imported_list'   => $imported_list,
+            'duplicates_list' => $duplicates_list,
         ]);
     }
 }

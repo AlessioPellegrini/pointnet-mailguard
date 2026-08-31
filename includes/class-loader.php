@@ -58,6 +58,7 @@ class PN_Mailguard_Loader {
         add_action('wp_ajax_pn_mailguard_delete_tls_report',   ['PN_Mailguard_Dashboard', 'ajax_delete_tls_report']);
         add_action('wp_ajax_pn_mailguard_test_imap',           ['PN_Mailguard_Dashboard', 'ajax_test_imap']);
         add_action('wp_ajax_pn_mailguard_fetch_imap_now',      ['PN_Mailguard_Dashboard', 'ajax_fetch_imap_now']);
+        add_action('wp_ajax_pn_mailguard_reset_dmarc_data',    ['PN_Mailguard_Dashboard', 'ajax_reset_dmarc_data']);
 
         // AJAX — DKIM Analyzer tab
         add_action('wp_ajax_pn_mailguard_analyze_dkim',        ['PN_Mailguard_Dashboard', 'ajax_analyze_dkim']);

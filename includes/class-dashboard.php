@@ -2162,7 +2162,10 @@ class PN_Mailguard_Dashboard {
                             </span>
                         <?php endif; ?>
                     </h3>
-                    <div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" id="pn-reset-dmarc-btn" class="button button-link-delete button-small" style="color:#d63638; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
+                            🗑️ <?php esc_html_e('Empty DMARC Database', 'pointnet-mailguard'); ?>
+                        </button>
                         <button type="button" id="pn-imap-fetch-btn" class="button button-secondary button-small" style="display:inline-flex; align-items:center; gap:4px;">
                             🔄 <?php esc_html_e('Fetch Reports Now', 'pointnet-mailguard'); ?>
                         </button>
@@ -2246,15 +2249,37 @@ class PN_Mailguard_Dashboard {
                             Failed: <strong><?php echo esc_html($last_summary['failed'] ?? 0); ?></strong>
                         <?php endif; ?>
                     </div>
-                    <?php if (!empty($last_summary['errors']) && is_array($last_summary['errors'])): ?>
-                        <div style="margin-top:8px; padding:8px 12px; background:#fbeaea; border:1px solid #f5c6cb; border-radius:4px; font-size:11px; color:#d63638; max-height:120px; overflow-y:auto;">
-                            <strong><?php esc_html_e('Fetch Details / Error Log:', 'pointnet-mailguard'); ?></strong>
-                            <ul style="margin:4px 0 0 16px; padding:0; list-style-type:disc;">
-                                <?php foreach ($last_summary['errors'] as $err): ?>
-                                    <li><?php echo esc_html($err); ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+                    <?php if (is_array($last_summary)): ?>
+                        <?php if (!empty($last_summary['imported_list'])): ?>
+                            <div style="margin-top:6px; padding:6px 10px; background:#edfaef; border:1px solid #c3e6cb; border-radius:4px; font-size:11px; color:#00a32a; max-height:140px; overflow-y:auto;">
+                                <strong>📥 <?php esc_html_e('Imported Reports:', 'pointnet-mailguard'); ?></strong>
+                                <ul style="margin:2px 0 0 16px; padding:0; list-style-type:disc;">
+                                    <?php foreach ($last_summary['imported_list'] as $item): ?>
+                                        <li><?php echo esc_html($item); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($last_summary['duplicates_list'])): ?>
+                            <div style="margin-top:6px; padding:6px 10px; background:#fff8e5; border:1px solid #ffeeba; border-radius:4px; font-size:11px; color:#856404; max-height:140px; overflow-y:auto;">
+                                <strong>⏭️ <?php esc_html_e('Duplicates Skipped (Report IDs already present):', 'pointnet-mailguard'); ?></strong>
+                                <ul style="margin:2px 0 0 16px; padding:0; list-style-type:disc;">
+                                    <?php foreach ($last_summary['duplicates_list'] as $item): ?>
+                                        <li><?php echo esc_html($item); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($last_summary['errors'])): ?>
+                            <div style="margin-top:6px; padding:6px 10px; background:#fbeaea; border:1px solid #f5c6cb; border-radius:4px; font-size:11px; color:#d63638; max-height:140px; overflow-y:auto;">
+                                <strong>❌ <?php esc_html_e('Fetch Errors:', 'pointnet-mailguard'); ?></strong>
+                                <ul style="margin:2px 0 0 16px; padding:0; list-style-type:disc;">
+                                    <?php foreach ($last_summary['errors'] as $err): ?>
+                                        <li><?php echo esc_html($err); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
@@ -2825,13 +2850,37 @@ class PN_Mailguard_Dashboard {
         $res = PN_Mailguard_Imap_Fetcher::fetch_reports();
         if ($res['success']) {
             wp_send_json_success([
-                'message'   => $res['message'],
-                'imported'  => $res['imported'],
-                'duplicates'=> $res['duplicates'],
-                'failed'    => $res['failed'],
+                'message'        => $res['message'],
+                'imported'       => $res['imported'],
+                'duplicates'     => $res['duplicates'],
+                'failed'         => $res['failed'],
+                'imported_list'  => $res['imported_list'] ?? [],
+                'duplicates_list'=> $res['duplicates_list'] ?? [],
+                'errors'         => $res['errors'] ?? [],
             ]);
         } else {
             wp_send_json_error(['message' => $res['message']]);
         }
+    }
+
+    public static function ajax_reset_dmarc_data(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        global $wpdb;
+        $table_records = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_RECORDS;
+        $table_reports = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_REPORTS;
+        $table_tls_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
+        $table_tls_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
+
+        $wpdb->query("TRUNCATE TABLE `{$table_records}`");
+        $wpdb->query("TRUNCATE TABLE `{$table_reports}`");
+        $wpdb->query("TRUNCATE TABLE `{$table_tls_rec}`");
+        $wpdb->query("TRUNCATE TABLE `{$table_tls_rep}`");
+
+        delete_option('pn_mailguard_imap_last_fetch_time');
+        delete_option('pn_mailguard_imap_last_fetch_summary');
+
+        wp_send_json_success(['message' => __('All DMARC and TLSRPT database records and fetch history have been successfully cleared.', 'pointnet-mailguard')]);
     }
 }

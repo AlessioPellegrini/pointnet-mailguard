@@ -766,6 +766,41 @@ jQuery(document).ready(function($) {
         });
     });
 
+    $(document).on('click', '#pn-reset-dmarc-btn', function(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        var confirmMsg = pnMailguard.confirmResetDmarc || 'Are you sure you want to completely EMPTY the DMARC and TLSRPT database? All imported reports will be deleted.';
+        if (!confirm(confirmMsg)) return;
+
+        var btn = $(this);
+        var status = $('#pn-imap-status');
+        btn.prop('disabled', true);
+        status.css({ color: '#2271b1', background: '#f0f6ff', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c8d7e1' })
+              .text('⏳ ' + (pnMailguard.resettingDmarc || 'Emptying DMARC database records...'))
+              .show();
+
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_reset_dmarc_data',
+            nonce: pnMailguard.nonce
+        }, function(res) {
+            btn.prop('disabled', false);
+            if (res.success) {
+                status.css({ color: '#00a32a', background: '#edfaef', padding: '8px 12px', borderRadius: '4px', border: '1px solid #c3e6cb' })
+                      .text('✅ ' + (res.data && res.data.message ? res.data.message : 'Database cleared!'))
+                      .show();
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                      .text('❌ ' + (res.data && res.data.message ? res.data.message : 'Reset failed.'))
+                      .show();
+            }
+        }).fail(function() {
+            btn.prop('disabled', false);
+            status.css({ color: '#d63638', background: '#fbeaea', padding: '8px 12px', borderRadius: '4px', border: '1px solid #f5c6cb' })
+                  .text('❌ ' + (pnMailguard.networkError || 'Network error'))
+                  .show();
+        });
+    });
+
     // -------------------------------------------------------------------------
     // Contextual Documentation Drawer (Off-Canvas Knowledge Base)
     // -------------------------------------------------------------------------
