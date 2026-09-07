@@ -830,9 +830,9 @@ jQuery(document).ready(function($) {
                 '<strong>Politica <code>p=none</code>:</strong> Modalità monitoraggio (raccoglie report senza bloccare alcuna email).',
                 '<strong>Politica <code>p=quarantine</code>:</strong> Sposta nello SPAM del destinatario le email non autenticate.',
                 '<strong>Politica <code>p=reject</code>:</strong> Blocca del tutto la consegna dei messaggi non autenticati (massima protezione).',
-                '<strong>Report aggregati RUA:</strong> Specifica <code>rua=mailto:...</code> per analizzare i report nel tab <em>DMARC Reports</em>.'
+                '<strong>Report aggregati RUA:</strong> Specifica <code>rua=mailto:...</code> per analizzare i report nel tab <em>DMARC & TLS Reports</em>.'
             ],
-            remediation: 'Attiva il record TXT DMARC su <code>_dmarc.tuodominio.com</code> e usa la sezione <em>DMARC Reports</em> del plugin per monitorare i report ricevuti.'
+            remediation: 'Attiva il record TXT DMARC su <code>_dmarc.tuodominio.com</code> e usa la sezione <em>DMARC & TLS Reports</em> del plugin per monitorare i report ricevuti.'
         },
         dkim: {
             icon: '🔑',

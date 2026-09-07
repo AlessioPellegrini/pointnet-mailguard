@@ -272,7 +272,7 @@ class PN_Mailguard_Dashboard {
                 <?php
                 $tab_labels = [
                     'monitors'     => '📧 ' . __('Email & MX Monitor', 'pointnet-mailguard'),
-                    'dmarcreports' => '📊 ' . __('DMARC Reports',      'pointnet-mailguard'),
+                    'dmarcreports' => '📊 ' . __('DMARC & TLS Reports', 'pointnet-mailguard'),
                     'customip'     => '🌐 ' . __('Custom IP Monitor',   'pointnet-mailguard'),
                     'dnstools'     => '🔬 ' . __('DNS & IP Tools',      'pointnet-mailguard'),
                     'advanced'     => '⚙️ '  . __('Advanced',          'pointnet-mailguard'),
@@ -1790,6 +1790,68 @@ class PN_Mailguard_Dashboard {
         $email_logs = PN_Mailguard_Logger::get_rows('email', 20);
         $ip_logs    = PN_Mailguard_Logger::get_rows('ip', 20);
 
+        // DMARC and TLSRPT aggregate reports
+        global $wpdb;
+        $table_dmarc_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_REPORTS;
+        $table_tls_rep   = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
+
+        $dmarc_summary = null;
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_dmarc_rep)) === $table_dmarc_rep) {
+            $d_stats = $wpdb->get_row($wpdb->prepare("SELECT COUNT(id) as count_reports, SUM(total_messages) as total_msg, SUM(passed_messages) as passed_msg, SUM(failed_messages) as failed_msg FROM %i", $table_dmarc_rep));
+            $d_total = intval($d_stats->total_msg ?? 0);
+            $d_passed = intval($d_stats->passed_msg ?? 0);
+            $d_failed = intval($d_stats->failed_msg ?? 0);
+            $recent_dmarc = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT id, report_id, org_name, email, domain, date_begin, date_end, total_messages, passed_messages, failed_messages, pass_rate, created_at FROM %i ORDER BY created_at DESC LIMIT 20",
+                    $table_dmarc_rep
+                ),
+                ARRAY_A
+            );
+            if ($anonymize && !empty($recent_dmarc)) {
+                foreach ($recent_dmarc as &$rd) {
+                    if (!empty($rd['email'])) $rd['email'] = $mask($rd['email']);
+                }
+                unset($rd);
+            }
+            $dmarc_summary = [
+                'total_reports'     => intval($d_stats->count_reports ?? 0),
+                'total_messages'    => $d_total,
+                'passed_messages'   => $d_passed,
+                'failed_messages'   => $d_failed,
+                'overall_pass_rate' => $d_total > 0 ? round(($d_passed / $d_total) * 100, 1) : 0.0,
+                'recent_reports'    => $recent_dmarc ?: [],
+            ];
+        }
+
+        $tls_summary = null;
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_tls_rep)) === $table_tls_rep) {
+            $t_stats = $wpdb->get_row($wpdb->prepare("SELECT COUNT(id) as count_reports, SUM(successful_sessions) as total_success, SUM(failed_sessions) as total_failed FROM %i", $table_tls_rep));
+            $t_success = intval($t_stats->total_success ?? 0);
+            $t_failed  = intval($t_stats->total_failed ?? 0);
+            $t_total   = $t_success + $t_failed;
+            $recent_tls = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT id, report_id, org_name, contact_info, domain, date_begin, date_end, successful_sessions, failed_sessions, success_rate, created_at FROM %i ORDER BY created_at DESC LIMIT 20",
+                    $table_tls_rep
+                ),
+                ARRAY_A
+            );
+            if ($anonymize && !empty($recent_tls)) {
+                foreach ($recent_tls as &$rt) {
+                    if (!empty($rt['contact_info'])) $rt['contact_info'] = $mask($rt['contact_info']);
+                }
+                unset($rt);
+            }
+            $tls_summary = [
+                'total_reports'        => intval($t_stats->count_reports ?? 0),
+                'successful_sessions'  => $t_success,
+                'failed_sessions'      => $t_failed,
+                'overall_success_rate' => $t_total > 0 ? round(($t_success / $t_total) * 100, 1) : 100.0,
+                'recent_reports'       => $recent_tls ?: [],
+            ];
+        }
+
         // AI analysis
         $ai_result = null;
         if ($domain) {
@@ -1825,6 +1887,8 @@ class PN_Mailguard_Dashboard {
                 'mtasts'   => $dns_data['mtasts'] ?? null,
                 'dnssec'   => $dns_data['dnssec'] ?? null,
             ],
+            'dmarc_aggregate_reports' => $dmarc_summary,
+            'tlsrpt_reports'          => $tls_summary,
             'scan_history' => [
                 'email_logs' => $email_logs ?: [],
                 'ip_logs'    => $ip_logs ?: [],

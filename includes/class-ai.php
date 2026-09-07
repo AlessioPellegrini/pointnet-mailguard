@@ -98,13 +98,49 @@ class PN_Mailguard_AI {
             $dkim_data = PN_Mailguard_DKIM::analyze($domain, $selector);
         }
 
+        // 4. Ingested DMARC and TLSRPT aggregate statistics
+        global $wpdb;
+        $table_dmarc_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_REPORTS;
+        $table_tls_rep   = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
+
+        $dmarc_reports_data = null;
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_dmarc_rep)) === $table_dmarc_rep) {
+            $d_stats = $wpdb->get_row($wpdb->prepare("SELECT COUNT(id) as count_reports, SUM(total_messages) as total_msg, SUM(passed_messages) as passed_msg, SUM(failed_messages) as failed_msg FROM %i", $table_dmarc_rep));
+            $d_total = intval($d_stats->total_msg ?? 0);
+            $d_passed = intval($d_stats->passed_msg ?? 0);
+            $d_failed = intval($d_stats->failed_msg ?? 0);
+            $dmarc_reports_data = [
+                'total_reports'     => intval($d_stats->count_reports ?? 0),
+                'total_messages'    => $d_total,
+                'passed_messages'   => $d_passed,
+                'failed_messages'   => $d_failed,
+                'overall_pass_rate' => $d_total > 0 ? round(($d_passed / $d_total) * 100, 1) : 0.0,
+            ];
+        }
+
+        $tls_reports_data = null;
+        if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_tls_rep)) === $table_tls_rep) {
+            $t_stats = $wpdb->get_row($wpdb->prepare("SELECT COUNT(id) as count_reports, SUM(successful_sessions) as total_success, SUM(failed_sessions) as total_failed FROM %i", $table_tls_rep));
+            $t_success = intval($t_stats->total_success ?? 0);
+            $t_failed  = intval($t_stats->total_failed ?? 0);
+            $t_total   = $t_success + $t_failed;
+            $tls_reports_data = [
+                'total_reports'        => intval($t_stats->count_reports ?? 0),
+                'successful_sessions'  => $t_success,
+                'failed_sessions'      => $t_failed,
+                'overall_success_rate' => $t_total > 0 ? round(($t_success / $t_total) * 100, 1) : 100.0,
+            ];
+        }
+
         return [
-            'scan'   => $scan_data,
-            'spf'    => $spf_data,
-            'dmarc'  => $dmarc_data,
-            'dkim'   => $dkim_data,
-            'mtasts' => $mtasts_data,
-            'dnssec' => $dnssec_data,
+            'scan'          => $scan_data,
+            'spf'           => $spf_data,
+            'dmarc'         => $dmarc_data,
+            'dkim'          => $dkim_data,
+            'mtasts'        => $mtasts_data,
+            'dnssec'        => $dnssec_data,
+            'dmarc_reports' => $dmarc_reports_data,
+            'tls_reports'   => $tls_reports_data,
         ];
     }
 
@@ -120,15 +156,17 @@ class PN_Mailguard_AI {
         // 1. Gather all data via the single source of truth
         $data = self::build_report_data($domain, $email, $selector);
 
-        $scan_data    = $data['scan'];
-        $spf_data     = $data['spf'];
-        $dmarc_data   = $data['dmarc'];
-        $dkim_data    = $data['dkim'];
-        $mtasts_data  = $data['mtasts'];
-        $dnssec_data  = $data['dnssec'];
+        $scan_data     = $data['scan'];
+        $spf_data      = $data['spf'];
+        $dmarc_data    = $data['dmarc'];
+        $dkim_data     = $data['dkim'];
+        $mtasts_data   = $data['mtasts'];
+        $dnssec_data   = $data['dnssec'];
+        $dmarc_reports = $data['dmarc_reports'] ?? null;
+        $tls_reports   = $data['tls_reports'] ?? null;
 
         // 2. Build prompt
-        $prompt = self::build_prompt($scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data, $dnssec_data, $domain);
+        $prompt = self::build_prompt($scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data, $dnssec_data, $domain, $dmarc_reports, $tls_reports);
 
         // 3. Call Gemini API
         $result = self::call_api($prompt);
@@ -201,7 +239,7 @@ class PN_Mailguard_AI {
     /**
      * Build a structured prompt for the AI.
      */
-    private static function build_prompt(array $scan, $spf, $dmarc, $dkim, $mtasts, $dnssec, string $domain): string {
+    private static function build_prompt(array $scan, $spf, $dmarc, $dkim, $mtasts, $dnssec, string $domain, $dmarc_reports = null, $tls_reports = null): string {
         $language = self::get_ai_language();
         $lines = [];
 
@@ -329,6 +367,25 @@ class PN_Mailguard_AI {
                     $lines[] = "  $icon " . ($c['label'] ?? '') . ': ' . ($c['message'] ?? '');
                 }
             }
+            $lines[] = '';
+        }
+
+        if (!empty($dmarc_reports) && !empty($dmarc_reports['total_reports'])) {
+            $lines[] = '=== INGESTED DMARC AGGREGATE REPORTS (RUA) ===';
+            $lines[] = "Reports received: {$dmarc_reports['total_reports']}";
+            $lines[] = "Total messages evaluated: {$dmarc_reports['total_messages']}";
+            $lines[] = "Passed messages (SPF+DKIM compliant): {$dmarc_reports['passed_messages']}";
+            $lines[] = "Failed messages: {$dmarc_reports['failed_messages']}";
+            $lines[] = "Global alignment pass rate: {$dmarc_reports['overall_pass_rate']}%";
+            $lines[] = '';
+        }
+
+        if (!empty($tls_reports) && !empty($tls_reports['total_reports'])) {
+            $lines[] = '=== INGESTED TLSRPT TLS FAILURE REPORTS (RFC 8460) ===';
+            $lines[] = "Reports received: {$tls_reports['total_reports']}";
+            $lines[] = "Successful TLS sessions: {$tls_reports['successful_sessions']}";
+            $lines[] = "Failed TLS sessions: {$tls_reports['failed_sessions']}";
+            $lines[] = "TLS success rate: {$tls_reports['overall_success_rate']}%";
             $lines[] = '';
         }
 
@@ -789,6 +846,14 @@ class PN_Mailguard_AI {
                 $dnssec = $data['dnssec'];
                 $context_parts[] = 'DNSSEC Status: ' . ($dnssec['status'] ?? 'N/A');
                 $context_parts[] = 'DNSSEC Enabled: ' . (($dnssec['enabled'] ?? false) ? 'YES' : 'NO');
+            }
+            if (!empty($data['dmarc_reports']) && !empty($data['dmarc_reports']['total_reports'])) {
+                $dr = $data['dmarc_reports'];
+                $context_parts[] = "DMARC Aggregate Reports: {$dr['total_reports']} reports, {$dr['total_messages']} messages ({$dr['overall_pass_rate']}% pass rate, {$dr['failed_messages']} failed)";
+            }
+            if (!empty($data['tls_reports']) && !empty($data['tls_reports']['total_reports'])) {
+                $tr = $data['tls_reports'];
+                $context_parts[] = "TLSRPT Reports: {$tr['total_reports']} reports, {$tr['successful_sessions']} successful TLS sessions, {$tr['failed_sessions']} failed sessions ({$tr['overall_success_rate']}% success rate)";
             }
         }
 

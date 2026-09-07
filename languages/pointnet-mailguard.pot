@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 21:54+0200\n"
+"POT-Creation-Date: 2026-09-07 22:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,20 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: includes/class-ai.php:392 includes/class-ai.php:691
+#: includes/class-ai.php:449 includes/class-ai.php:748
 msgid "AI not configured. Add your Gemini API key in Settings."
 msgstr ""
 
-#: includes/class-ai.php:450
+#: includes/class-ai.php:507
 #, php-format
 msgid "Gemini API error: %s"
 msgstr ""
 
-#: includes/class-ai.php:474 includes/class-ai.php:844
+#: includes/class-ai.php:531 includes/class-ai.php:909
 msgid "AI returned an empty response."
 msgstr ""
 
-#: includes/class-ai.php:491 includes/class-ai.php:507
+#: includes/class-ai.php:548 includes/class-ai.php:564
 msgid "AI response could not be parsed."
 msgstr ""
 
@@ -67,7 +67,7 @@ msgid "Email & MX Monitor"
 msgstr ""
 
 #: includes/class-dashboard.php:275
-msgid "DMARC Reports"
+msgid "DMARC & TLS Reports"
 msgstr ""
 
 #: includes/class-dashboard.php:276 includes/class-dashboard.php:829
@@ -201,15 +201,15 @@ msgid ""
 "download and process report attachments."
 msgstr ""
 
-#: includes/class-dashboard.php:428 includes/class-dashboard.php:2218
+#: includes/class-dashboard.php:428 includes/class-dashboard.php:2282
 msgid "IMAP Host"
 msgstr ""
 
-#: includes/class-dashboard.php:432 includes/class-dashboard.php:2222
+#: includes/class-dashboard.php:432 includes/class-dashboard.php:2286
 msgid "Port"
 msgstr ""
 
-#: includes/class-dashboard.php:436 includes/class-dashboard.php:2226
+#: includes/class-dashboard.php:436 includes/class-dashboard.php:2290
 msgid "Encryption"
 msgstr ""
 
@@ -217,15 +217,15 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: includes/class-dashboard.php:448 includes/class-dashboard.php:2238
+#: includes/class-dashboard.php:448 includes/class-dashboard.php:2302
 msgid "Password"
 msgstr ""
 
-#: includes/class-dashboard.php:457 includes/class-dashboard.php:2251
+#: includes/class-dashboard.php:457 includes/class-dashboard.php:2315
 msgid "Enable automatic hourly polling (WP-Cron)"
 msgstr ""
 
-#: includes/class-dashboard.php:460 includes/class-dashboard.php:2255
+#: includes/class-dashboard.php:460 includes/class-dashboard.php:2319
 msgid "Action after import:"
 msgstr ""
 
@@ -784,16 +784,16 @@ msgstr ""
 msgid "by"
 msgstr ""
 
-#: includes/class-dashboard.php:1848 includes/class-dashboard.php:1863
-#: includes/class-dashboard.php:1889
+#: includes/class-dashboard.php:1912 includes/class-dashboard.php:1927
+#: includes/class-dashboard.php:1953
 msgid "Please wait 30 seconds between scans."
 msgstr ""
 
-#: includes/class-dashboard.php:2152
+#: includes/class-dashboard.php:2216
 msgid "DMARC & TLS Aggregate Reports Reader"
 msgstr ""
 
-#: includes/class-dashboard.php:2155
+#: includes/class-dashboard.php:2219
 msgid ""
 "Upload DMARC aggregate report files (.xml, .gz, .zip) and TLSRPT TLS reports "
 "(.json, .json.gz, .zip) sent by Gmail, Outlook, Yahoo, etc. PointNet Mail "
@@ -801,313 +801,313 @@ msgid ""
 "authentication and MTA-STS TLS delivery analytics."
 msgstr ""
 
-#: includes/class-dashboard.php:2162
+#: includes/class-dashboard.php:2226
 msgid ""
 "Drag & drop DMARC (.xml) or TLSRPT (.json) report files here, or click to "
 "browse"
 msgstr ""
 
-#: includes/class-dashboard.php:2165
+#: includes/class-dashboard.php:2229
 msgid ""
 "Supported formats: DMARC XML (.xml, .gz, .zip) and TLSRPT JSON "
 "(.json, .json.gz, .gz, .zip)"
 msgstr ""
 
-#: includes/class-dashboard.php:2171
+#: includes/class-dashboard.php:2235
 msgid "Select DMARC / TLSRPT Report Files"
 msgstr ""
 
-#: includes/class-dashboard.php:2187
+#: includes/class-dashboard.php:2251
 msgid "Automatic Email Ingestion (IMAP Mailbox)"
 msgstr ""
 
-#: includes/class-dashboard.php:2200
+#: includes/class-dashboard.php:2264
 msgid "Empty Database (DMARC & TLS)"
 msgstr ""
 
-#: includes/class-dashboard.php:2203
+#: includes/class-dashboard.php:2267
 msgid "Fetch Reports Now"
 msgstr ""
 
-#: includes/class-dashboard.php:2209
+#: includes/class-dashboard.php:2273
 msgid ""
 "Configure a dedicated mailbox (e.g. dmarc-reports@domain.com) to "
 "automatically download and process incoming DMARC and TLSRPT report "
 "attachments."
 msgstr ""
 
-#: includes/class-dashboard.php:2234
+#: includes/class-dashboard.php:2298
 msgid "Username / Email"
 msgstr ""
 
-#: includes/class-dashboard.php:2242
+#: includes/class-dashboard.php:2306
 msgid "Mailbox Folder"
 msgstr ""
 
-#: includes/class-dashboard.php:2257
+#: includes/class-dashboard.php:2321
 msgid "Delete email from server (Recommended for dedicated mailboxes)"
 msgstr ""
 
-#: includes/class-dashboard.php:2258
+#: includes/class-dashboard.php:2322
 msgid "Mark as read (\\Seen)"
 msgstr ""
 
-#: includes/class-dashboard.php:2265
+#: includes/class-dashboard.php:2329
 msgid "Test Connection"
 msgstr ""
 
-#: includes/class-dashboard.php:2268
+#: includes/class-dashboard.php:2332
 msgid "Save IMAP Settings"
 msgstr ""
 
-#: includes/class-dashboard.php:2288
+#: includes/class-dashboard.php:2352
 msgid "Imported Reports:"
 msgstr ""
 
-#: includes/class-dashboard.php:2298
+#: includes/class-dashboard.php:2362
 msgid "Duplicates Skipped (Report IDs already present):"
 msgstr ""
 
-#: includes/class-dashboard.php:2308
+#: includes/class-dashboard.php:2372
 msgid "Fetch Errors:"
 msgstr ""
 
-#: includes/class-dashboard.php:2327
+#: includes/class-dashboard.php:2391
 msgid "How to receive automatic DMARC and TLSRPT reports"
 msgstr ""
 
-#: includes/class-dashboard.php:2330
+#: includes/class-dashboard.php:2394
 msgid ""
 "To enable automatic reporting from major email receivers (Google, Microsoft, "
 "Yahoo), publish the following DNS TXT records for your domain:"
 msgstr ""
 
-#: includes/class-dashboard.php:2335
+#: includes/class-dashboard.php:2399
 msgid "1. DMARC Aggregate Reports (RFC 7489)"
 msgstr ""
 
-#: includes/class-dashboard.php:2341
+#: includes/class-dashboard.php:2405
 msgid "2. MTA-STS TLS Reports (RFC 8460)"
 msgstr ""
 
-#: includes/class-dashboard.php:2355
+#: includes/class-dashboard.php:2419
 msgid "Total Reports Imported"
 msgstr ""
 
-#: includes/class-dashboard.php:2359
+#: includes/class-dashboard.php:2423
 msgid "DMARC Evaluated Emails"
 msgstr ""
 
-#: includes/class-dashboard.php:2365
+#: includes/class-dashboard.php:2429
 msgid "DMARC Pass Rate"
 msgstr ""
 
-#: includes/class-dashboard.php:2369
+#: includes/class-dashboard.php:2433
 msgid "MTA-STS TLS Sessions"
 msgstr ""
 
-#: includes/class-dashboard.php:2375
+#: includes/class-dashboard.php:2439
 msgid "TLS Delivery Success"
 msgstr ""
 
-#: includes/class-dashboard.php:2381
+#: includes/class-dashboard.php:2445
 msgid "DMARC Aggregate Reports (RFC 7489)"
 msgstr ""
 
-#: includes/class-dashboard.php:2385
+#: includes/class-dashboard.php:2449
 msgid ""
 "No DMARC reports imported yet. Use the upload box above to upload your first "
 "report file."
 msgstr ""
 
-#: includes/class-dashboard.php:2391 includes/class-dashboard.php:2509
+#: includes/class-dashboard.php:2455 includes/class-dashboard.php:2573
 msgid "Reporting Org"
 msgstr ""
 
-#: includes/class-dashboard.php:2392 includes/class-mailer.php:99
+#: includes/class-dashboard.php:2456 includes/class-mailer.php:99
 msgid "Domain"
 msgstr ""
 
-#: includes/class-dashboard.php:2393 includes/class-dashboard.php:2511
+#: includes/class-dashboard.php:2457 includes/class-dashboard.php:2575
 msgid "Date Range"
 msgstr ""
 
-#: includes/class-dashboard.php:2394
+#: includes/class-dashboard.php:2458
 msgid "Total Emails"
 msgstr ""
 
-#: includes/class-dashboard.php:2395
+#: includes/class-dashboard.php:2459
 msgid "Pass Rate"
 msgstr ""
 
-#: includes/class-dashboard.php:2396 includes/class-dashboard.php:2515
+#: includes/class-dashboard.php:2460 includes/class-dashboard.php:2579
 msgid "Imported On"
 msgstr ""
 
-#: includes/class-dashboard.php:2397 includes/class-dashboard.php:2516
+#: includes/class-dashboard.php:2461 includes/class-dashboard.php:2580
 msgid "Actions"
 msgstr ""
 
-#: includes/class-dashboard.php:2428 includes/class-dashboard.php:2552
+#: includes/class-dashboard.php:2492 includes/class-dashboard.php:2616
 msgid "Details"
 msgstr ""
 
-#: includes/class-dashboard.php:2439
+#: includes/class-dashboard.php:2503
 msgid "Sender IPs & Authentication Breakdown"
 msgstr ""
 
-#: includes/class-dashboard.php:2441
+#: includes/class-dashboard.php:2505
 msgid "No sender IP details found."
 msgstr ""
 
-#: includes/class-dashboard.php:2446
+#: includes/class-dashboard.php:2510
 msgid "Source IP"
 msgstr ""
 
-#: includes/class-dashboard.php:2447 includes/class-loader.php:185
+#: includes/class-dashboard.php:2511 includes/class-loader.php:185
 msgid "Country"
 msgstr ""
 
-#: includes/class-dashboard.php:2448
+#: includes/class-dashboard.php:2512
 msgid "Count"
 msgstr ""
 
-#: includes/class-dashboard.php:2449
+#: includes/class-dashboard.php:2513
 msgid "Disposition"
 msgstr ""
 
-#: includes/class-dashboard.php:2450
+#: includes/class-dashboard.php:2514
 msgid "SPF Result"
 msgstr ""
 
-#: includes/class-dashboard.php:2451
+#: includes/class-dashboard.php:2515
 msgid "DKIM Result"
 msgstr ""
 
-#: includes/class-dashboard.php:2452
+#: includes/class-dashboard.php:2516
 msgid "Header From"
 msgstr ""
 
-#: includes/class-dashboard.php:2499
+#: includes/class-dashboard.php:2563
 msgid "TLSRPT Reports (RFC 8460 - MTA-STS / DANE TLS)"
 msgstr ""
 
-#: includes/class-dashboard.php:2503
+#: includes/class-dashboard.php:2567
 msgid ""
 "No TLSRPT TLS reports imported yet. Upload a .json or .json.gz report file "
 "above."
 msgstr ""
 
-#: includes/class-dashboard.php:2510
+#: includes/class-dashboard.php:2574
 msgid "Policy Domain"
 msgstr ""
 
-#: includes/class-dashboard.php:2512
+#: includes/class-dashboard.php:2576
 msgid "Success Sessions"
 msgstr ""
 
-#: includes/class-dashboard.php:2513
+#: includes/class-dashboard.php:2577
 msgid "Failures"
 msgstr ""
 
-#: includes/class-dashboard.php:2514
+#: includes/class-dashboard.php:2578
 msgid "Success Rate"
 msgstr ""
 
-#: includes/class-dashboard.php:2563
+#: includes/class-dashboard.php:2627
 msgid "MTA-STS Policies & TLS Session Delivery Breakdown"
 msgstr ""
 
-#: includes/class-dashboard.php:2592
+#: includes/class-dashboard.php:2656
 msgid "Failure Details:"
 msgstr ""
 
-#: includes/class-dashboard.php:2596
+#: includes/class-dashboard.php:2660
 msgid "Result Type"
 msgstr ""
 
-#: includes/class-dashboard.php:2597
+#: includes/class-dashboard.php:2661
 msgid "Sending MTA IP"
 msgstr ""
 
-#: includes/class-dashboard.php:2598
+#: includes/class-dashboard.php:2662
 msgid "Receiving IP / MX"
 msgstr ""
 
-#: includes/class-dashboard.php:2599
+#: includes/class-dashboard.php:2663
 msgid "Failed Count"
 msgstr ""
 
-#: includes/class-dashboard.php:2600
+#: includes/class-dashboard.php:2664
 msgid "Additional Info"
 msgstr ""
 
-#: includes/class-dashboard.php:2610
+#: includes/class-dashboard.php:2674
 msgid "No TLS failures reported for this policy."
 msgstr ""
 
-#: includes/class-dashboard.php:2659
+#: includes/class-dashboard.php:2723
 msgid "No valid file uploaded. Please select an XML, JSON, .gz, or .zip file."
 msgstr ""
 
-#: includes/class-dashboard.php:2665
+#: includes/class-dashboard.php:2729
 msgid "Unable to read uploaded report file."
 msgstr ""
 
-#: includes/class-dashboard.php:2701
+#: includes/class-dashboard.php:2765
 #, php-format
 msgid "TLSRPT Report ID \"%1$s\" from %2$s has already been imported."
 msgstr ""
 
-#: includes/class-dashboard.php:2726
+#: includes/class-dashboard.php:2790
 msgid "Failed to save TLSRPT report to database."
 msgstr ""
 
-#: includes/class-dashboard.php:2748
+#: includes/class-dashboard.php:2812
 #, php-format
 msgid ""
 "TLSRPT (MTA-STS TLS) Report successfully imported! (%1$d successful "
 "sessions, %2$d failed)."
 msgstr ""
 
-#: includes/class-dashboard.php:2776
+#: includes/class-dashboard.php:2840
 #, php-format
 msgid "DMARC Report ID \"%1$s\" from %2$s has already been imported."
 msgstr ""
 
-#: includes/class-dashboard.php:2803
+#: includes/class-dashboard.php:2867
 msgid "Failed to save DMARC report to database."
 msgstr ""
 
-#: includes/class-dashboard.php:2834
+#: includes/class-dashboard.php:2898
 #, php-format
 msgid ""
 "DMARC Report successfully imported! (%1$d messages evaluated, %2$d passed)."
 msgstr ""
 
-#: includes/class-dashboard.php:2848 includes/class-dashboard.php:2867
+#: includes/class-dashboard.php:2912 includes/class-dashboard.php:2931
 msgid "Invalid report ID."
 msgstr ""
 
-#: includes/class-dashboard.php:2858
+#: includes/class-dashboard.php:2922
 msgid "Report deleted successfully."
 msgstr ""
 
-#: includes/class-dashboard.php:2877
+#: includes/class-dashboard.php:2941
 msgid "TLS report deleted successfully."
 msgstr ""
 
-#: includes/class-dashboard.php:2888
+#: includes/class-dashboard.php:2952
 msgid "Invalid port number. Port must be between 1 and 65535."
 msgstr ""
 
-#: includes/class-dashboard.php:2896
+#: includes/class-dashboard.php:2960
 msgid ""
 "Connections to internal, private, or loopback network addresses are not "
 "permitted."
 msgstr ""
 
-#: includes/class-dashboard.php:2966
+#: includes/class-dashboard.php:3030
 msgid ""
 "All DMARC and TLSRPT database records and fetch history have been "
 "successfully cleared."
