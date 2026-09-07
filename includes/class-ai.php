@@ -273,8 +273,8 @@ class PN_Mailguard_AI {
         $lines[] = self::PLUGIN_CONTEXT;
         $lines[] = '';
         $lines[] = "Procedi con l'analisi dei dati seguenti e produci un report JSON valido.";
-        $lines[] = "Rispondi SOLO con JSON, nient'altro.";
-        $lines[] = "Il campo summary_it deve essere scritto in {$language}.";
+        $lines[] = "Rispondi SOLO ed ESCLUSIVAMENTE con un oggetto JSON valido, senza blocchi di codice markdown, senza spiegazioni prima o dopo.";
+        $lines[] = "TUTTI i campi testuali del JSON (summary_it, i campi 'title', 'description' e 'fix' dentro issues, gli elementi di 'strengths' e 'next_steps') DEVONO essere scritti in lingua {$language}.";
         $lines[] = '';
 
         $lines[] = '=== MONITOR SCAN ===';
@@ -440,15 +440,17 @@ class PN_Mailguard_AI {
         }
 
         $lines[] = '=== FORMATO JSON RICHIESTO ===';
+        $lines[] = "IMPORTANTE: Genera TUTTI i contenuti testuali in lingua {$language}.";
+        $lines[] = 'Rispondi ESCLUSIVAMENTE con il seguente oggetto JSON valido, senza blocchi di codice markdown, senza testo prima o dopo:';
         $lines[] = '{';
         $lines[] = '  "severity": "ok|warning|critical",';
         $lines[] = '  "score": 0-100,';
-        $lines[] = '  "summary_it": "riassunto in italiano (max 2 frasi)",';
+        $lines[] = '  "summary_it": "riassunto esecutivo in ' . $language . ' (max 2 frasi)",';
         $lines[] = '  "issues": [';
-        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|TLSRPT|DNSSEC|DNSBL|PTR|FCrDNS|TLS|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
+        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|TLSRPT|DNSSEC|DNSBL|PTR|FCrDNS|TLS|MX|GENERAL", "severity": "error|warning|info", "title": "titolo in ' . $language . '", "description": "descrizione in ' . $language . '", "fix": "azione/comando consigliato in ' . $language . '" }';
         $lines[] = '  ],';
-        $lines[] = '  "strengths": ["..."],';
-        $lines[] = '  "next_steps": ["..."]';
+        $lines[] = '  "strengths": ["punto di forza 1 in ' . $language . '", "..."],';
+        $lines[] = '  "next_steps": ["prossimo passo 1 in ' . $language . '", "..."]';
         $lines[] = '}';
 
         return implode("\n", $lines);
@@ -510,7 +512,7 @@ class PN_Mailguard_AI {
         $response = wp_remote_post(
             'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent',
             [
-                'timeout' => 30,
+                'timeout' => 45,
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'x-goog-api-key' => $api_key,
@@ -524,8 +526,9 @@ class PN_Mailguard_AI {
                         ],
                     ],
                     'generationConfig' => [
-                        'temperature'     => 0.3,
-                        'maxOutputTokens' => 1500,
+                        'temperature'      => 0.2,
+                        'maxOutputTokens'  => 4096,
+                        'responseMimeType' => 'application/json',
                     ],
                 ]),
             ]
@@ -544,38 +547,37 @@ class PN_Mailguard_AI {
             ];
         }
 
-        $body = json_decode(wp_remote_retrieve_body($response), true);
-
-        // Extract text from Gemini response format
-        $text = '';
-        if (isset($body['candidates'][0]['content']['parts'][0]['text'])) {
-            $text = $body['candidates'][0]['content']['parts'][0]['text'];
-        } elseif (isset($body['candidates'][0]['finishReason']) && $body['candidates'][0]['finishReason'] !== 'STOP') {
-            return [
-                'error'      => true,
-                /* translators: %s: Gemini API finish reason */
-                'error_msg'  => sprintf(__('Gemini API error: %s', 'pointnet-mailguard'), $body['candidates'][0]['finishReason'] ?? 'unknown'),
-                'severity'   => 'error',
-                'score'      => 0,
-                'summary_it' => '',
-                'issues'     => [],
-                'strengths'  => [],
-                'next_steps' => [],
-            ];
-        } elseif (!empty($body['error']['message'])) {
-            return [
-                'error'      => true,
-                'error_msg'  => 'Gemini API: ' . $body['error']['message'],
-                'severity'   => 'error',
-                'score'      => 0,
-                'summary_it' => '',
-                'issues'     => [],
-                'strengths'  => [],
-                'next_steps' => [],
-            ];
-        }
+        $body          = json_decode(wp_remote_retrieve_body($response), true);
+        $candidate     = $body['candidates'][0] ?? [];
+        $finish_reason = $candidate['finishReason'] ?? '';
+        $text          = $candidate['content']['parts'][0]['text'] ?? '';
 
         if (empty($text)) {
+            if (!empty($finish_reason) && $finish_reason !== 'STOP') {
+                return [
+                    'error'      => true,
+                    /* translators: %s: Gemini API finish reason */
+                    'error_msg'  => sprintf(__('Gemini API error: %s', 'pointnet-mailguard'), $finish_reason),
+                    'severity'   => 'error',
+                    'score'      => 0,
+                    'summary_it' => '',
+                    'issues'     => [],
+                    'strengths'  => [],
+                    'next_steps' => [],
+                ];
+            } elseif (!empty($body['error']['message'])) {
+                return [
+                    'error'      => true,
+                    'error_msg'  => 'Gemini API: ' . $body['error']['message'],
+                    'severity'   => 'error',
+                    'score'      => 0,
+                    'summary_it' => '',
+                    'issues'     => [],
+                    'strengths'  => [],
+                    'next_steps' => [],
+                ];
+            }
+
             return [
                 'error'      => true,
                 'error_msg'  => __('AI returned an empty response.', 'pointnet-mailguard'),
@@ -588,14 +590,30 @@ class PN_Mailguard_AI {
             ];
         }
 
-        // Remove markdown code fences
-        $text = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', $text);
+        // Clean markdown code fences if present (e.g. ```json ... ```)
+        $cleaned = trim($text);
+        if (preg_match('/^```(?:json)?\s*([\s\S]*?)\s*```$/i', $cleaned, $m)) {
+            $cleaned = trim($m[1]);
+        }
 
-        // Use json_validate() in PHP 8.3 for cleaner validation
-        if (!json_validate($text)) {
+        // If not valid yet, attempt to extract the outermost JSON object
+        if (!json_validate($cleaned)) {
+            if (preg_match('/\{[\s\S]*\}/', $cleaned, $m)) {
+                $sub = trim($m[0]);
+                if (json_validate($sub)) {
+                    $cleaned = $sub;
+                }
+            }
+        }
+
+        if (!json_validate($cleaned)) {
+            $error_msg = ($finish_reason === 'MAX_TOKENS')
+                ? __('AI response was truncated (token limit reached). Try selecting a more concise model or increase limits.', 'pointnet-mailguard')
+                : __('AI response could not be parsed.', 'pointnet-mailguard');
+
             return [
                 'error'      => true,
-                'error_msg'  => __('AI response could not be parsed.', 'pointnet-mailguard'),
+                'error_msg'  => $error_msg,
                 'raw'        => $text,
                 'severity'   => 'warning',
                 'score'      => 0,
@@ -606,13 +624,13 @@ class PN_Mailguard_AI {
             ];
         }
 
-        $parsed = json_decode($text, true);
+        $parsed = json_decode($cleaned, true);
 
         if (!isset($parsed['severity'])) {
             return [
                 'error'      => true,
                 'error_msg'  => __('AI response could not be parsed.', 'pointnet-mailguard'),
-                'raw'        => $text,
+                'raw'        => $cleaned,
                 'severity'   => 'warning',
                 'score'      => 0,
                 'summary_it' => '',

@@ -1800,3 +1800,7 @@ msgstr ""
 #: includes/class-mailer.php:236
 msgid "Connection failed"
 msgstr ""
+
+#: includes/class-ai.php:611
+msgid "AI response was truncated (token limit reached). Try selecting a more concise model or increase limits."
+msgstr ""

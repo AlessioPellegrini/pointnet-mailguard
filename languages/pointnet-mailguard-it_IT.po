@@ -1925,6 +1925,10 @@ msgstr "Certificato"
 msgid "Connection failed"
 msgstr "Connessione fallita"
 
+#: includes/class-ai.php:611
+msgid "AI response was truncated (token limit reached). Try selecting a more concise model or increase limits."
+msgstr "La risposta dell'AI è stata troncata (raggiunto il limite di token). Prova a selezionare un modello più conciso o ad aumentare i limiti."
+
 #~ msgid "Empty DMARC Database"
 #~ msgstr "Svuota Database DMARC"
 
