@@ -84,11 +84,12 @@ class PN_Mailguard_Loader {
         // AJAX — Export report
         add_action('wp_ajax_pn_mailguard_export_report',       ['PN_Mailguard_Dashboard', 'ajax_export_report']);
 
-        // AJAX — IP Analysis tools (DNS & IP Tools tab)
+        // AJAX — IP & SMTP Analysis tools (DNS & IP Tools tab)
         add_action('wp_ajax_pn_mailguard_ip_dnsbl',            ['PN_Mailguard_Dashboard', 'ajax_ip_dnsbl']);
         add_action('wp_ajax_pn_mailguard_ip_ptr',              ['PN_Mailguard_Dashboard', 'ajax_ip_ptr']);
         add_action('wp_ajax_pn_mailguard_ip_geoip',            ['PN_Mailguard_Dashboard', 'ajax_ip_geoip']);
         add_action('wp_ajax_pn_mailguard_ip_whois',            ['PN_Mailguard_Dashboard', 'ajax_ip_whois']);
+        add_action('wp_ajax_pn_mailguard_check_smtp_tls',      ['PN_Mailguard_Dashboard', 'ajax_check_smtp_tls']);
     }
 
     public static function load_textdomain(): void {
@@ -199,6 +200,10 @@ class PN_Mailguard_Loader {
             'modelsUpdated'      => __('Models updated successfully.', 'pointnet-mailguard'),
             'noModelsFound'      => __('No models found. Make sure your API key is valid.', 'pointnet-mailguard'),
             'fetchModelsFailed'  => __('Failed to fetch models. Check your API key.', 'pointnet-mailguard'),
+            'checkingSmtpTls'    => __('Connecting to port 25 and negotiating STARTTLS...', 'pointnet-mailguard'),
+            'checkSmtpTls'       => __('Check SMTP & TLS', 'pointnet-mailguard'),
+            'smtpTlsSuccess'     => __('SMTP STARTTLS & Certificate check completed.', 'pointnet-mailguard'),
+            'smtpTlsFailed'      => __('SMTP connection or TLS check failed.', 'pointnet-mailguard'),
         ]);
     }
 }

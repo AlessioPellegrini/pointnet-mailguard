@@ -498,6 +498,11 @@ jQuery(document).ready(function($) {
                 } else {
                     html = '<div class="pn-dns-record">' + escHtml(d.ptr) + '</div>';
                     html += '<p style="font-size:11px; color:#00a32a; margin:6px 0 0;">✅ ' + pnMailguard.ptrFound + '</p>';
+                    if (d.fcrdns_valid) {
+                        html += '<div style="margin-top:8px; padding:6px 10px; background:#edfaef; border:1px solid #b8e6c1; border-radius:4px; font-size:11px; color:#00a32a;"><strong>✓ FCrDNS 100% OK</strong>: ' + escHtml(d.fcrdns_msg || 'Circular resolution verified') + '</div>';
+                    } else if (d.fcrdns_msg) {
+                        html += '<div style="margin-top:8px; padding:6px 10px; background:#fff8e5; border:1px solid #f0d080; border-radius:4px; font-size:11px; color:#996800;"><strong>⚠ FCrDNS Mismatch</strong>: ' + escHtml(d.fcrdns_msg) + '</div>';
+                    }
                 }
             } else if (type === 'geoip') {
                 if (d.status === 'success') {
@@ -565,6 +570,113 @@ jQuery(document).ready(function($) {
         if (e.key === 'Enter' && !isIpAnalyzing) {
             e.preventDefault();
             analyzeIpAll();
+        }
+    });
+
+    // -------------------------------------------------------------------------
+    // DNS & IP Tools — SMTP STARTTLS & TLS Certificate Check (Port 25)
+    // -------------------------------------------------------------------------
+    function runSmtpTlsCheck() {
+        var host = $.trim($('#pn-smtp-tls-host').val());
+        if (!host) {
+            host = $.trim($('#pn-dns-domain').val());
+        }
+        if (!host) {
+            alert(pnMailguard.enterEmailFirst || 'Please enter a host or domain.');
+            return;
+        }
+
+        var $btn = $('#pn-btn-check-smtp-tls');
+        var $results = $('#pn-smtp-tls-results');
+        $btn.prop('disabled', true).text('⏳ ' + (pnMailguard.checkingSmtpTls || 'Checking SMTP & TLS...'));
+        $results.html('<div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:16px; color:#666;">⏳ ' + (pnMailguard.checkingSmtpTls || 'Connecting to mail server on port 25 and negotiating STARTTLS...') + '</div>');
+
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_check_smtp_tls',
+            nonce: pnMailguard.nonce,
+            host: host
+        }, function(res) {
+            $btn.prop('disabled', false).html('🔒 ' + (pnMailguard.checkSmtpTls || 'Check SMTP & TLS'));
+            if (!res.success) {
+                var err = (res.data && res.data.message) ? res.data.message : (pnMailguard.analysisFailed || 'Error');
+                $results.html('<div class="notice notice-error inline" style="margin:0;"><p>' + escHtml(err) + '</p></div>');
+                return;
+            }
+
+            var d = res.data;
+            var html = '<div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; overflow:hidden;">';
+            html += '<div style="background:#f8f8f8; border-bottom:1px solid #e0e0e0; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">';
+            html += '<span style="font-weight:600; font-size:14px;">🔒 ' + escHtml(d.target_host) + ' (Port 25)</span>';
+
+            if (d.connected && d.tls_active && d.cert_valid) {
+                html += '<span style="background:#edfaef; color:#00a32a; font-weight:600; font-size:11px; padding:3px 8px; border-radius:4px;">✓ SECURE TLS</span>';
+            } else if (d.connected && d.tls_active && d.is_expired) {
+                html += '<span style="background:#fbeaea; color:#a30000; font-weight:600; font-size:11px; padding:3px 8px; border-radius:4px;">✗ CERT EXPIRED</span>';
+            } else if (d.connected) {
+                html += '<span style="background:#fff8e5; color:#996800; font-weight:600; font-size:11px; padding:3px 8px; border-radius:4px;">⚠ NO TLS / PLAIN</span>';
+            } else {
+                html += '<span style="background:#fbeaea; color:#a30000; font-weight:600; font-size:11px; padding:3px 8px; border-radius:4px;">✗ CONNECTION REFUSED</span>';
+            }
+            html += '</div>';
+
+            html += '<div style="padding:16px;">';
+            if (!d.connected) {
+                html += '<div style="background:#fdf2f2; border:1px solid #f8b4b4; border-radius:6px; padding:12px; font-size:13px; color:#9b1c1c;">';
+                html += '<strong>⚠ ' + (pnMailguard.smtpTlsFailed || 'Connection Failed') + ':</strong> ' + escHtml(d.error);
+                html += '<p style="margin:6px 0 0; font-size:11px; color:#666;">Note: Some web hosts block outbound connections to port 25 to prevent spam abuse.</p>';
+                html += '</div>';
+            } else {
+                html += '<table class="pn-dns-table" style="width:100%; border-collapse:collapse; font-size:13px;">';
+
+                // Banner
+                html += '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 6px; font-weight:600; width:180px;">SMTP Banner</td><td style="padding:8px 6px; font-family:monospace; font-size:12px;">' + escHtml(d.banner || 'N/A') + '</td></tr>';
+
+                // STARTTLS
+                var stBadge = d.starttls_supported
+                    ? '<span style="background:#edfaef; color:#00a32a; font-weight:600; padding:2px 6px; border-radius:3px; font-size:11px;">✓ Supported</span>'
+                    : '<span style="background:#fbeaea; color:#a30000; font-weight:600; padding:2px 6px; border-radius:3px; font-size:11px;">✗ Not Supported</span>';
+                html += '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 6px; font-weight:600;">STARTTLS Extension</td><td style="padding:8px 6px;">' + stBadge + '</td></tr>';
+
+                // TLS Handshake
+                var tlsBadge = d.tls_active
+                    ? '<span style="background:#edfaef; color:#00a32a; font-weight:600; padding:2px 6px; border-radius:3px; font-size:11px;">✓ Active (TLS Negotiated)</span>'
+                    : '<span style="background:#fbeaea; color:#a30000; font-weight:600; padding:2px 6px; border-radius:3px; font-size:11px;">✗ Handshake Failed</span>';
+                html += '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 6px; font-weight:600;">TLS Handshake</td><td style="padding:8px 6px;">' + tlsBadge + '</td></tr>';
+
+                if (d.tls_active) {
+                    // Certificate Expiration
+                    var expColor = d.is_expired ? '#a30000' : (d.days_remaining < 30 ? '#996800' : '#00a32a');
+                    var expText = d.is_expired ? 'EXPIRED' : (d.days_remaining + ' days remaining');
+                    html += '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 6px; font-weight:600;">Certificate Expiration</td><td style="padding:8px 6px; color:' + expColor + '; font-weight:600;">' + escHtml(d.cert_valid_to || 'N/A') + ' (' + expText + ')</td></tr>';
+
+                    // Issuer
+                    html += '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 6px; font-weight:600;">Issuer CA</td><td style="padding:8px 6px;">' + escHtml(d.cert_issuer || 'N/A') + '</td></tr>';
+
+                    // Subject CN
+                    html += '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 6px; font-weight:600;">Common Name (CN)</td><td style="padding:8px 6px; font-family:monospace;">' + escHtml(d.cert_subject || 'N/A') + '</td></tr>';
+
+                    // SAN & Host Match
+                    var matchBadge = d.host_matches_cert
+                        ? '<span style="background:#edfaef; color:#00a32a; font-weight:600; padding:2px 6px; border-radius:3px; font-size:11px;">✓ Matches Host (' + escHtml(d.target_host) + ')</span>'
+                        : '<span style="background:#fff8e5; color:#996800; font-weight:600; padding:2px 6px; border-radius:3px; font-size:11px;">⚠ Host Mismatch (Expected: ' + escHtml(d.target_host) + ')</span>';
+                    var sans = (d.san_list && d.san_list.length) ? d.san_list.join(', ') : 'None';
+                    html += '<tr style="border-bottom:1px solid #eee;"><td style="padding:8px 6px; font-weight:600;">Subject Alt Names (SAN)</td><td style="padding:8px 6px; font-family:monospace; font-size:11px; word-break:break-all;">' + escHtml(sans) + '<br>' + matchBadge + '</td></tr>';
+                }
+                html += '</table>';
+            }
+            html += '</div></div>';
+            $results.html(html);
+        }).fail(function() {
+            $btn.prop('disabled', false).html('🔒 ' + (pnMailguard.checkSmtpTls || 'Check SMTP & TLS'));
+            $results.html('<div class="notice notice-error inline" style="margin:0;"><p>' + escHtml(pnMailguard.networkError || 'Network error') + '</p></div>');
+        });
+    }
+
+    $(document).on('click', '#pn-btn-check-smtp-tls', runSmtpTlsCheck);
+    $(document).on('keydown', '#pn-smtp-tls-host', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            runSmtpTlsCheck();
         }
     });
 

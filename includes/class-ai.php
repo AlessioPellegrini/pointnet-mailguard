@@ -43,6 +43,8 @@ class PN_Mailguard_AI {
         . "Il plugin esegue GIÀ automaticamente i seguenti controlli:\n"
         . "- DNSBL: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL, Abusix, SPFBL, DroneBL, LashBack UBL (9 blacklist)\n"
         . "- PTR (reverse DNS) con alert su record mancante\n"
+        . "- FCrDNS (Forward-Confirmed Reverse DNS): verifica bidirezionale circolare IP ↔ PTR\n"
+        . "- Controllo Certificato SSL/TLS e STARTTLS porta 25 (scadenza certificato, issuer, corrispondenza SAN/CN)\n"
         . "- SPF: analisi RFC 7208 completa (9 controlli, rilevamento provider)\n"
         . "- DMARC: analisi RFC 7489 (policy strength, correlazione SPF)\n"
         . "- DMARC Aggregate Reports (RUA): ingestione e analisi report XML/ZIP/GZ con calcolo allineamento SPF/DKIM e volumi\n"
@@ -134,6 +136,11 @@ class PN_Mailguard_AI {
             ];
         }
 
+        $smtp_tls = $scan_data['smtp_tls'] ?? null;
+        if (empty($smtp_tls) && !empty($scan_data['mx_host'])) {
+            $smtp_tls = PN_Mailguard_MX::check_smtp_tls($scan_data['mx_host']);
+        }
+
         return [
             'scan'          => $scan_data,
             'spf'           => $spf_data,
@@ -141,6 +148,7 @@ class PN_Mailguard_AI {
             'dkim'          => $dkim_data,
             'mtasts'        => $mtasts_data,
             'dnssec'        => $dnssec_data,
+            'smtp_tls'      => $smtp_tls,
             'dmarc_reports' => $dmarc_reports_data,
             'tls_reports'   => $tls_reports_data,
         ];
@@ -199,22 +207,39 @@ class PN_Mailguard_AI {
         if (!empty($email) && is_email($email)) {
             return PN_Mailguard_Scanner::run_email($email);
         }
+        $mx_records = PN_Mailguard_MX::get_mx_hosts($domain);
+        $mx_host = !empty($mx_records[0]['host']) ? $mx_records[0]['host'] : '';
+        $mx_ip = '';
+        $ptr = ['ptr' => '', 'ptr_warning' => false, 'fcrdns_valid' => false, 'forward_ips' => [], 'fcrdns_msg' => ''];
+        $smtp_tls = [];
+        if (!empty($mx_host)) {
+            $ips = gethostbynamel($mx_host);
+            if (!empty($ips[0])) {
+                $mx_ip = $ips[0];
+                $ptr = PN_Mailguard_PTR::check($mx_ip);
+            }
+            $smtp_tls = PN_Mailguard_MX::check_smtp_tls($mx_host);
+        }
         $spf = PN_Mailguard_SPF::check($domain);
         return [
-            'domain'       => $domain,
-            'email'        => $email,
-            'mx_ip'        => '',
-            'mx_host'      => '',
-            'dnsbl'        => [],
-            'is_alert'     => false,
-            'ptr'          => '',
-            'ptr_warning'  => false,
-            'spf_record'   => $spf['spf_record'],
-            'spf_status'   => $spf['spf_status'],
-            'spf_warning'  => $spf['spf_warning'],
+            'domain'        => $domain,
+            'email'         => $email,
+            'mx_ip'         => $mx_ip,
+            'mx_host'       => $mx_host,
+            'dnsbl'         => [],
+            'is_alert'      => false,
+            'ptr'           => $ptr['ptr'],
+            'ptr_warning'   => $ptr['ptr_warning'],
+            'fcrdns_valid'  => $ptr['fcrdns_valid'] ?? false,
+            'forward_ips'   => $ptr['forward_ips'] ?? [],
+            'fcrdns_msg'    => $ptr['fcrdns_msg'] ?? '',
+            'smtp_tls'      => $smtp_tls,
+            'spf_record'    => $spf['spf_record'],
+            'spf_status'    => $spf['spf_status'],
+            'spf_warning'   => $spf['spf_warning'],
             'shared_server' => false,
-            'wp_ip'        => '',
-            'error'        => '',
+            'wp_ip'         => '',
+            'error'         => '',
         ];
     }
 
@@ -257,6 +282,9 @@ class PN_Mailguard_AI {
         if (!empty($scan['mx_host'])) $lines[] = 'MX: ' . $scan['mx_host'] . ' → ' . $scan['mx_ip'];
         if (!empty($scan['wp_ip']))   $lines[] = 'WordPress IP: ' . $scan['wp_ip'] . ' | Server: ' . ($scan['shared_server'] ? 'CONDIVISO' : 'DEDICATO');
         if (!empty($scan['ptr']))     $lines[] = 'PTR: ' . $scan['ptr'] . ($scan['ptr_warning'] ? ' ⚠️ WARNING' : ' ✅');
+        if (isset($scan['fcrdns_valid'])) {
+            $lines[] = 'FCrDNS (Forward-Confirmed Reverse DNS): ' . ($scan['fcrdns_valid'] ? '✅ Circolare Valido' : '⚠️ Non circolare / disallineato') . (!empty($scan['fcrdns_msg']) ? ' (' . $scan['fcrdns_msg'] . ')' : '');
+        }
         if (!empty($scan['dnsbl'])) {
             $dnsbl_parts = [];
             foreach ($scan['dnsbl'] as $name => $val) {
@@ -264,6 +292,26 @@ class PN_Mailguard_AI {
                 $dnsbl_parts[] = "$name: $icon $val";
             }
             $lines[] = 'DNSBL: ' . implode(' | ', $dnsbl_parts);
+        }
+        if (!empty($scan['smtp_tls']) && is_array($scan['smtp_tls'])) {
+            $tls = $scan['smtp_tls'];
+            $lines[] = '';
+            $lines[] = '=== SMTP STARTTLS & SSL/TLS CERTIFICATE (PORT 25) ===';
+            $lines[] = 'Host MX: ' . ($tls['mx_host'] ?? ($scan['mx_host'] ?? 'N/A'));
+            $lines[] = 'Connessione Porta 25: ' . (!empty($tls['connected']) ? 'RIUSCITA' : 'FALLITA / FILTRATA (' . ($tls['error'] ?? '') . ')');
+            if (!empty($tls['connected'])) {
+                $lines[] = 'Banner: ' . ($tls['banner'] ?? 'N/A');
+                $lines[] = 'STARTTLS Supportato: ' . (!empty($tls['starttls_supported']) ? 'SÌ' : 'NO');
+                $lines[] = 'TLS Attivo: ' . (!empty($tls['tls_active']) ? 'SÌ' : 'NO');
+                if (!empty($tls['tls_active'])) {
+                    $lines[] = 'Certificato Scadenza: ' . ($tls['cert_valid_to'] ?? 'N/A') . ' (' . ($tls['days_remaining'] ?? 0) . ' giorni rimanenti)';
+                    $lines[] = 'Certificato Scaduto: ' . (!empty($tls['is_expired']) ? 'SÌ 🔴' : 'NO ✅');
+                    $lines[] = 'Emittente: ' . ($tls['cert_issuer'] ?? 'N/A');
+                    $lines[] = 'Common Name (CN): ' . ($tls['cert_subject'] ?? 'N/A');
+                    $lines[] = 'SANs: ' . implode(', ', $tls['san_list'] ?? []);
+                    $lines[] = 'Host MX corrisponde al certificato: ' . (!empty($tls['host_matches_cert']) ? 'SÌ ✅' : 'NO ⚠️ (mismatch)');
+                }
+            }
         }
         $lines[] = '';
 
@@ -397,7 +445,7 @@ class PN_Mailguard_AI {
         $lines[] = '  "score": 0-100,';
         $lines[] = '  "summary_it": "riassunto in italiano (max 2 frasi)",';
         $lines[] = '  "issues": [';
-        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|TLSRPT|DNSSEC|DNSBL|PTR|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
+        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|TLSRPT|DNSSEC|DNSBL|PTR|FCrDNS|TLS|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
         $lines[] = '  ],';
         $lines[] = '  "strengths": ["..."],';
         $lines[] = '  "next_steps": ["..."]';

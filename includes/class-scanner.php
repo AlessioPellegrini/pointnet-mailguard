@@ -75,6 +75,12 @@ class PN_Mailguard_Scanner {
         $dnssec_data = PN_Mailguard_Dnssec::analyze($mx['domain']);
         $dnssec_status = $dnssec_data['status'] ?? 'warning';
 
+        // SMTP STARTTLS & Certificate check on port 25
+        $smtp_tls = [];
+        if (!empty($mx['mx_host'])) {
+            $smtp_tls = PN_Mailguard_MX::check_smtp_tls($mx['mx_host']);
+        }
+
         return [
             'email'          => $mx['email'],
             'domain'         => $mx['domain'],
@@ -86,6 +92,10 @@ class PN_Mailguard_Scanner {
             'is_alert'       => $dnsbl['is_alert'],
             'ptr'            => $ptr['ptr'],
             'ptr_warning'    => $ptr['ptr_warning'],
+            'fcrdns_valid'   => $ptr['fcrdns_valid'] ?? false,
+            'forward_ips'    => $ptr['forward_ips'] ?? [],
+            'fcrdns_msg'     => $ptr['fcrdns_msg'] ?? '',
+            'smtp_tls'       => $smtp_tls,
             'spf_record'     => $spf['spf_record'],
             'spf_status'     => $spf['spf_status'],
             'spf_warning'    => $spf['spf_warning'],
@@ -135,12 +145,15 @@ class PN_Mailguard_Scanner {
         $ptr   = PN_Mailguard_PTR::check($ip);
 
         return [
-            'ip'          => $ip,
-            'dnsbl'       => $dnsbl['results'],
-            'is_alert'    => $dnsbl['is_alert'],
-            'ptr'         => $ptr['ptr'],
-            'ptr_warning' => $ptr['ptr_warning'],
-            'error'       => '',
+            'ip'           => $ip,
+            'dnsbl'        => $dnsbl['results'],
+            'is_alert'     => $dnsbl['is_alert'],
+            'ptr'          => $ptr['ptr'],
+            'ptr_warning'  => $ptr['ptr_warning'],
+            'fcrdns_valid' => $ptr['fcrdns_valid'] ?? false,
+            'forward_ips'  => $ptr['forward_ips'] ?? [],
+            'fcrdns_msg'   => $ptr['fcrdns_msg'] ?? '',
+            'error'        => '',
         ];
     }
 
@@ -188,16 +201,24 @@ class PN_Mailguard_Scanner {
         $mtasts_data = PN_Mailguard_MTA_STS::analyze($domain);
         $dnssec_data = PN_Mailguard_Dnssec::analyze($domain);
 
+        $mx_host = '';
+        $mx_records = PN_Mailguard_MX::get_mx_hosts($domain);
+        if (!empty($mx_records[0]['host'])) {
+            $mx_host = $mx_records[0]['host'];
+        }
+        $smtp_tls = !empty($mx_host) ? PN_Mailguard_MX::check_smtp_tls($mx_host) : null;
+
         // Store in a transient (stored in wp_options, auto-expires after 24h).
         // Plugin consumers read this via get_transient() to avoid blocking DNS lookups.
         set_transient(
             'pn_mailguard_dns_cache_' . $domain,
             [
-                'spf'    => $spf_data,
-                'dmarc'  => $dmarc_data,
-                'dkim'   => $dkim_data,
-                'mtasts' => $mtasts_data,
-                'dnssec' => $dnssec_data,
+                'spf'      => $spf_data,
+                'dmarc'    => $dmarc_data,
+                'dkim'     => $dkim_data,
+                'mtasts'   => $mtasts_data,
+                'dnssec'   => $dnssec_data,
+                'smtp_tls' => $smtp_tls,
             ],
             DAY_IN_SECONDS
         );

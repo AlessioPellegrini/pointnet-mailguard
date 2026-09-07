@@ -932,6 +932,21 @@ class PN_Mailguard_Dashboard {
                                 }
                                 $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">PTR</span> ';
                             }
+                            // FCrDNS
+                            elseif (preg_match('/^FCrDNS:\s*(OK|MISMATCH|WARNING)/i', $part, $m)) {
+                                $s = strtoupper($m[1]);
+                                if ($s === 'OK') { $bg = '#edfaef'; $txt = '#00a32a'; }
+                                else { $bg = '#fff8e5'; $txt = '#996800'; }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">FCrDNS</span> ';
+                            }
+                            // SMTP TLS
+                            elseif (preg_match('/^SMTP TLS:\s*(OK|EXPIRED|WARNING|ERROR)/i', $part, $m)) {
+                                $s = strtoupper($m[1]);
+                                if ($s === 'OK') { $bg = '#edfaef'; $txt = '#00a32a'; }
+                                elseif ($s === 'WARNING') { $bg = '#fff8e5'; $txt = '#996800'; }
+                                else { $bg = '#fbeaea'; $txt = '#a30000'; }
+                                $badges_html .= '<span style="background:' . $bg . ';color:' . $txt . ';font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;white-space:nowrap;">SMTP TLS</span> ';
+                            }
                             // DNSBL results like "SpamCop: CLEAN" or "Barracuda: LISTED" — collect them
                             elseif (preg_match('/^[A-Za-z0-9\s]+:\s*(CLEAN|LISTED)$/', $part, $m)) {
                                 $s = $m[1];
@@ -1076,14 +1091,28 @@ class PN_Mailguard_Dashboard {
                     // Extract MX host and IP from log details
                     $mx_match = [];
                     preg_match('/MX:\s*([^\s]+)\s*\(([^)]+)\)/', $last_log->details, $mx_match);
+                    $has_fcrdns_ok  = str_contains($last_log->details, 'FCrDNS: OK');
+                    $has_fcrdns_err = str_contains($last_log->details, 'FCrDNS: MISMATCH');
+                    $has_tls_ok     = str_contains($last_log->details, 'SMTP TLS: OK');
+                    $has_tls_exp    = str_contains($last_log->details, 'SMTP TLS: EXPIRED');
                     if (!empty($mx_match[2])):
                 ?>
-                <div style="font-size:12px; color:#50575e; margin-bottom:10px; display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
+                <div style="font-size:12px; color:#50575e; margin-bottom:10px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                     <span style="font-weight:600;">🔍 <?php esc_html_e('Auto-detected IP:', 'pointnet-mailguard'); ?></span>
                     <span style="font-family:monospace; background:#f0f0f1; padding:1px 6px; border-radius:3px; font-size:11px;"><?php echo esc_html($mx_match[2]); ?></span>
                     <span style="color:#999; font-size:11px;">
                         (<?php echo esc_html($mx_match[1]); ?> <?php esc_html_e('via MX lookup', 'pointnet-mailguard'); ?>)
                     </span>
+                    <?php if ($has_fcrdns_ok): ?>
+                    <span style="background:#edfaef; color:#00a32a; font-size:10px; font-weight:600; padding:2px 6px; border-radius:3px;" title="<?php esc_attr_e('Forward-Confirmed Reverse DNS: IP and PTR resolve circularly', 'pointnet-mailguard'); ?>">✓ FCrDNS 100% OK</span>
+                    <?php elseif ($has_fcrdns_err): ?>
+                    <span style="background:#fff8e5; color:#996800; font-size:10px; font-weight:600; padding:2px 6px; border-radius:3px;" title="<?php esc_attr_e('Forward-Confirmed Reverse DNS mismatch', 'pointnet-mailguard'); ?>">⚠ FCrDNS Mismatch</span>
+                    <?php endif; ?>
+                    <?php if ($has_tls_ok): ?>
+                    <span style="background:#edfaef; color:#00a32a; font-size:10px; font-weight:600; padding:2px 6px; border-radius:3px;" title="<?php esc_attr_e('SMTP STARTTLS & Certificate on port 25 valid', 'pointnet-mailguard'); ?>">✓ TLS 25 OK</span>
+                    <?php elseif ($has_tls_exp): ?>
+                    <span style="background:#fbeaea; color:#a30000; font-size:10px; font-weight:600; padding:2px 6px; border-radius:3px;" title="<?php esc_attr_e('SMTP SSL Certificate expired', 'pointnet-mailguard'); ?>">✗ TLS 25 Expired</span>
+                    <?php endif; ?>
                 </div>
                 <?php
                     endif;
@@ -1376,6 +1405,33 @@ class PN_Mailguard_Dashboard {
                 ?>
             </div>
         </div>
+
+        <!-- 🔒 SMTP STARTTLS & SSL/TLS Certificate section -->
+        <hr style="margin:32px 0 24px;">
+        <h2 style="font-size:16px; margin:0 0 8px; color:#1d2327;">🔒 <?php esc_html_e('SMTP STARTTLS & TLS Certificate Check (Port 25)', 'pointnet-mailguard'); ?></h2>
+        <p style="font-size:13px; color:#666; margin:0 0 16px;">
+            <?php esc_html_e('Connects directly to the mail server on port 25, tests STARTTLS handshake, and validates the SSL/TLS certificate (expiration, issuer, and SAN/CN match).', 'pointnet-mailguard'); ?>
+        </p>
+
+        <div style="margin-bottom:20px;">
+            <div class="card" style="padding:16px; max-width:600px;">
+                <label for="pn-smtp-tls-host" style="font-weight:600; font-size:14px;">
+                    <?php esc_html_e('Mail Server (MX Host) or Domain', 'pointnet-mailguard'); ?>
+                </label>
+                <div style="display:flex; gap:8px; margin-top:8px;">
+                    <input type="text" id="pn-smtp-tls-host" value="<?php echo esc_attr($dns_domain); ?>" placeholder="mail.example.com"
+                        style="flex:1; padding:6px 10px; font-size:14px;">
+                    <button type="button" id="pn-btn-check-smtp-tls" class="button button-primary">
+                        🔒 <?php esc_html_e('Check SMTP & TLS', 'pointnet-mailguard'); ?>
+                    </button>
+                </div>
+                <p class="description" style="margin:6px 0 0;">
+                    <?php esc_html_e('Enter an MX hostname (e.g. mail.pointnet.it) or your domain to test port 25 STARTTLS encryption and certificate validity.', 'pointnet-mailguard'); ?>
+                </p>
+            </div>
+        </div>
+
+        <div id="pn-smtp-tls-results" style="margin-bottom:24px;"></div>
 
         <!-- 🌐 IP Analysis section -->
         <hr style="margin:32px 0 24px;">
@@ -2177,6 +2233,55 @@ class PN_Mailguard_Dashboard {
         }
 
         $result = PN_Mailguard_Whois::lookup($ip);
+        wp_send_json_success($result);
+    }
+
+    public static function ajax_check_smtp_tls(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        $host = isset($_POST['host']) ? sanitize_text_field(wp_unslash($_POST['host'])) : '';
+        $port = isset($_POST['port']) ? intval($_POST['port']) : 25;
+        if ($port <= 0 || $port > 65535) {
+            $port = 25;
+        }
+
+        if (empty($host)) {
+            $domain = isset($_POST['domain']) ? sanitize_text_field(wp_unslash($_POST['domain'])) : '';
+            if (!empty($domain)) {
+                $mx_list = PN_Mailguard_MX::get_mx_hosts($domain);
+                if (!empty($mx_list[0]['host'])) {
+                    $host = $mx_list[0]['host'];
+                }
+            }
+        }
+
+        if (empty($host)) {
+            wp_send_json_error(['message' => __('Please provide a mail server host (e.g. mail.example.com) or domain.', 'pointnet-mailguard')]);
+        }
+
+        // Clean protocol or port if user typed mail.example.com:25 or https://
+        $host = preg_replace('#^https?://#i', '', $host);
+        if (str_contains($host, ':')) {
+            $parts = explode(':', $host);
+            $host = $parts[0];
+            if (isset($parts[1]) && is_numeric($parts[1])) {
+                $port = intval($parts[1]);
+            }
+        }
+        $host = trim($host, '/');
+
+        // Check if user entered a domain name whose MX should be resolved
+        $target_host = $host;
+        $mx_list = PN_Mailguard_MX::get_mx_hosts($host);
+        if (!empty($mx_list[0]['host'])) {
+            $target_host = $mx_list[0]['host'];
+        }
+
+        $result = PN_Mailguard_MX::check_smtp_tls($target_host, $port);
+        $result['queried_host'] = $host;
+        $result['target_host']  = $target_host;
+
         wp_send_json_success($result);
     }
 

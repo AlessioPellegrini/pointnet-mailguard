@@ -170,6 +170,17 @@ class PN_Mailguard_Logger {
         } elseif ($dnssec_status === 'warning') {
             $status = $status . ' + DNSSEC';
         }
+
+        // FCrDNS check
+        if (empty($data['ptr_warning']) && isset($data['fcrdns_valid']) && !$data['fcrdns_valid']) {
+            $status = (str_contains($status, 'CLEAN')) ? 'FCrDNS WARNING' : $status . ' + FCrDNS';
+        }
+
+        // SMTP TLS check
+        if (!empty($data['smtp_tls']['is_expired'])) {
+            $status = (str_contains($status, 'CLEAN')) ? 'TLS EXPIRED' : $status . ' + TLS';
+        }
+
         return $status;
     }
 
@@ -224,6 +235,24 @@ class PN_Mailguard_Logger {
 
         $parts[] = 'PTR: ' . $data['ptr'];
 
+        if (isset($data['fcrdns_valid'])) {
+            $parts[] = 'FCrDNS: ' . ($data['fcrdns_valid'] ? 'OK' : 'MISMATCH');
+        }
+
+        if (!empty($data['smtp_tls']) && is_array($data['smtp_tls'])) {
+            if (!empty($data['smtp_tls']['connected'])) {
+                if (!empty($data['smtp_tls']['is_expired'])) {
+                    $parts[] = 'SMTP TLS: EXPIRED';
+                } elseif (!empty($data['smtp_tls']['cert_valid'])) {
+                    $parts[] = 'SMTP TLS: OK';
+                } else {
+                    $parts[] = 'SMTP TLS: WARNING';
+                }
+            } else {
+                $parts[] = 'SMTP TLS: ERROR';
+            }
+        }
+
         return implode(' | ', $parts);
     }
 
@@ -243,9 +272,9 @@ class PN_Mailguard_Logger {
         foreach ($lines as $line) {
             $line = trim($line);
             if (empty($line)) continue;
-            if (str_contains($line, 'LISTED') || str_contains($line, 'ERROR') || str_contains($line, 'ALERT')) {
+            if (str_contains($line, 'LISTED') || str_contains($line, 'ERROR') || str_contains($line, 'ALERT') || str_contains($line, 'EXPIRED')) {
                 $color = '#f38ba8';
-            } elseif (str_contains($line, 'WARNING') || str_contains($line, 'SHARED')) {
+            } elseif (str_contains($line, 'WARNING') || str_contains($line, 'SHARED') || str_contains($line, 'MISMATCH')) {
                 $color = '#f9e2af';
             } elseif (str_contains($line, 'CLEAN') || str_contains($line, 'OK') || str_contains($line, 'PASS') || str_contains($line, 'SEPARATE')) {
                 $color = '#a6e3a1';

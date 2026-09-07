@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.1
-Stable tag: 1.9.1
+Stable tag: 1.9.2
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -29,7 +29,8 @@ Developed by [PointNet](https://www.pointnet.it/).
 - Automatic mail server detection from email address via MX lookup
 - Shared vs dedicated server detection (mail and WordPress on same IP)
 - DNSBL checks against 9 blacklists: SpamCop, Barracuda, SORBS, UCEProtect L1, PSBL, Abusix, SPFBL, DroneBL, LashBack UBL
-- PTR (reverse DNS) verification with alert on missing record
+- PTR (reverse DNS) verification and circular FCrDNS (Forward-Confirmed Reverse DNS) validation
+- SMTP STARTTLS & SSL/TLS certificate active check on port 25 (expiration, issuer, SAN/CN match)
 - SPF Analyzer — full RFC 7208 analysis, 9 checks, provider detection
 - DMARC Analyzer — full RFC 7489 analysis, policy strength, SPF correlation
 - DMARC Aggregate Report (RUA) parser — XML, GZIP, and ZIP report processing with persistent DB storage and dashboard management
@@ -126,6 +127,14 @@ Planned improvements for upcoming releases:
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
+
+= 1.9.2 =
+* New: FCrDNS (Forward-Confirmed Reverse DNS) circular verification — checks bidirectional alignment between mail server IP and PTR hostname (IP → PTR and PTR → IP) to satisfy Google and Outlook strict anti-spam requirements.
+* New: SMTP STARTTLS & SSL/TLS Certificate check on port 25 — connects directly to the mail server on port 25, negotiates STARTTLS encryption, verifies certificate expiration date (with days remaining), issuer CA, and validates SAN / Common Name matching.
+* New: Added interactive "SMTP STARTTLS & TLS Certificate Check (Port 25)" diagnostic card to DNS & IP Tools tab with live testing on demand.
+* New: FCrDNS and SMTP TLS statuses integrated into Email & MX Monitor dashboard card, recent scan log badges, and terminal-style console.
+* New: Integrated FCrDNS and SMTP TLS certificate findings into AI deliverability report, AI prompt context, and exported JSON report.
+* Updated: Italian translations (.pot, .po, .mo).
 
 = 1.9.1 =
 * New: Complete 7-layer security verification across all reports, alerts, log history, and AI prompts (SPF, DMARC, DKIM, MTA-STS, DNSSEC, DNSBL, PTR/MX).
