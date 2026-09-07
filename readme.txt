@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.1
-Stable tag: 1.9.0
+Stable tag: 1.9.1
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -126,6 +126,16 @@ Planned improvements for upcoming releases:
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
+
+= 1.9.1 =
+* New: Complete 7-layer security verification across all reports, alerts, log history, and AI prompts (SPF, DMARC, DKIM, MTA-STS, DNSSEC, DNSBL, PTR/MX).
+* New: DNSSEC integration into email alerts — added DNSSEC status to alert subject, alert body summary, and detailed check sections.
+* New: DNSSEC integration into logger — added DNSSEC status and details to scan log rows and terminal-style output.
+* New: Database schema migration for `dnssec_data` column in AI results table.
+* New: Added "Empty Database (DMARC & TLS)" button with confirmation modal to reset all DMARC and TLSRPT tables in one click.
+* New: Rich itemized fetch summary lists for IMAP ingestion, detailing exact imported Report IDs and duplicate reports.
+* New: Pure PHP PKZIP unzipper with `gzinflate` for zero-dependency extraction of DMARC and TLSRPT archives.
+* Improved: Resilient Base64 MIME extractor supporting single-part DMARC emails and SpamAssassin headers.
 
 = 1.9.0 =
 * New: DNSSEC Analyzer — authenticated DNSSEC validation via DoH (DNS-over-HTTPS) using Google and Cloudflare endpoints
