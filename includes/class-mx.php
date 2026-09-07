@@ -98,6 +98,37 @@ class PN_Mailguard_MX {
     }
 
     /**
+     * Get sorted MX hosts for a domain.
+     *
+     * @param string $domain
+     * @return array List of array('host' => string, 'priority' => int)
+     */
+    public static function get_mx_hosts(string $domain): array {
+        $domain = strtolower(trim($domain));
+        if (empty($domain)) {
+            return [];
+        }
+
+        $records = @dns_get_record($domain, DNS_MX);
+        if (empty($records)) {
+            return [];
+        }
+
+        usort($records, fn($a, $b) => ($a['pri'] ?? 0) - ($b['pri'] ?? 0));
+
+        $hosts = [];
+        foreach ($records as $r) {
+            if (!empty($r['target'])) {
+                $hosts[] = [
+                    'host'     => strtolower($r['target']),
+                    'priority' => intval($r['pri'] ?? 0),
+                ];
+            }
+        }
+        return $hosts;
+    }
+
+    /**
      * Fetch the WordPress server's public IPv4 address via v4.ident.me.
      * Forces IPv4 to handle dual-stack servers (e.g. Hetzner).
      *

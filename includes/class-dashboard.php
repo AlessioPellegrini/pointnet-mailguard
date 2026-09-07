@@ -602,8 +602,8 @@ class PN_Mailguard_Dashboard {
         if ($dnssec_data  && $dnssec_data['status'] !== 'ok') $issues++;
         $email_active = !empty($check_email) && is_email($check_email);
         $ip_active    = !empty($check_ip) && filter_var($check_ip, FILTER_VALIDATE_IP);
-        if ($email_active && $last_email && in_array($last_email->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true)) $issues++;
-        if ($ip_active && $last_ip && in_array($last_ip->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true)) $issues++;
+        if ($email_active && $last_email && (in_array($last_email->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true) || str_contains($last_email->status, 'EXPIRED') || str_contains($last_email->status, 'WARNING'))) $issues++;
+        if ($ip_active && $last_ip && (in_array($last_ip->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true) || str_contains($last_ip->status, 'WARNING'))) $issues++;
 
         if ($issues === 0) {
             $light = '#00a32a'; $light_bg = '#edfaef'; $light_label = __('All good', 'pointnet-mailguard');
@@ -682,8 +682,8 @@ class PN_Mailguard_Dashboard {
                         preg_match('/MX:\s*[^\s]+\s*\(([^)]+)\)/', $last_email->details, $mx_match);
                         if (!empty($mx_match[1])) {
                             $mx_ip_label = $mx_match[1];
-                            $mx_ip_alert = in_array($last_email->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true);
-                            $mx_ip_warn  = in_array($last_email->status, ['PTR WARNING', 'SPF WARNING'], true);
+                            $mx_ip_alert = in_array($last_email->status, ['ALERT', 'ALERT + PTR', 'ERROR'], true) || str_contains($last_email->status, 'TLS EXPIRED');
+                            $mx_ip_warn  = in_array($last_email->status, ['PTR WARNING', 'SPF WARNING'], true) || str_contains($last_email->status, 'FCrDNS WARNING') || str_contains($last_email->status, 'WARNING');
                         }
                     }
                     if (!empty($mx_ip_label)):
