@@ -1880,6 +1880,51 @@ msgstr "WHOIS lookup ha restituito HTTP %d"
 msgid "Invalid response from WHOIS service."
 msgstr "Risposta non valida dal servizio WHOIS."
 
+#: includes/class-mailer.php:152
+msgid "FCrDNS circular verification mismatch."
+msgstr "Disallineamento verifica circolare FCrDNS."
+
+#: includes/class-mailer.php:156
+msgid "SMTP SSL/TLS certificate on port 25 is expired."
+msgstr "Il certificato SSL/TLS SMTP sulla porta 25 è scaduto."
+
+#: includes/class-mailer.php:158
+msgid "Could not connect to SMTP server on port 25."
+msgstr "Impossibile connettersi al server SMTP sulla porta 25."
+
+#: includes/class-mailer.php:160
+msgid "SMTP SSL/TLS certificate validation failed."
+msgstr "Validazione del certificato SSL/TLS SMTP fallita."
+
+#: includes/class-mailer.php:221
+msgid "FCrDNS Check"
+msgstr "Controllo FCrDNS"
+
+#: includes/class-mailer.php:226
+msgid "SMTP STARTTLS & Certificate (Port 25)"
+msgstr "SMTP STARTTLS e Certificato (Porta 25)"
+
+#: includes/class-mailer.php:230
+msgid "Supported"
+msgstr "Supportato"
+
+#: includes/class-mailer.php:230
+msgid "Not supported"
+msgstr "Non supportato"
+
+#: includes/class-mailer.php:232
+#, php-format
+msgid "%d days remaining"
+msgstr "%d giorni rimanenti"
+
+#: includes/class-mailer.php:233
+msgid "Certificate"
+msgstr "Certificato"
+
+#: includes/class-mailer.php:236
+msgid "Connection failed"
+msgstr "Connessione fallita"
+
 #~ msgid "Empty DMARC Database"
 #~ msgstr "Svuota Database DMARC"
 

@@ -1755,3 +1755,48 @@ msgstr ""
 #: includes/class-whois.php:88
 msgid "Invalid response from WHOIS service."
 msgstr ""
+
+#: includes/class-mailer.php:152
+msgid "FCrDNS circular verification mismatch."
+msgstr ""
+
+#: includes/class-mailer.php:156
+msgid "SMTP SSL/TLS certificate on port 25 is expired."
+msgstr ""
+
+#: includes/class-mailer.php:158
+msgid "Could not connect to SMTP server on port 25."
+msgstr ""
+
+#: includes/class-mailer.php:160
+msgid "SMTP SSL/TLS certificate validation failed."
+msgstr ""
+
+#: includes/class-mailer.php:221
+msgid "FCrDNS Check"
+msgstr ""
+
+#: includes/class-mailer.php:226
+msgid "SMTP STARTTLS & Certificate (Port 25)"
+msgstr ""
+
+#: includes/class-mailer.php:230
+msgid "Supported"
+msgstr ""
+
+#: includes/class-mailer.php:230
+msgid "Not supported"
+msgstr ""
+
+#: includes/class-mailer.php:232
+#, php-format
+msgid "%d days remaining"
+msgstr ""
+
+#: includes/class-mailer.php:233
+msgid "Certificate"
+msgstr ""
+
+#: includes/class-mailer.php:236
+msgid "Connection failed"
+msgstr ""

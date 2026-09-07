@@ -10,7 +10,11 @@ if (!defined('ABSPATH')) exit;
 class PN_Mailguard_Mailer {
 
     public static function maybe_send(array $data, string $type = 'email'): void {
-        if (empty($data['error']) && empty($data['is_alert']) && empty($data['ptr_warning']) && empty($data['spf_warning']) && empty($data['dmarc_warning']) && empty($data['dkim_warning']) && empty($data['mtasts_warning']) && empty($data['dnssec_warning'])) {
+        $has_fcrdns_warn = isset($data['fcrdns_valid']) && !$data['fcrdns_valid'] && empty($data['ptr_warning']);
+        $has_tls_error   = !empty($data['smtp_tls']['is_expired']);
+        $has_tls_warn    = !empty($data['smtp_tls']) && (empty($data['smtp_tls']['connected']) || empty($data['smtp_tls']['cert_valid']) || !empty($data['smtp_tls']['is_expired']));
+
+        if (empty($data['error']) && empty($data['is_alert']) && empty($data['ptr_warning']) && empty($data['spf_warning']) && empty($data['dmarc_warning']) && empty($data['dkim_warning']) && empty($data['mtasts_warning']) && empty($data['dnssec_warning']) && !$has_fcrdns_warn && !$has_tls_warn) {
             return;
         }
 
@@ -21,12 +25,13 @@ class PN_Mailguard_Mailer {
         }
         if ($level === 'errors') {
             // Only send for real errors/alert, not for warnings
-            // "Real errors": scan failure, DNSBL listing, SPF missing, DKIM error/missing
+            // "Real errors": scan failure, DNSBL listing, SPF missing, DKIM error/missing, DNSSEC error, and TLS certificate expired
             $has_real_error = !empty($data['error'])
                 || !empty($data['is_alert'])
                 || (!empty($data['dkim_warning']) && isset($data['dkim_status']) && $data['dkim_status'] !== 'ok' && $data['dkim_status'] !== 'warning')
                 || (!empty($data['spf_warning']) && isset($data['spf_status']) && $data['spf_status'] === 'missing')
-                || (!empty($data['dnssec_warning']) && isset($data['dnssec_status']) && $data['dnssec_status'] === 'error');
+                || (!empty($data['dnssec_warning']) && isset($data['dnssec_status']) && $data['dnssec_status'] === 'error')
+                || $has_tls_error;
             if (!$has_real_error) {
                 return;
             }
@@ -59,6 +64,8 @@ class PN_Mailguard_Mailer {
         if (!empty($data['dkim_warning'])) $parts[] = 'DKIM error';
         if (!empty($data['mtasts_warning'])) $parts[] = 'MTA-STS';
         if (!empty($data['dnssec_warning'])) $parts[] = 'DNSSEC';
+        if (isset($data['fcrdns_valid']) && !$data['fcrdns_valid'] && empty($data['ptr_warning'])) $parts[] = 'FCrDNS mismatch';
+        if (!empty($data['smtp_tls']['is_expired'])) $parts[] = 'TLS expired';
 
         if (count($parts) >= 2) {
             return sprintf(
@@ -141,6 +148,18 @@ class PN_Mailguard_Mailer {
                 $body .= '🟡 ' . __('DNSSEC is not configured.', 'pointnet-mailguard') . "\n";
             }
         }
+        if (isset($data['fcrdns_valid']) && !$data['fcrdns_valid'] && empty($data['ptr_warning'])) {
+            $body .= '🟡 ' . __('FCrDNS circular verification mismatch.', 'pointnet-mailguard') . "\n";
+        }
+        if (!empty($data['smtp_tls'])) {
+            if (!empty($data['smtp_tls']['is_expired'])) {
+                $body .= '🔴 ' . __('SMTP SSL/TLS certificate on port 25 is expired.', 'pointnet-mailguard') . "\n";
+            } elseif (empty($data['smtp_tls']['connected'])) {
+                $body .= '🟡 ' . __('Could not connect to SMTP server on port 25.', 'pointnet-mailguard') . "\n";
+            } elseif (empty($data['smtp_tls']['cert_valid'])) {
+                $body .= '🟡 ' . __('SMTP SSL/TLS certificate validation failed.', 'pointnet-mailguard') . "\n";
+            }
+        }
 
         $body .= "\n" . __('DNSBL Results', 'pointnet-mailguard') . ":\n";
         foreach ($data['dnsbl'] as $name => $val) {
@@ -196,6 +215,26 @@ class PN_Mailguard_Mailer {
             $dnssec_icon = $data['dnssec_status'] === 'ok' ? '✅' : '⚠️';
             $body .= '  - ' . $dnssec_icon . ' DNSSEC: ' . strtoupper($data['dnssec_status']);
             $body .= ' (' . (!empty($data['dnssec_enabled']) ? __('ENABLED / SIGNED', 'pointnet-mailguard') : __('NOT CONFIGURED', 'pointnet-mailguard')) . ")\n";
+        }
+
+        if (isset($data['fcrdns_valid'])) {
+            $body .= "\n" . __('FCrDNS Check', 'pointnet-mailguard') . ":\n";
+            $body .= '  - ' . ($data['fcrdns_valid'] ? '✅ ' : '⚠️ ') . sanitize_text_field($data['fcrdns_msg'] ?? '') . "\n";
+        }
+
+        if (!empty($data['smtp_tls']) && is_array($data['smtp_tls'])) {
+            $body .= "\n" . __('SMTP STARTTLS & Certificate (Port 25)', 'pointnet-mailguard') . ":\n";
+            $tls = $data['smtp_tls'];
+            if (!empty($tls['connected'])) {
+                $tls_icon = !empty($tls['cert_valid']) ? '✅' : '⚠️';
+                $body .= '  - ' . $tls_icon . ' STARTTLS: ' . (!empty($tls['starttls_supported']) ? __('Supported', 'pointnet-mailguard') : __('Not supported', 'pointnet-mailguard')) . "\n";
+                if (!empty($tls['cert_valid_to'])) {
+                    $exp_status = !empty($tls['is_expired']) ? __('EXPIRED', 'pointnet-mailguard') : sprintf(__('%d days remaining', 'pointnet-mailguard'), intval($tls['days_remaining'] ?? 0));
+                    $body .= '  - ' . __('Certificate', 'pointnet-mailguard') . ': ' . sanitize_text_field($tls['cert_valid_to']) . ' (' . $exp_status . ")\n";
+                }
+            } else {
+                $body .= '  - ⚠️ ' . __('Connection failed', 'pointnet-mailguard') . ': ' . sanitize_text_field($tls['error'] ?? '') . "\n";
+            }
         }
 
         return $body;
