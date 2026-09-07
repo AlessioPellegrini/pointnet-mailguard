@@ -45,6 +45,8 @@ class PN_Mailguard_AI {
         . "- PTR (reverse DNS) con alert su record mancante\n"
         . "- SPF: analisi RFC 7208 completa (9 controlli, rilevamento provider)\n"
         . "- DMARC: analisi RFC 7489 (policy strength, correlazione SPF)\n"
+        . "- DMARC Aggregate Reports (RUA): ingestione e analisi report XML/ZIP/GZ con calcolo allineamento SPF/DKIM e volumi\n"
+        . "- TLSRPT Reports (RFC 8460): ingestione e monitoraggio sessioni e fallimenti di consegna TLS\n"
         . "- DKIM: auto-rilevamento selettore, tipo/lunghezza chiave, test mode, hash\n"
         . "- MTA-STS: analisi RFC 8461 (record DNS _mta-sts, policy JSON, modalità enforce/testing/none, MX list, max_age)\n"
         . "- DNSSEC: analisi RFC 4033-4035 (verifiche record DS, DNSKEY e flag AD di autenticazione)\n"
@@ -395,7 +397,7 @@ class PN_Mailguard_AI {
         $lines[] = '  "score": 0-100,';
         $lines[] = '  "summary_it": "riassunto in italiano (max 2 frasi)",';
         $lines[] = '  "issues": [';
-        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|DNSSEC|DNSBL|PTR|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
+        $lines[] = '    { "component": "SPF|DMARC|DKIM|MTA-STS|TLSRPT|DNSSEC|DNSBL|PTR|MX|GENERAL", "severity": "error|warning|info", "title": "...", "description": "...", "fix": "..." }';
         $lines[] = '  ],';
         $lines[] = '  "strengths": ["..."],';
         $lines[] = '  "next_steps": ["..."]';
