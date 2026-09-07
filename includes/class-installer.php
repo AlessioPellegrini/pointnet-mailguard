@@ -49,13 +49,20 @@ class PN_Mailguard_Installer {
             self::install();
         }
 
-        // Add mtasts_data column if missing (migration from v1.7.x to v1.8.0)
+        // Add mtasts_data and dnssec_data columns if missing
         $ai_table = $wpdb->prefix . self::TABLE_AI;
-        $column   = $wpdb->get_results(
-            $wpdb->prepare("SHOW COLUMNS FROM %i LIKE 'mtasts_data'", $ai_table)
+        $col_mtasts = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM %i LIKE %s", $ai_table, 'mtasts_data')
         );
-        if (empty($column)) {
+        if (empty($col_mtasts)) {
             $wpdb->query($wpdb->prepare("ALTER TABLE %i ADD COLUMN mtasts_data longtext AFTER dkim_data", $ai_table));
+        }
+
+        $col_dnssec = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM %i LIKE %s", $ai_table, 'dnssec_data')
+        );
+        if (empty($col_dnssec)) {
+            $wpdb->query($wpdb->prepare("ALTER TABLE %i ADD COLUMN dnssec_data longtext AFTER mtasts_data", $ai_table));
         }
     }
 
@@ -82,6 +89,7 @@ class PN_Mailguard_Installer {
                     dmarc_data longtext,
                     dkim_data longtext,
                     mtasts_data longtext,
+                    dnssec_data longtext,
                     created_at datetime DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (id),
                     KEY domain (domain)

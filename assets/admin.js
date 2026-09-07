@@ -93,7 +93,7 @@ jQuery(document).ready(function($) {
                 location.reload();
             } else {
                 var msg = (res.data && res.data.message) ? res.data.message : pnMailguard.aiAnalysisFailed;
-                resultDiv.html('<div class="notice notice-error inline" style="margin:0;"><p>' + msg + '</p></div>');
+                resultDiv.html('<div class="notice notice-error inline" style="margin:0;"><p>' + escHtml(msg) + '</p></div>');
                 btn.prop('disabled', false).text('🤖 ' + pnMailguard.analyzeWithAi);
             }
         });
@@ -330,7 +330,7 @@ jQuery(document).ready(function($) {
         $.post(ajaxurl, data, function(res) {
             if (!res.success) {
                 var msg = (res.data && res.data.message) ? res.data.message : pnMailguard.analysisFailed;
-                $body.html('<div class="notice notice-error inline" style="margin:0;"><p>' + msg + '</p></div>');
+                $body.html('<div class="notice notice-error inline" style="margin:0;"><p>' + escHtml(msg) + '</p></div>');
                 if (callback) callback();
                 return;
             }
@@ -445,7 +445,7 @@ jQuery(document).ready(function($) {
         $.post(ajaxurl, { action: action, nonce: pnMailguard.nonce, ip: ip }, function(res) {
             if (!res.success) {
                 var msg = (res.data && res.data.message) ? res.data.message : pnMailguard.analysisFailed;
-                $body.html('<div class="notice notice-error inline" style="margin:0;"><p>' + msg + '</p></div>');
+                $body.html('<div class="notice notice-error inline" style="margin:0;"><p>' + escHtml(msg) + '</p></div>');
                 if (callback) callback();
                 return;
             }

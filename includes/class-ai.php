@@ -135,7 +135,7 @@ class PN_Mailguard_AI {
 
         // 4. Save result
         if (!empty($result) && empty($result['error'])) {
-            self::save_result($domain, $result, $scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data);
+            self::save_result($domain, $result, $scan_data, $spf_data, $dmarc_data, $dkim_data, $mtasts_data, $dnssec_data);
         }
 
         return $result;
@@ -530,22 +530,32 @@ class PN_Mailguard_AI {
     /**
      * Save AI analysis result to the database.
      */
-    public static function save_result(string $domain, array $result, $scan, $spf, $dmarc, $dkim, $mtasts = null): void {
+    public static function save_result(string $domain, array $result, $scan, $spf, $dmarc, $dkim, $mtasts = null, $dnssec = null): void {
         global $wpdb;
         $table = $wpdb->prefix . self::TABLE_AI;
 
-        $wpdb->insert($table, [
-            'domain'     => sanitize_text_field($domain),
-            'severity'   => sanitize_text_field($result['severity'] ?? 'warning'),
-            'score'      => intval($result['score'] ?? 50),
-            'summary_it' => sanitize_text_field($result['summary_it'] ?? ''),
-            'report'     => wp_json_encode($result),
-            'scan_data'  => wp_json_encode($scan),
-            'spf_data'   => wp_json_encode($spf),
-            'dmarc_data' => wp_json_encode($dmarc),
-            'dkim_data'  => wp_json_encode($dkim),
+        $insert_data = [
+            'domain'      => sanitize_text_field($domain),
+            'severity'    => sanitize_text_field($result['severity'] ?? 'warning'),
+            'score'       => intval($result['score'] ?? 50),
+            'summary_it'  => sanitize_text_field($result['summary_it'] ?? ''),
+            'report'      => wp_json_encode($result),
+            'scan_data'   => wp_json_encode($scan),
+            'spf_data'    => wp_json_encode($spf),
+            'dmarc_data'  => wp_json_encode($dmarc),
+            'dkim_data'   => wp_json_encode($dkim),
             'mtasts_data' => wp_json_encode($mtasts),
-        ]);
+        ];
+
+        // Only add dnssec_data if the column exists
+        $has_dnssec_col = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM %i LIKE %s", $table, 'dnssec_data')
+        );
+        if (!empty($has_dnssec_col)) {
+            $insert_data['dnssec_data'] = wp_json_encode($dnssec);
+        }
+
+        $wpdb->insert($table, $insert_data);
     }
 
     /**

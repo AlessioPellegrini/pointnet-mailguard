@@ -18,7 +18,21 @@ class PN_Mailguard_Dashboard {
         register_setting('pn_mailguard_settings', 'pn_mailguard_check_ip',      ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_email_alert',   ['sanitize_callback' => 'sanitize_email']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_dkim_selector', ['sanitize_callback' => 'sanitize_text_field']);
-        register_setting('pn_mailguard_settings', 'pn_mailguard_gemini_key',    ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_gemini_key',    [
+            'sanitize_callback' => function($key) {
+                $key = sanitize_text_field($key);
+                if (empty($key)) {
+                    return '';
+                }
+                if ($key === '********') {
+                    return get_option('pn_mailguard_gemini_key', '');
+                }
+                if (PN_Mailguard_Crypto::is_encrypted($key)) {
+                    return $key;
+                }
+                return PN_Mailguard_Crypto::encrypt($key);
+            }
+        ]);
         register_setting('pn_mailguard_settings', 'pn_mailguard_gemini_model',  ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_alert_level',     ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_uninstall_cleanup', ['sanitize_callback' => 'sanitize_text_field']);
@@ -28,7 +42,21 @@ class PN_Mailguard_Dashboard {
         register_setting('pn_mailguard_settings', 'pn_mailguard_imap_port',         ['sanitize_callback' => 'absint']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_imap_encryption',   ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_imap_username',     ['sanitize_callback' => 'sanitize_text_field']);
-        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_password',     ['sanitize_callback' => 'sanitize_text_field']);
+        register_setting('pn_mailguard_settings', 'pn_mailguard_imap_password',     [
+            'sanitize_callback' => function($pass) {
+                $pass = wp_unslash($pass);
+                if (empty($pass)) {
+                    return '';
+                }
+                if ($pass === '********') {
+                    return get_option('pn_mailguard_imap_password', '');
+                }
+                if (PN_Mailguard_Crypto::is_encrypted($pass)) {
+                    return $pass;
+                }
+                return PN_Mailguard_Crypto::encrypt($pass);
+            }
+        ]);
         register_setting('pn_mailguard_settings', 'pn_mailguard_imap_mailbox',      ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_imap_auto_fetch',   ['sanitize_callback' => 'sanitize_text_field']);
         register_setting('pn_mailguard_settings', 'pn_mailguard_imap_action_after', ['sanitize_callback' => 'sanitize_text_field']);
@@ -122,7 +150,11 @@ class PN_Mailguard_Dashboard {
                 }
             }
 
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Passwords must preserve special characters and are encrypted before storage.
             $submitted_imap_pass = wp_unslash($_POST['pn_mailguard_imap_password'] ?? '');
+            if (is_string($submitted_imap_pass) && strlen($submitted_imap_pass) > 2048) {
+                $submitted_imap_pass = substr($submitted_imap_pass, 0, 2048);
+            }
             if (empty($submitted_imap_pass)) {
                 delete_option('pn_mailguard_imap_password');
             } elseif ($submitted_imap_pass !== '********') {
@@ -218,6 +250,7 @@ class PN_Mailguard_Dashboard {
         if (!current_user_can('manage_options')) wp_die(esc_html__('Unauthorized', 'pointnet-mailguard'));
 
         $tabs   = ['monitors', 'dmarcreports', 'customip', 'dnstools', 'advanced', 'support'];
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab parameter is read-only view state for navigation.
         $raw    = isset($_GET['tab']) ? sanitize_text_field(wp_unslash($_GET['tab'])) : '';
         $tab    = in_array($raw, $tabs, true) ? $raw : 'monitors';
         $base   = admin_url('admin.php?page=pn-mailguard');
@@ -2615,11 +2648,18 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
-        if (empty($_FILES['dmarc_file']) || $_FILES['dmarc_file']['error'] !== UPLOAD_ERR_OK) {
+        if (
+            !isset($_FILES['dmarc_file']) ||
+            !is_array($_FILES['dmarc_file']) ||
+            !isset($_FILES['dmarc_file']['error']) ||
+            $_FILES['dmarc_file']['error'] !== UPLOAD_ERR_OK ||
+            !isset($_FILES['dmarc_file']['tmp_name']) ||
+            !is_uploaded_file($_FILES['dmarc_file']['tmp_name'])
+        ) {
             wp_send_json_error(['message' => __('No valid file uploaded. Please select an XML, JSON, .gz, or .zip file.', 'pointnet-mailguard')]);
         }
 
-        $tmp_path = $_FILES['dmarc_file']['tmp_name'];
+        $tmp_path = sanitize_text_field(wp_unslash($_FILES['dmarc_file']['tmp_name']));
         $raw_bytes = @file_get_contents($tmp_path);
         if ($raw_bytes === false) {
             wp_send_json_error(['message' => __('Unable to read uploaded report file.', 'pointnet-mailguard')]);
@@ -2656,7 +2696,12 @@ class PN_Mailguard_Dashboard {
                     $wpdb->prepare("SELECT id FROM %i WHERE report_id = %s AND org_name = %s LIMIT 1", $table_tls_rep, $meta['report_id'], $meta['org_name'])
                 );
                 if ($exists) {
-                    wp_send_json_error(['message' => sprintf(__('TLSRPT Report ID "%s" from %s has already been imported.', 'pointnet-mailguard'), esc_html($meta['report_id']), esc_html($meta['org_name']))]);
+                    wp_send_json_error(['message' => sprintf(
+                        /* translators: 1: Report ID, 2: Organization Name */
+                        __('TLSRPT Report ID "%1$s" from %2$s has already been imported.', 'pointnet-mailguard'),
+                        esc_html($meta['report_id']),
+                        esc_html($meta['org_name'])
+                    )]);
                 }
             }
 
@@ -2698,7 +2743,12 @@ class PN_Mailguard_Dashboard {
             }
 
             wp_send_json_success([
-                'message' => sprintf(__('TLSRPT (MTA-STS TLS) Report successfully imported! (%d successful sessions, %d failed).', 'pointnet-mailguard'), $sum['successful_sessions'], $sum['failed_sessions']),
+                'message' => sprintf(
+                    /* translators: 1: Number of successful sessions, 2: Number of failed sessions */
+                    __('TLSRPT (MTA-STS TLS) Report successfully imported! (%1$d successful sessions, %2$d failed).', 'pointnet-mailguard'),
+                    $sum['successful_sessions'],
+                    $sum['failed_sessions']
+                ),
             ]);
         } else {
             // Process DMARC XML Report
@@ -2721,7 +2771,12 @@ class PN_Mailguard_Dashboard {
                     $wpdb->prepare("SELECT id FROM %i WHERE report_id = %s AND org_name = %s LIMIT 1", $table_reports, $meta['report_id'], $meta['org_name'])
                 );
                 if ($exists) {
-                    wp_send_json_error(['message' => sprintf(__('DMARC Report ID "%s" from %s has already been imported.', 'pointnet-mailguard'), esc_html($meta['report_id']), esc_html($meta['org_name']))]);
+                    wp_send_json_error(['message' => sprintf(
+                        /* translators: 1: Report ID, 2: Organization Name */
+                        __('DMARC Report ID "%1$s" from %2$s has already been imported.', 'pointnet-mailguard'),
+                        esc_html($meta['report_id']),
+                        esc_html($meta['org_name'])
+                    )]);
                 }
             }
 
@@ -2774,7 +2829,12 @@ class PN_Mailguard_Dashboard {
             }
 
             wp_send_json_success([
-                'message' => sprintf(__('DMARC Report successfully imported! (%d messages evaluated, %d passed).', 'pointnet-mailguard'), $sum['total_messages'], $sum['passed_messages']),
+                'message' => sprintf(
+                    /* translators: 1: Total number of messages, 2: Number of passed messages */
+                    __('DMARC Report successfully imported! (%1$d messages evaluated, %2$d passed).', 'pointnet-mailguard'),
+                    $sum['total_messages'],
+                    $sum['passed_messages']
+                ),
             ]);
         }
     }
@@ -2821,12 +2881,34 @@ class PN_Mailguard_Dashboard {
         check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('0', 403);
 
+        $host = sanitize_text_field(wp_unslash($_POST['host'] ?? ''));
+        $port = intval($_POST['port'] ?? 993);
+
+        if ($port < 1 || $port > 65535) {
+            wp_send_json_error(['message' => __('Invalid port number. Port must be between 1 and 65535.', 'pointnet-mailguard')]);
+        }
+
+        // Prevent SSRF against loopback and internal network IP ranges
+        $allow_private = (bool) apply_filters('pn_mailguard_allow_private_imap', false);
+        if (!$allow_private && !empty($host)) {
+            $resolved_ip = gethostbyname($host);
+            if (filter_var($resolved_ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                wp_send_json_error(['message' => __('Connections to internal, private, or loopback network addresses are not permitted.', 'pointnet-mailguard')]);
+            }
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Passwords must preserve special characters and are passed securely to IMAP.
+        $raw_pass = wp_unslash($_POST['password'] ?? '');
+        if (is_string($raw_pass) && strlen($raw_pass) > 2048) {
+            $raw_pass = substr($raw_pass, 0, 2048);
+        }
+
         $config = [
-            'host'         => sanitize_text_field(wp_unslash($_POST['host'] ?? '')),
-            'port'         => intval($_POST['port'] ?? 993),
+            'host'         => $host,
+            'port'         => $port,
             'encryption'   => sanitize_text_field(wp_unslash($_POST['encryption'] ?? 'ssl')),
             'username'     => sanitize_text_field(wp_unslash($_POST['username'] ?? '')),
-            'password'     => wp_unslash($_POST['password'] ?? ''),
+            'password'     => $raw_pass,
             'mailbox'      => sanitize_text_field(wp_unslash($_POST['mailbox'] ?? 'INBOX')),
             'action_after' => sanitize_text_field(wp_unslash($_POST['action_after'] ?? 'delete')),
         ];
@@ -2873,10 +2955,10 @@ class PN_Mailguard_Dashboard {
         $table_tls_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
         $table_tls_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
 
-        $wpdb->query("TRUNCATE TABLE `{$table_records}`");
-        $wpdb->query("TRUNCATE TABLE `{$table_reports}`");
-        $wpdb->query("TRUNCATE TABLE `{$table_tls_rec}`");
-        $wpdb->query("TRUNCATE TABLE `{$table_tls_rep}`");
+        $wpdb->query($wpdb->prepare("TRUNCATE TABLE %i", $table_records));
+        $wpdb->query($wpdb->prepare("TRUNCATE TABLE %i", $table_reports));
+        $wpdb->query($wpdb->prepare("TRUNCATE TABLE %i", $table_tls_rec));
+        $wpdb->query($wpdb->prepare("TRUNCATE TABLE %i", $table_tls_rep));
 
         delete_option('pn_mailguard_imap_last_fetch_time');
         delete_option('pn_mailguard_imap_last_fetch_summary');

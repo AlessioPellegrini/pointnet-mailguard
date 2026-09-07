@@ -156,9 +156,12 @@ class PN_Mailguard_Loader {
             'dkimNotDetected'    => __('Could not auto-detect DKIM selector. You can enter it manually if you know it, or leave empty.', 'pointnet-mailguard'),
             'saveFailed'          => __('Save failed.', 'pointnet-mailguard'),
             'uploadingReport'     => __('Uploading and parsing DMARC report...', 'pointnet-mailguard'),
+            /* translators: 1: current file number, 2: total files, 3: file name */
             'uploadingFile'       => __('Processing file %1$s of %2$s (%3$s)...', 'pointnet-mailguard'),
             'uploadSuccessSingle' => __('Report imported successfully!', 'pointnet-mailguard'),
+            /* translators: %d: number of reports imported */
             'uploadSuccessMultiple' => __('%d reports imported successfully!', 'pointnet-mailguard'),
+            /* translators: 1: successful imports count, 2: total reports, 3: error count */
             'uploadPartial'       => __('Imported %1$s of %2$s reports. %3$s error(s):', 'pointnet-mailguard'),
             'uploadFailed'        => __('Import failed:', 'pointnet-mailguard'),
             'uploadFailedGeneric' => __('Upload failed', 'pointnet-mailguard'),

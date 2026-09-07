@@ -48,6 +48,7 @@ class PN_Mailguard_Imap_Fetcher {
         if (!$stream) {
             return [
                 'success' => false,
+                /* translators: %s: IMAP error details */
                 'message' => sprintf(__('IMAP Connection Failed: %s', 'pointnet-mailguard'), $err_msg),
             ];
         }
@@ -67,7 +68,10 @@ class PN_Mailguard_Imap_Fetcher {
      * @return array Result summary with counts of imported, skipped, failed reports
      */
     public static function fetch_reports(?array $config = null): array {
-        @set_time_limit(180);
+        if (function_exists('set_time_limit')) {
+            // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- Needed for large IMAP report batch processing
+            @set_time_limit(180);
+        }
         $cfg = $config ?? self::get_config();
 
         if (empty($cfg['host']) || empty($cfg['username']) || empty($cfg['password'])) {
@@ -81,6 +85,7 @@ class PN_Mailguard_Imap_Fetcher {
         if (!$stream) {
             return [
                 'success' => false,
+                /* translators: %s: IMAP error details */
                 'message' => sprintf(__('IMAP Connection Failed: %s', 'pointnet-mailguard'), $err_msg),
             ];
         }
@@ -198,7 +203,8 @@ class PN_Mailguard_Imap_Fetcher {
         self::update_fetch_status($imported, $duplicates, $failed, $errors, $imported_list, $duplicates_list);
 
         $msg = sprintf(
-            __('IMAP Fetch Completed: %d report(s) imported, %d duplicate(s) skipped, %d error(s).', 'pointnet-mailguard'),
+            /* translators: 1: number of imported reports, 2: number of duplicate reports, 3: number of failed reports */
+            __('IMAP Fetch Completed: %1$d report(s) imported, %2$d duplicate(s) skipped, %3$d error(s).', 'pointnet-mailguard'),
             $imported,
             $duplicates,
             $failed
@@ -256,7 +262,8 @@ class PN_Mailguard_Imap_Fetcher {
                         'status'    => 'duplicate',
                         'report_id' => $meta['report_id'],
                         'org_name'  => $meta['org_name'],
-                        'message'   => sprintf(__('Duplicate TLSRPT Report ID "%s" from %s (Already in DB)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name']),
+                        /* translators: 1: report ID, 2: organization name */
+                        'message'   => sprintf(__('Duplicate TLSRPT Report ID "%1$s" from %2$s (Already in DB)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name']),
                     ];
                 }
             }
@@ -302,7 +309,8 @@ class PN_Mailguard_Imap_Fetcher {
                 'status'    => 'success',
                 'report_id' => $meta['report_id'],
                 'org_name'  => $meta['org_name'],
-                'message'   => sprintf(__('Imported TLSRPT Report ID "%s" from %s (%d sessions)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name'], $sum['successful_sessions'] ?? 0),
+                /* translators: 1: report ID, 2: organization name, 3: session count */
+                'message'   => sprintf(__('Imported TLSRPT Report ID "%1$s" from %2$s (%3$d sessions)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name'], $sum['successful_sessions'] ?? 0),
             ];
         } else {
             // DMARC XML
@@ -326,7 +334,8 @@ class PN_Mailguard_Imap_Fetcher {
                         'status'    => 'duplicate',
                         'report_id' => $meta['report_id'],
                         'org_name'  => $meta['org_name'],
-                        'message'   => sprintf(__('Duplicate DMARC Report ID "%s" from %s (Already in DB)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name']),
+                        /* translators: 1: report ID, 2: organization name */
+                        'message'   => sprintf(__('Duplicate DMARC Report ID "%1$s" from %2$s (Already in DB)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name']),
                     ];
                 }
             }
@@ -381,7 +390,8 @@ class PN_Mailguard_Imap_Fetcher {
                 'status'    => 'success',
                 'report_id' => $meta['report_id'],
                 'org_name'  => $meta['org_name'],
-                'message'   => sprintf(__('Imported DMARC Report ID "%s" from %s (%d msgs)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name'], $sum['total_messages'] ?? 0),
+                /* translators: 1: report ID, 2: organization name, 3: message count */
+                'message'   => sprintf(__('Imported DMARC Report ID "%1$s" from %2$s (%3$d msgs)', 'pointnet-mailguard'), $meta['report_id'], $meta['org_name'], $sum['total_messages'] ?? 0),
             ];
         }
     }
@@ -403,10 +413,12 @@ class PN_Mailguard_Imap_Fetcher {
             $remote = 'ssl://' . $host;
         }
 
+        $ssl_verify = (bool) apply_filters('pn_mailguard_imap_ssl_verify', true);
         $context = stream_context_create([
             'ssl' => [
-                'verify_peer'      => false,
-                'verify_peer_name' => false,
+                'verify_peer'       => $ssl_verify,
+                'verify_peer_name'  => $ssl_verify,
+                'allow_self_signed' => !$ssl_verify,
             ]
         ]);
 
@@ -425,7 +437,7 @@ class PN_Mailguard_Imap_Fetcher {
         $greeting = fgets($stream);
         if (!$greeting || !str_starts_with(trim($greeting), '* OK')) {
             $err_msg = "Invalid server greeting: " . trim($greeting ?: 'No response');
-            fclose($stream);
+            self::close_socket($stream);
             return false;
         }
 
@@ -439,14 +451,16 @@ class PN_Mailguard_Imap_Fetcher {
             }
             if (!$ok || !@stream_socket_enable_crypto($stream, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT)) {
                 $err_msg = "STARTTLS negotiation failed.";
-                fclose($stream);
+                self::close_socket($stream);
                 return false;
             }
         }
 
-        // LOGIN
-        $user_escaped = str_replace(['\\', '"'], ['\\\\', '\"'], $cfg['username']);
-        $pass_escaped = str_replace(['\\', '"'], ['\\\\', '\"'], $cfg['password']);
+        // LOGIN - Strip CRLF to prevent IMAP command injection
+        $clean_user = str_replace(["\r", "\n"], '', $cfg['username']);
+        $clean_pass = str_replace(["\r", "\n"], '', $cfg['password']);
+        $user_escaped = str_replace(['\\', '"'], ['\\\\', '\"'], $clean_user);
+        $pass_escaped = str_replace(['\\', '"'], ['\\\\', '\"'], $clean_pass);
 
         $tag = self::send_command($stream, "LOGIN \"{$user_escaped}\" \"{$pass_escaped}\"");
         $res = self::read_until_tag($stream, $tag);
@@ -460,13 +474,14 @@ class PN_Mailguard_Imap_Fetcher {
         }
 
         if (!$login_ok) {
-            $err_msg = "Authentication failed for user {$cfg['username']}";
-            fclose($stream);
+            $err_msg = "Authentication failed for user {$clean_user}";
+            self::close_socket($stream);
             return false;
         }
 
-        // SELECT Mailbox
-        $mailbox = $cfg['mailbox'] ?: 'INBOX';
+        // SELECT Mailbox - Strip CRLF to prevent command injection
+        $raw_mailbox = $cfg['mailbox'] ?: 'INBOX';
+        $mailbox = str_replace(["\r", "\n", '"'], '', $raw_mailbox);
         $tag = self::send_command($stream, "SELECT \"{$mailbox}\"");
         $res = self::read_until_tag($stream, $tag);
 
@@ -480,7 +495,7 @@ class PN_Mailguard_Imap_Fetcher {
 
         if (!$select_ok) {
             $err_msg = "Unable to select mailbox \"{$mailbox}\"";
-            fclose($stream);
+            self::close_socket($stream);
             return false;
         }
 
@@ -494,7 +509,9 @@ class PN_Mailguard_Imap_Fetcher {
         static $counter = 0;
         $counter++;
         $tag = sprintf("A%04d", $counter);
-        fwrite($stream, "{$tag} {$command}\r\n");
+        $clean_command = str_replace(["\r", "\n"], '', $command);
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- Socket stream resource, not local filesystem.
+        fwrite($stream, "{$tag} {$clean_command}\r\n");
         return $tag;
     }
 
@@ -531,6 +548,7 @@ class PN_Mailguard_Imap_Fetcher {
                 $read_so_far = 0;
                 while ($read_so_far < $literal_bytes && !feof($stream)) {
                     $to_read = min(8192, $literal_bytes - $read_so_far);
+                    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Socket stream resource, not local filesystem.
                     $chunk = fread($stream, $to_read);
                     if ($chunk === false) {
                         break;
@@ -578,13 +596,25 @@ class PN_Mailguard_Imap_Fetcher {
     }
 
     /**
+     * Safely close network stream socket.
+     *
+     * @param resource|null $stream Socket resource
+     */
+    private static function close_socket($stream): void {
+        if (is_resource($stream)) {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Socket stream resource, not local filesystem.
+            @fclose($stream);
+        }
+    }
+
+    /**
      * Disconnect cleanly from IMAP server.
      */
     private static function disconnect($stream): void {
         if ($stream) {
             $tag = self::send_command($stream, 'LOGOUT');
             self::read_until_tag($stream, $tag);
-            @fclose($stream);
+            self::close_socket($stream);
         }
     }
 

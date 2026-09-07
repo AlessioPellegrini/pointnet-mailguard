@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) exit;
 class PN_Mailguard_Mailer {
 
     public static function maybe_send(array $data, string $type = 'email'): void {
-        if (empty($data['error']) && empty($data['is_alert']) && empty($data['ptr_warning']) && empty($data['spf_warning']) && empty($data['dmarc_warning']) && empty($data['dkim_warning']) && empty($data['mtasts_warning'])) {
+        if (empty($data['error']) && empty($data['is_alert']) && empty($data['ptr_warning']) && empty($data['spf_warning']) && empty($data['dmarc_warning']) && empty($data['dkim_warning']) && empty($data['mtasts_warning']) && empty($data['dnssec_warning'])) {
             return;
         }
 
@@ -25,7 +25,8 @@ class PN_Mailguard_Mailer {
             $has_real_error = !empty($data['error'])
                 || !empty($data['is_alert'])
                 || (!empty($data['dkim_warning']) && isset($data['dkim_status']) && $data['dkim_status'] !== 'ok' && $data['dkim_status'] !== 'warning')
-                || (!empty($data['spf_warning']) && isset($data['spf_status']) && $data['spf_status'] === 'missing');
+                || (!empty($data['spf_warning']) && isset($data['spf_status']) && $data['spf_status'] === 'missing')
+                || (!empty($data['dnssec_warning']) && isset($data['dnssec_status']) && $data['dnssec_status'] === 'error');
             if (!$has_real_error) {
                 return;
             }
@@ -57,6 +58,7 @@ class PN_Mailguard_Mailer {
         if (!empty($data['dmarc_warning'])) $parts[] = 'DMARC';
         if (!empty($data['dkim_warning'])) $parts[] = 'DKIM error';
         if (!empty($data['mtasts_warning'])) $parts[] = 'MTA-STS';
+        if (!empty($data['dnssec_warning'])) $parts[] = 'DNSSEC';
 
         if (count($parts) >= 2) {
             return sprintf(
@@ -132,6 +134,13 @@ class PN_Mailguard_Mailer {
                 $body .= '🟡 ' . __('MTA-STS policy has warnings.', 'pointnet-mailguard') . "\n";
             }
         }
+        if (isset($data['dnssec_status'])) {
+            if ($data['dnssec_status'] === 'error') {
+                $body .= '🔴 ' . __('DNSSEC authentication failed.', 'pointnet-mailguard') . "\n";
+            } elseif (!empty($data['dnssec_warning'])) {
+                $body .= '🟡 ' . __('DNSSEC is not configured.', 'pointnet-mailguard') . "\n";
+            }
+        }
 
         $body .= "\n" . __('DNSBL Results', 'pointnet-mailguard') . ":\n";
         foreach ($data['dnsbl'] as $name => $val) {
@@ -180,6 +189,13 @@ class PN_Mailguard_Mailer {
             $body .= '  - ' . $mtasts_icon . ' MTA-STS: ' . strtoupper($data['mtasts_status']);
             if (!empty($data['mtasts_record']))  $body .= ' (record: ' . sanitize_text_field($data['mtasts_record']) . ')';
             $body .= "\n";
+        }
+
+        if (isset($data['dnssec_status'])) {
+            $body .= "\n" . __('DNSSEC Check', 'pointnet-mailguard') . ":\n";
+            $dnssec_icon = $data['dnssec_status'] === 'ok' ? '✅' : '⚠️';
+            $body .= '  - ' . $dnssec_icon . ' DNSSEC: ' . strtoupper($data['dnssec_status']);
+            $body .= ' (' . (!empty($data['dnssec_enabled']) ? __('ENABLED / SIGNED', 'pointnet-mailguard') : __('NOT CONFIGURED', 'pointnet-mailguard')) . ")\n";
         }
 
         return $body;

@@ -161,6 +161,15 @@ class PN_Mailguard_Logger {
         } elseif ($dkim_status === 'warning') {
             $status = $status . ' + DKIM';
         }
+        // DNSSEC check
+        $dnssec_status = $data['dnssec_status'] ?? '';
+        if ($dnssec_status === 'error') {
+            $status = (str_contains($status, 'CLEAN') ? 'DNSSEC ERROR' : $status . ' + DNSSEC');
+        } elseif ($dnssec_status === 'warning' && $status === 'CLEAN') {
+            $status = 'DNSSEC WARNING';
+        } elseif ($dnssec_status === 'warning') {
+            $status = $status . ' + DNSSEC';
+        }
         return $status;
     }
 
@@ -199,6 +208,11 @@ class PN_Mailguard_Logger {
             $mtasts_s = $data['mtasts_status'] ?? '';
             if (!empty($mtasts_s)) {
                 $parts[] = 'MTA-STS: ' . strtoupper($mtasts_s);
+            }
+            // DNSSEC status
+            $dnssec_s = $data['dnssec_status'] ?? '';
+            if (!empty($dnssec_s)) {
+                $parts[] = 'DNSSEC: ' . strtoupper($dnssec_s);
             }
         } else {
             $parts[] = 'IP: ' . $data['ip'];

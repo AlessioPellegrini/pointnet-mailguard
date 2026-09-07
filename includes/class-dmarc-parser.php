@@ -13,6 +13,8 @@ if (!defined('ABSPATH')) exit;
  */
 class PN_Mailguard_Dmarc_Parser {
 
+    const int MAX_UNCOMPRESSED_BYTES = 15728640; // 15 MB limit against decompression bombs
+
     /**
      * Parse a DMARC aggregate report from file path or binary/string content.
      *
@@ -37,7 +39,7 @@ class PN_Mailguard_Dmarc_Parser {
         // Decompress content if needed
         $xml_content = self::decompress($content);
         if ($xml_content === false) {
-            return self::error_response('Failed to decompress DMARC report. Format must be XML, GZIP (.gz/.xml.gz) or ZIP (.zip).');
+            return self::error_response('Failed to decompress DMARC report. Format must be XML, GZIP (.gz/.xml.gz) or ZIP (.zip), and uncompressed size must be under 15 MB.');
         }
 
         // Parse XML string safely
@@ -52,10 +54,11 @@ class PN_Mailguard_Dmarc_Parser {
      */
     public static function decompress(string $data): string|false {
         $raw = ltrim($data);
+        $max_bytes = (int) apply_filters('pn_mailguard_max_uncompressed_bytes', self::MAX_UNCOMPRESSED_BYTES);
 
         // Check if already XML
         if (str_starts_with($raw, '<?xml') || str_contains($raw, '<feedback')) {
-            return $data;
+            return strlen($data) <= $max_bytes ? $data : false;
         }
 
         // 1. GZIP check (magic bytes \x1f\x8b)
@@ -63,24 +66,24 @@ class PN_Mailguard_Dmarc_Parser {
         if ($gz_pos !== false) {
             $gz_data = substr($data, $gz_pos);
             if (function_exists('gzdecode')) {
-                $decompressed = @gzdecode($gz_data);
-                if ($decompressed !== false) {
+                $decompressed = @gzdecode($gz_data, $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
             }
             if (function_exists('gzinflate') && strlen($gz_data) > 10) {
-                $decompressed = @gzinflate(substr($gz_data, 10));
-                if ($decompressed !== false) {
+                $decompressed = @gzinflate(substr($gz_data, 10), $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
-                $decompressed = @gzinflate($gz_data);
-                if ($decompressed !== false) {
+                $decompressed = @gzinflate($gz_data, $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
             }
             if (function_exists('gzuncompress')) {
-                $decompressed = @gzuncompress($gz_data);
-                if ($decompressed !== false) {
+                $decompressed = @gzuncompress($gz_data, $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
             }
@@ -101,6 +104,12 @@ class PN_Mailguard_Dmarc_Parser {
 
                     if ($zip->open($tmp) === true) {
                         for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $stat = $zip->statIndex($i);
+                            if ($stat && isset($stat['size']) && $stat['size'] > $max_bytes) {
+                                $zip->close();
+                                wp_delete_file($tmp);
+                                return false;
+                            }
                             $filename = $zip->getNameIndex($i);
                             if (preg_match('/\.xml$/i', $filename) || str_contains($filename, 'xml')) {
                                 $xml = $zip->getFromIndex($i);
@@ -108,14 +117,20 @@ class PN_Mailguard_Dmarc_Parser {
                             }
                         }
                         if ($xml === false && $zip->numFiles > 0) {
+                            $stat = $zip->statIndex(0);
+                            if ($stat && isset($stat['size']) && $stat['size'] > $max_bytes) {
+                                $zip->close();
+                                wp_delete_file($tmp);
+                                return false;
+                            }
                             // Fallback: get first file in zip
                             $xml = $zip->getFromIndex(0);
                         }
                         $zip->close();
                     }
-                    @unlink($tmp);
+                    wp_delete_file($tmp);
 
-                    if ($xml !== false) {
+                    if ($xml !== false && strlen($xml) <= $max_bytes) {
                         return $xml;
                     }
                 }
@@ -129,13 +144,13 @@ class PN_Mailguard_Dmarc_Parser {
                 $payload     = substr($zip_data, 30 + $fn_len + $extra_len);
 
                 if ($comp_method === 8 && function_exists('gzinflate')) {
-                    $unzipped = @gzinflate($payload);
-                    if ($unzipped !== false) {
+                    $unzipped = @gzinflate($payload, $max_bytes);
+                    if ($unzipped !== false && strlen($unzipped) <= $max_bytes) {
                         return $unzipped;
                     }
                 } elseif ($comp_method === 0) {
                     $c_size = unpack('V', substr($zip_data, 18, 4))[1] ?? 0;
-                    if ($c_size > 0) {
+                    if ($c_size > 0 && $c_size <= $max_bytes) {
                         return substr($payload, 0, $c_size);
                     }
                 }
@@ -323,7 +338,7 @@ class PN_Mailguard_Dmarc_Parser {
         // Extract tag value helper
         $get_val = function(string $tag, string $str, string $default = ''): string {
             if (preg_match('/<' . preg_quote($tag, '/') . '[^>]*>(.*?)<\/' . preg_quote($tag, '/') . '>/is', $str, $m)) {
-                return trim(strip_tags($m[1]));
+                return trim(wp_strip_all_tags($m[1]));
             }
             return $default;
         };

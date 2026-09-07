@@ -145,6 +145,7 @@ class PN_Mailguard_Dnssec {
             $checks[] = [
                 'id'          => 'ds_records',
                 'status'      => 'ok',
+                /* translators: %d: number of DS records found */
                 'title'       => sprintf(__('Found %d DS Record(s)', 'pointnet-mailguard'), count($ds_records)),
                 'description' => __('Delegation Signer (DS) record is present at parent TLD registry.', 'pointnet-mailguard'),
             ];
@@ -164,6 +165,7 @@ class PN_Mailguard_Dnssec {
             $checks[] = [
                 'id'          => 'dnskey_records',
                 'status'      => 'ok',
+                /* translators: %d: number of DNSKEY records found */
                 'title'       => sprintf(__('Found %d DNSKEY Record(s)', 'pointnet-mailguard'), count($dnskey_records)),
                 'description' => __('Public Zone Signing Keys (ZSK/KSK) found in DNS.', 'pointnet-mailguard'),
             ];

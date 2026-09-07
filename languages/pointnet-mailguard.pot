@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-31 18:47+0200\n"
+"POT-Creation-Date: 2026-09-07 21:54+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: includes/class-ai.php:392 includes/class-ai.php:681
+#: includes/class-ai.php:392 includes/class-ai.php:691
 msgid "AI not configured. Add your Gemini API key in Settings."
 msgstr ""
 
@@ -26,7 +26,7 @@ msgstr ""
 msgid "Gemini API error: %s"
 msgstr ""
 
-#: includes/class-ai.php:474 includes/class-ai.php:834
+#: includes/class-ai.php:474 includes/class-ai.php:844
 msgid "AI returned an empty response."
 msgstr ""
 
@@ -34,569 +34,569 @@ msgstr ""
 msgid "AI response could not be parsed."
 msgstr ""
 
-#: includes/class-dashboard.php:40 includes/class-dashboard.php:218
+#: includes/class-dashboard.php:68 includes/class-dashboard.php:250
 msgid "Unauthorized"
 msgstr ""
 
-#: includes/class-dashboard.php:47 includes/class-dashboard.php:155
+#: includes/class-dashboard.php:75 includes/class-dashboard.php:187
 msgid "Please enter a valid email address to monitor."
 msgstr ""
 
-#: includes/class-dashboard.php:56 includes/class-dashboard.php:163
+#: includes/class-dashboard.php:84 includes/class-dashboard.php:195
 msgid "Please enter a valid IPv4 or IPv6 address."
 msgstr ""
 
-#: includes/class-dashboard.php:65 includes/class-dashboard.php:171
+#: includes/class-dashboard.php:93 includes/class-dashboard.php:203
 msgid "Please enter a valid alert email address."
 msgstr ""
 
-#: includes/class-dashboard.php:140
+#: includes/class-dashboard.php:172
 msgid "Settings saved."
 msgstr ""
 
-#: includes/class-dashboard.php:178
+#: includes/class-dashboard.php:210
 msgid "Monitor settings saved."
 msgstr ""
 
-#: includes/class-dashboard.php:198
+#: includes/class-dashboard.php:230
 msgid "Settings"
 msgstr ""
 
-#: includes/class-dashboard.php:241
+#: includes/class-dashboard.php:274
 msgid "Email & MX Monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:242
+#: includes/class-dashboard.php:275
 msgid "DMARC Reports"
 msgstr ""
 
-#: includes/class-dashboard.php:243 includes/class-dashboard.php:796
+#: includes/class-dashboard.php:276 includes/class-dashboard.php:829
 msgid "Custom IP Monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:244
+#: includes/class-dashboard.php:277
 msgid "DNS & IP Tools"
 msgstr ""
 
-#: includes/class-dashboard.php:245
+#: includes/class-dashboard.php:278
 msgid "Advanced"
 msgstr ""
 
-#: includes/class-dashboard.php:246
+#: includes/class-dashboard.php:279
 msgid "Export / Support"
 msgstr ""
 
-#: includes/class-dashboard.php:282
+#: includes/class-dashboard.php:315
 msgid "Contextual Documentation"
 msgstr ""
 
-#: includes/class-dashboard.php:283
+#: includes/class-dashboard.php:316
 msgid "DNS & Email Security Guide"
 msgstr ""
 
-#: includes/class-dashboard.php:286 includes/class-dashboard.php:296
+#: includes/class-dashboard.php:319 includes/class-dashboard.php:329
 msgid "Close"
 msgstr ""
 
-#: includes/class-dashboard.php:293
+#: includes/class-dashboard.php:326
 msgid "Open Live Analysis Tool"
 msgstr ""
 
-#: includes/class-dashboard.php:315
+#: includes/class-dashboard.php:348
 msgid "Welcome to PointNet Mail Guard!"
 msgstr ""
 
-#: includes/class-dashboard.php:318
+#: includes/class-dashboard.php:351
 msgid ""
 "Set up your monitoring in 2 minutes. We automatically analyze 7 security "
 "layers: SPF, DMARC, DKIM, MTA-STS, DNSSEC, DNSBL Blacklists, and Mail Server "
 "IP/PTR."
 msgstr ""
 
-#: includes/class-dashboard.php:325
+#: includes/class-dashboard.php:358
 msgid "Step 1: Email to monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:327
+#: includes/class-dashboard.php:360
 msgid ""
 "The email address you send from — we will detect your mail server IP "
 "automatically via MX lookup."
 msgstr ""
 
-#: includes/class-dashboard.php:335
+#: includes/class-dashboard.php:368
 msgid "Step 2: Additional IP to monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:336 includes/class-dashboard.php:387
-#: includes/class-dashboard.php:449
+#: includes/class-dashboard.php:369 includes/class-dashboard.php:420
+#: includes/class-dashboard.php:482
 msgid "(optional)"
 msgstr ""
 
-#: includes/class-dashboard.php:339
+#: includes/class-dashboard.php:372
 msgid ""
 "Your mail server IP is already monitored via the email above. You only need "
 "this if you want to monitor a different server — for example your web "
 "server, a VPS, or an SMTP relay service."
 msgstr ""
 
-#: includes/class-dashboard.php:342
+#: includes/class-dashboard.php:375
 msgid ""
 "Leave empty to skip — the email monitor already covers your mail server."
 msgstr ""
 
-#: includes/class-dashboard.php:347
+#: includes/class-dashboard.php:380
 msgid "Step 3: Alert email"
 msgstr ""
 
-#: includes/class-dashboard.php:349
+#: includes/class-dashboard.php:382
 msgid "Where to receive alerts when problems are detected."
 msgstr ""
 
-#: includes/class-dashboard.php:353
+#: includes/class-dashboard.php:386
 msgid ""
 "Tip: use a different email from the one you monitor. If your mail server has "
 "issues, alerts sent to the same monitored address may not arrive."
 msgstr ""
 
-#: includes/class-dashboard.php:355
+#: includes/class-dashboard.php:388
 msgid "Notification level"
 msgstr ""
 
-#: includes/class-dashboard.php:357 includes/class-dashboard.php:1482
+#: includes/class-dashboard.php:390 includes/class-dashboard.php:1515
 msgid "All issues (warnings + errors)"
 msgstr ""
 
-#: includes/class-dashboard.php:358 includes/class-dashboard.php:1483
+#: includes/class-dashboard.php:391 includes/class-dashboard.php:1516
 msgid "Errors only (DNSBL, DKIM errors, scan failures)"
 msgstr ""
 
-#: includes/class-dashboard.php:359 includes/class-dashboard.php:1484
+#: includes/class-dashboard.php:392 includes/class-dashboard.php:1517
 msgid "None (disable email notifications)"
 msgstr ""
 
-#: includes/class-dashboard.php:365
+#: includes/class-dashboard.php:398
 msgid "Step 4: DKIM Selector (optional)"
 msgstr ""
 
-#: includes/class-dashboard.php:367
+#: includes/class-dashboard.php:400
 msgid "If known, enter your DKIM selector. Leave empty to auto-detect."
 msgstr ""
 
-#: includes/class-dashboard.php:372 includes/class-dashboard.php:1326
-#: includes/class-dashboard.php:1452
+#: includes/class-dashboard.php:405 includes/class-dashboard.php:1359
+#: includes/class-dashboard.php:1485
 msgid "Leave empty to auto-detect"
 msgstr ""
 
-#: includes/class-dashboard.php:375 includes/class-loader.php:153
+#: includes/class-dashboard.php:408 includes/class-loader.php:153
 msgid "Detect"
 msgstr ""
 
-#: includes/class-dashboard.php:386
+#: includes/class-dashboard.php:419
 msgid "Step 5: DMARC & TLSRPT Report Auto-Fetch (IMAP)"
 msgstr ""
 
-#: includes/class-dashboard.php:390
+#: includes/class-dashboard.php:423
 msgid ""
 "Connect a dedicated mailbox (e.g. dmarc@yourdomain.com) to automatically "
 "download and process report attachments."
 msgstr ""
 
-#: includes/class-dashboard.php:395 includes/class-dashboard.php:2185
+#: includes/class-dashboard.php:428 includes/class-dashboard.php:2218
 msgid "IMAP Host"
 msgstr ""
 
-#: includes/class-dashboard.php:399 includes/class-dashboard.php:2189
+#: includes/class-dashboard.php:432 includes/class-dashboard.php:2222
 msgid "Port"
 msgstr ""
 
-#: includes/class-dashboard.php:403 includes/class-dashboard.php:2193
+#: includes/class-dashboard.php:436 includes/class-dashboard.php:2226
 msgid "Encryption"
 msgstr ""
 
-#: includes/class-dashboard.php:411
+#: includes/class-dashboard.php:444
 msgid "Username"
 msgstr ""
 
-#: includes/class-dashboard.php:415 includes/class-dashboard.php:2205
+#: includes/class-dashboard.php:448 includes/class-dashboard.php:2238
 msgid "Password"
 msgstr ""
 
-#: includes/class-dashboard.php:424 includes/class-dashboard.php:2218
+#: includes/class-dashboard.php:457 includes/class-dashboard.php:2251
 msgid "Enable automatic hourly polling (WP-Cron)"
 msgstr ""
 
-#: includes/class-dashboard.php:427 includes/class-dashboard.php:2222
+#: includes/class-dashboard.php:460 includes/class-dashboard.php:2255
 msgid "Action after import:"
 msgstr ""
 
-#: includes/class-dashboard.php:429
+#: includes/class-dashboard.php:462
 msgid "Delete email (Recommended)"
 msgstr ""
 
-#: includes/class-dashboard.php:430
+#: includes/class-dashboard.php:463
 msgid "Mark as read"
 msgstr ""
 
-#: includes/class-dashboard.php:435
+#: includes/class-dashboard.php:468
 msgid "Test IMAP Connection"
 msgstr ""
 
-#: includes/class-dashboard.php:448
+#: includes/class-dashboard.php:481
 msgid "Step 6: Google Gemini AI Deliverability Advisor"
 msgstr ""
 
-#: includes/class-dashboard.php:452
+#: includes/class-dashboard.php:485
 msgid ""
 "Get AI-powered email deliverability recommendations, root cause diagnosis, "
 "and interactive chat assistance."
 msgstr ""
 
-#: includes/class-dashboard.php:455
+#: includes/class-dashboard.php:488
 msgid "Enter your Gemini API key (AIzaSy...)"
 msgstr ""
 
-#: includes/class-dashboard.php:460
+#: includes/class-dashboard.php:493
 #, php-format
 msgid "Get a free API key at %s"
 msgstr ""
 
-#: includes/class-dashboard.php:469
+#: includes/class-dashboard.php:502
 msgid "Save & Start Monitoring →"
 msgstr ""
 
-#: includes/class-dashboard.php:576
+#: includes/class-dashboard.php:609
 msgid "All good"
 msgstr ""
 
-#: includes/class-dashboard.php:578
+#: includes/class-dashboard.php:611
 msgid "Attention needed"
 msgstr ""
 
-#: includes/class-dashboard.php:580
+#: includes/class-dashboard.php:613
 msgid "Issues detected"
 msgstr ""
 
-#: includes/class-dashboard.php:597
+#: includes/class-dashboard.php:630
 msgid "Next automatic scan:"
 msgstr ""
 
-#: includes/class-dashboard.php:600 includes/class-loader.php:137
+#: includes/class-dashboard.php:633 includes/class-loader.php:137
 msgid "Run Scheduled Scan Now"
 msgstr ""
 
-#: includes/class-dashboard.php:636 includes/class-dashboard.php:638
-#: includes/class-dashboard.php:640 includes/class-dashboard.php:661
-#: includes/class-dashboard.php:663 includes/class-dashboard.php:735
-#: includes/class-dashboard.php:744 includes/class-dashboard.php:746
-#: includes/class-dashboard.php:748
+#: includes/class-dashboard.php:669 includes/class-dashboard.php:671
+#: includes/class-dashboard.php:673 includes/class-dashboard.php:694
+#: includes/class-dashboard.php:696 includes/class-dashboard.php:768
+#: includes/class-dashboard.php:777 includes/class-dashboard.php:779
+#: includes/class-dashboard.php:781
 msgid "Click for contextual guide"
 msgstr ""
 
-#: includes/class-dashboard.php:679
+#: includes/class-dashboard.php:712
 msgid "DNS Record Status"
 msgstr ""
 
-#: includes/class-dashboard.php:700
+#: includes/class-dashboard.php:733
 msgid "DNSBL Blacklist Check"
 msgstr ""
 
-#: includes/class-dashboard.php:725 includes/class-dashboard.php:794
+#: includes/class-dashboard.php:758 includes/class-dashboard.php:827
 msgid "Recent scans"
 msgstr ""
 
-#: includes/class-dashboard.php:727 includes/class-dashboard.php:972
+#: includes/class-dashboard.php:760 includes/class-dashboard.php:1005
 msgid "Email Monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:765
+#: includes/class-dashboard.php:798
 msgid "Custom IP Monitor not configured"
 msgstr ""
 
-#: includes/class-dashboard.php:768
+#: includes/class-dashboard.php:801
 msgid ""
 "Monitor a separate IP (e.g. your VPS, SMTP relay or web server). This is "
 "independent from your email monitor."
 msgstr ""
 
-#: includes/class-dashboard.php:771
+#: includes/class-dashboard.php:804
 msgid "Add IP to Monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:775
+#: includes/class-dashboard.php:808
 msgid "Configure IP monitor:"
 msgstr ""
 
-#: includes/class-dashboard.php:777 includes/class-dashboard.php:1020
+#: includes/class-dashboard.php:810 includes/class-dashboard.php:1053
 msgid "IP Address"
 msgstr ""
 
-#: includes/class-dashboard.php:781 includes/class-dashboard.php:1025
+#: includes/class-dashboard.php:814 includes/class-dashboard.php:1058
 msgid "Save"
 msgstr ""
 
-#: includes/class-dashboard.php:784 includes/class-dashboard.php:1028
+#: includes/class-dashboard.php:817 includes/class-dashboard.php:1061
 msgid "Cancel"
 msgstr ""
 
-#: includes/class-dashboard.php:786 includes/class-dashboard.php:1030
+#: includes/class-dashboard.php:819 includes/class-dashboard.php:1063
 msgid "Saving..."
 msgstr ""
 
-#: includes/class-dashboard.php:830
+#: includes/class-dashboard.php:863
 #, php-format
 msgid "Last %d scans"
 msgstr ""
 
-#: includes/class-dashboard.php:938
+#: includes/class-dashboard.php:971
 msgid "No scans yet. Click \"Run Diagnosis\" above."
 msgstr ""
 
-#: includes/class-dashboard.php:947
+#: includes/class-dashboard.php:980
 msgid "Not analyzed yet"
 msgstr ""
 
-#: includes/class-dashboard.php:950
+#: includes/class-dashboard.php:983
 msgid "All checks passed"
 msgstr ""
 
-#: includes/class-dashboard.php:951 includes/class-dashboard.php:1141
-#: includes/class-loader.php:169
+#: includes/class-dashboard.php:984 includes/class-dashboard.php:1174
+#: includes/class-loader.php:172
 msgid "warnings"
 msgstr ""
 
-#: includes/class-dashboard.php:952 includes/class-dashboard.php:1142
-#: includes/class-loader.php:170
+#: includes/class-dashboard.php:985 includes/class-dashboard.php:1175
+#: includes/class-loader.php:173
 msgid "errors"
 msgstr ""
 
-#: includes/class-dashboard.php:972
+#: includes/class-dashboard.php:1005
 msgid "IP Monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:974
+#: includes/class-dashboard.php:1007
 msgid "Auto-detected mail server IP"
 msgstr ""
 
-#: includes/class-dashboard.php:975
+#: includes/class-dashboard.php:1008
 msgid "Manual IP address"
 msgstr ""
 
-#: includes/class-dashboard.php:980 includes/class-loader.php:139
+#: includes/class-dashboard.php:1013 includes/class-loader.php:139
 msgid "📧 Run Email Diagnosis"
 msgstr ""
 
-#: includes/class-dashboard.php:981 includes/class-loader.php:140
+#: includes/class-dashboard.php:1014 includes/class-loader.php:140
 msgid "🌐 Run IP Diagnosis"
 msgstr ""
 
-#: includes/class-dashboard.php:988
+#: includes/class-dashboard.php:1021
 msgid "Auto-detects your mail server IP via MX lookup and runs full checks."
 msgstr ""
 
-#: includes/class-dashboard.php:989
+#: includes/class-dashboard.php:1022
 msgid ""
 "Monitors a SEPARATE IP (your mail server is already covered by the email "
 "monitor above)."
 msgstr ""
 
-#: includes/class-dashboard.php:994
+#: includes/class-dashboard.php:1027
 msgid ""
 "IPv4: DNSBL (9 blacklist) + PTR reverse DNS. For GeoIP and WHOIS use the DNS "
 "& IP Tools tab."
 msgstr ""
 
-#: includes/class-dashboard.php:996
+#: includes/class-dashboard.php:1029
 msgid ""
 "IPv6: PTR reverse DNS only. DNSBL checks are not available (only 1 of 9 "
 "blacklists supports IPv6). For GeoIP and WHOIS use the DNS & IP Tools tab."
 msgstr ""
 
-#: includes/class-dashboard.php:1006
+#: includes/class-dashboard.php:1039
 msgid "Edit this monitor"
 msgstr ""
 
-#: includes/class-dashboard.php:1014
+#: includes/class-dashboard.php:1047
 msgid "Edit monitor settings:"
 msgstr ""
 
-#: includes/class-dashboard.php:1017
+#: includes/class-dashboard.php:1050
 msgid "Email da monitorare"
 msgstr ""
 
-#: includes/class-dashboard.php:1049
+#: includes/class-dashboard.php:1082
 msgid "Auto-detected IP:"
 msgstr ""
 
-#: includes/class-dashboard.php:1052
+#: includes/class-dashboard.php:1085
 msgid "via MX lookup"
 msgstr ""
 
-#: includes/class-dashboard.php:1060
+#: includes/class-dashboard.php:1093
 msgid "Not configured. Click ✏️ to set up."
 msgstr ""
 
-#: includes/class-dashboard.php:1083
+#: includes/class-dashboard.php:1116
 msgid "No scan results yet."
 msgstr ""
 
-#: includes/class-dashboard.php:1118
+#: includes/class-dashboard.php:1151
 msgid "Contextual guide and documentation"
 msgstr ""
 
-#: includes/class-dashboard.php:1122
+#: includes/class-dashboard.php:1155
 msgid "Last scan"
 msgstr ""
 
-#: includes/class-dashboard.php:1131
+#: includes/class-dashboard.php:1164
 msgid "Not analyzed yet."
 msgstr ""
 
-#: includes/class-dashboard.php:1140 includes/class-loader.php:168
+#: includes/class-dashboard.php:1173 includes/class-loader.php:171
 msgid "passed"
 msgstr ""
 
-#: includes/class-dashboard.php:1186 includes/class-loader.php:174
+#: includes/class-dashboard.php:1219 includes/class-loader.php:177
 msgid "Detected providers:"
 msgstr ""
 
-#: includes/class-dashboard.php:1207
+#: includes/class-dashboard.php:1240
 msgid "AI report unavailable."
 msgstr ""
 
-#: includes/class-dashboard.php:1256
+#: includes/class-dashboard.php:1289
 msgid "Strengths"
 msgstr ""
 
-#: includes/class-dashboard.php:1267
+#: includes/class-dashboard.php:1300
 msgid "Next steps"
 msgstr ""
 
-#: includes/class-dashboard.php:1296
+#: includes/class-dashboard.php:1329
 msgid "Domain to analyze"
 msgstr ""
 
-#: includes/class-dashboard.php:1303 includes/class-loader.php:173
+#: includes/class-dashboard.php:1336 includes/class-loader.php:176
 msgid "Analyze All Records"
 msgstr ""
 
-#: includes/class-dashboard.php:1307
+#: includes/class-dashboard.php:1340
 msgid "Enter any domain to check its SPF, DMARC and DKIM records at once."
 msgstr ""
 
-#: includes/class-dashboard.php:1311
+#: includes/class-dashboard.php:1344
 #, php-format
 msgid "Auto-detected from Email Monitor: %s"
 msgstr ""
 
-#: includes/class-dashboard.php:1322 includes/class-dashboard.php:1449
+#: includes/class-dashboard.php:1355 includes/class-dashboard.php:1482
 msgid "DKIM Selector"
 msgstr ""
 
-#: includes/class-dashboard.php:1330
+#: includes/class-dashboard.php:1363
 msgid "Optional — if DKIM auto-detection fails, enter your selector manually."
 msgstr ""
 
-#: includes/class-dashboard.php:1349
+#: includes/class-dashboard.php:1382
 msgid "IP Analysis"
 msgstr ""
 
-#: includes/class-dashboard.php:1351
+#: includes/class-dashboard.php:1384
 msgid ""
 "Analyze any IPv4 or IPv6 address with PTR, GeoIP and WHOIS lookups. DNSBL "
 "checks require IPv4 (8 of 9 blacklists do not support IPv6)."
 msgstr ""
 
-#: includes/class-dashboard.php:1357
+#: includes/class-dashboard.php:1390
 msgid "IP address to analyze"
 msgstr ""
 
-#: includes/class-dashboard.php:1363 includes/class-loader.php:175
+#: includes/class-dashboard.php:1396 includes/class-loader.php:178
 msgid "Analyze IP"
 msgstr ""
 
-#: includes/class-dashboard.php:1367
+#: includes/class-dashboard.php:1400
 msgid ""
 "Enter any IPv4 address to check DNSBL blacklists, PTR record, geolocation "
 "and WHOIS info."
 msgstr ""
 
-#: includes/class-dashboard.php:1374
+#: includes/class-dashboard.php:1407
 msgid "blacklists checked"
 msgstr ""
 
-#: includes/class-dashboard.php:1375
+#: includes/class-dashboard.php:1408
 msgid "Reverse DNS"
 msgstr ""
 
-#: includes/class-dashboard.php:1375
+#: includes/class-dashboard.php:1408
 msgid "Hostname lookup"
 msgstr ""
 
-#: includes/class-dashboard.php:1376
+#: includes/class-dashboard.php:1409
 msgid "Location & ISP"
 msgstr ""
 
-#: includes/class-dashboard.php:1377
+#: includes/class-dashboard.php:1410
 msgid "IP block info"
 msgstr ""
 
-#: includes/class-dashboard.php:1394
+#: includes/class-dashboard.php:1427
 msgid "Analyze"
 msgstr ""
 
-#: includes/class-dashboard.php:1400
+#: includes/class-dashboard.php:1433
 msgid "Enter a domain and click \"Analyze All Records\"."
 msgstr ""
 
-#: includes/class-dashboard.php:1421
+#: includes/class-dashboard.php:1454
 msgid "Enter an IP address and click \"Analyze IP\"."
 msgstr ""
 
-#: includes/class-dashboard.php:1441
+#: includes/class-dashboard.php:1474
 msgid "DKIM Configuration"
 msgstr ""
 
-#: includes/class-dashboard.php:1442
+#: includes/class-dashboard.php:1475
 msgid ""
 "The DKIM selector is used to automatically detect your DKIM DNS record. If "
 "auto-detection fails, you can set it here."
 msgstr ""
 
-#: includes/class-dashboard.php:1453
+#: includes/class-dashboard.php:1486
 msgid ""
 "Optional. If DKIM auto-detection does not find your selector, enter it here. "
 "Common examples: google, selector1, mail, dkim."
 msgstr ""
 
-#: includes/class-dashboard.php:1460
+#: includes/class-dashboard.php:1493
 msgid "Alert Configuration"
 msgstr ""
 
-#: includes/class-dashboard.php:1461
+#: includes/class-dashboard.php:1494
 msgid "Configure where and when to receive email notifications."
 msgstr ""
 
-#: includes/class-dashboard.php:1465
+#: includes/class-dashboard.php:1498
 msgid "Alert Email"
 msgstr ""
 
-#: includes/class-dashboard.php:1470
+#: includes/class-dashboard.php:1503
 msgid ""
 "Where to send email alerts when the monitors detect issues. This is a global "
 "setting shared by both Email and IP monitors."
 msgstr ""
 
-#: includes/class-dashboard.php:1472
+#: includes/class-dashboard.php:1505
 msgid ""
 "Currently using the WordPress admin email. You can change it to any email "
 "address."
 msgstr ""
 
-#: includes/class-dashboard.php:1478
+#: includes/class-dashboard.php:1511
 msgid "Notification Level"
 msgstr ""
 
-#: includes/class-dashboard.php:1487
+#: includes/class-dashboard.php:1520
 msgid ""
 "Choose which types of problems trigger an email notification. \"Errors "
 "only\" means you will only receive emails for critical problems like "
@@ -604,196 +604,196 @@ msgid ""
 "DMARC configuration suggestions will be shown only on the dashboard."
 msgstr ""
 
-#: includes/class-dashboard.php:1495
+#: includes/class-dashboard.php:1528
 msgid "AI Configuration (Gemini API)"
 msgstr ""
 
-#: includes/class-dashboard.php:1496
+#: includes/class-dashboard.php:1529
 msgid ""
 "Configure your Google Gemini API key and model for AI-powered deliverability "
 "analysis."
 msgstr ""
 
-#: includes/class-dashboard.php:1500
+#: includes/class-dashboard.php:1533
 msgid "Gemini API Key"
 msgstr ""
 
-#: includes/class-dashboard.php:1505
+#: includes/class-dashboard.php:1538
 msgid "Get your free API key from"
 msgstr ""
 
-#: includes/class-dashboard.php:1507
+#: includes/class-dashboard.php:1540
 msgid "You can also define"
 msgstr ""
 
-#: includes/class-dashboard.php:1508 includes/class-dashboard.php:1538
+#: includes/class-dashboard.php:1541 includes/class-dashboard.php:1571
 msgid "in wp-config.php."
 msgstr ""
 
-#: includes/class-dashboard.php:1511
+#: includes/class-dashboard.php:1544
 msgid "GDPR Notice:"
 msgstr ""
 
-#: includes/class-dashboard.php:1512
+#: includes/class-dashboard.php:1545
 msgid ""
 "Domain data (name, IP, DNS records) will be sent to Google Gemini API. By "
 "using an API key you accept"
 msgstr ""
 
-#: includes/class-dashboard.php:1513
+#: includes/class-dashboard.php:1546
 msgid "Google's terms"
 msgstr ""
 
-#: includes/class-dashboard.php:1514
+#: includes/class-dashboard.php:1547
 msgid ""
 "For full GDPR compliance use a paid Google Cloud account which includes a "
 "Data Processing Agreement."
 msgstr ""
 
-#: includes/class-dashboard.php:1520
+#: includes/class-dashboard.php:1553
 msgid "AI Model"
 msgstr ""
 
-#: includes/class-dashboard.php:1524
+#: includes/class-dashboard.php:1557
 msgid "Default (gemini-3.1-flash-lite)"
 msgstr ""
 
-#: includes/class-dashboard.php:1533 includes/class-loader.php:195
+#: includes/class-dashboard.php:1566 includes/class-loader.php:198
 msgid "Fetch Models"
 msgstr ""
 
-#: includes/class-dashboard.php:1537
+#: includes/class-dashboard.php:1570
 msgid "Choose a model. You can also set"
 msgstr ""
 
-#: includes/class-dashboard.php:1540
+#: includes/class-dashboard.php:1573
 msgid "Save your AI API key first to see available models."
 msgstr ""
 
-#: includes/class-dashboard.php:1550
+#: includes/class-dashboard.php:1583
 msgid "Uninstall Behavior"
 msgstr ""
 
-#: includes/class-dashboard.php:1551
+#: includes/class-dashboard.php:1584
 msgid ""
 "Choose what happens to plugin data when you delete the plugin from the "
 "Plugins screen."
 msgstr ""
 
-#: includes/class-dashboard.php:1555
+#: includes/class-dashboard.php:1588
 msgid "Data cleanup"
 msgstr ""
 
-#: includes/class-dashboard.php:1559
+#: includes/class-dashboard.php:1592
 msgid "Delete all data on uninstall"
 msgstr ""
 
-#: includes/class-dashboard.php:1562
+#: includes/class-dashboard.php:1595
 msgid ""
 "When enabled, all plugin tables, options and scheduled tasks will be removed "
 "when the plugin is deleted. Disable this to keep your data in the database "
 "if you plan to reinstall the plugin in the future."
 msgstr ""
 
-#: includes/class-dashboard.php:1570
+#: includes/class-dashboard.php:1603
 msgid "Save Settings"
 msgstr ""
 
-#: includes/class-dashboard.php:1588
+#: includes/class-dashboard.php:1621
 msgid "Configure an email monitor first to enable AI analysis."
 msgstr ""
 
-#: includes/class-dashboard.php:1601
+#: includes/class-dashboard.php:1634
 #, php-format
 msgid ""
 "AI analysis requires a Gemini API key. Configure it in the <a href=\"%s\" "
 "style=\"color:#2271b1; text-decoration:underline;\">Advanced tab</a>."
 msgstr ""
 
-#: includes/class-dashboard.php:1608
+#: includes/class-dashboard.php:1641
 msgid "AI Deliverability Analysis"
 msgstr ""
 
-#: includes/class-dashboard.php:1610 includes/class-loader.php:143
+#: includes/class-dashboard.php:1643 includes/class-loader.php:143
 msgid "Analyze with AI"
 msgstr ""
 
-#: includes/class-dashboard.php:1619
+#: includes/class-dashboard.php:1652
 msgid ""
 "Click \"Analyze with AI\" to get a full deliverability report with "
 "recommendations."
 msgstr ""
 
-#: includes/class-dashboard.php:1640
+#: includes/class-dashboard.php:1673
 #, php-format
 msgid ""
 "AI chat requires a Gemini API key. Configure it in the <a href=\"%s\" "
 "style=\"color:#2271b1; text-decoration:underline;\">Advanced tab</a>."
 msgstr ""
 
-#: includes/class-dashboard.php:1648
+#: includes/class-dashboard.php:1681
 msgid "Chat with AI"
 msgstr ""
 
-#: includes/class-dashboard.php:1649
+#: includes/class-dashboard.php:1682
 msgid "Ask anything about email deliverability"
 msgstr ""
 
-#: includes/class-dashboard.php:1652
+#: includes/class-dashboard.php:1685
 msgid "Ask a question below to get started."
 msgstr ""
 
-#: includes/class-dashboard.php:1655
+#: includes/class-dashboard.php:1688
 msgid "e.g. Come posso configurare SPF per il mio dominio?"
 msgstr ""
 
-#: includes/class-dashboard.php:1657 includes/class-loader.php:146
+#: includes/class-dashboard.php:1690 includes/class-loader.php:146
 msgid "Send"
 msgstr ""
 
-#: includes/class-dashboard.php:1679
+#: includes/class-dashboard.php:1712
 msgid "Export Diagnostic Report"
 msgstr ""
 
-#: includes/class-dashboard.php:1681
+#: includes/class-dashboard.php:1714
 msgid ""
 "Download a complete JSON report with all scan data, DNS configuration and "
 "settings. Share it with PointNet support or an external AI for "
 "troubleshooting."
 msgstr ""
 
-#: includes/class-dashboard.php:1686
+#: includes/class-dashboard.php:1719
 msgid "Privacy notice:"
 msgstr ""
 
-#: includes/class-dashboard.php:1687
+#: includes/class-dashboard.php:1720
 msgid ""
 "The report contains your monitored email address and server IPs. Share it "
 "only with authorized personnel."
 msgstr ""
 
-#: includes/class-dashboard.php:1693
+#: includes/class-dashboard.php:1726
 msgid "Anonymize email/IP (replace with placeholders)"
 msgstr ""
 
-#: includes/class-dashboard.php:1696
+#: includes/class-dashboard.php:1729
 msgid "Download Report (JSON)"
 msgstr ""
 
-#: includes/class-dashboard.php:1713
+#: includes/class-dashboard.php:1746
 msgid "by"
 msgstr ""
 
-#: includes/class-dashboard.php:1815 includes/class-dashboard.php:1830
-#: includes/class-dashboard.php:1856
+#: includes/class-dashboard.php:1848 includes/class-dashboard.php:1863
+#: includes/class-dashboard.php:1889
 msgid "Please wait 30 seconds between scans."
 msgstr ""
 
-#: includes/class-dashboard.php:2119
+#: includes/class-dashboard.php:2152
 msgid "DMARC & TLS Aggregate Reports Reader"
 msgstr ""
 
-#: includes/class-dashboard.php:2122
+#: includes/class-dashboard.php:2155
 msgid ""
 "Upload DMARC aggregate report files (.xml, .gz, .zip) and TLSRPT TLS reports "
 "(.json, .json.gz, .zip) sent by Gmail, Outlook, Yahoo, etc. PointNet Mail "
@@ -801,302 +801,313 @@ msgid ""
 "authentication and MTA-STS TLS delivery analytics."
 msgstr ""
 
-#: includes/class-dashboard.php:2129
+#: includes/class-dashboard.php:2162
 msgid ""
 "Drag & drop DMARC (.xml) or TLSRPT (.json) report files here, or click to "
 "browse"
 msgstr ""
 
-#: includes/class-dashboard.php:2132
+#: includes/class-dashboard.php:2165
 msgid ""
 "Supported formats: DMARC XML (.xml, .gz, .zip) and TLSRPT JSON "
 "(.json, .json.gz, .gz, .zip)"
 msgstr ""
 
-#: includes/class-dashboard.php:2138
+#: includes/class-dashboard.php:2171
 msgid "Select DMARC / TLSRPT Report Files"
 msgstr ""
 
-#: includes/class-dashboard.php:2154
+#: includes/class-dashboard.php:2187
 msgid "Automatic Email Ingestion (IMAP Mailbox)"
 msgstr ""
 
-#: includes/class-dashboard.php:2167
+#: includes/class-dashboard.php:2200
 msgid "Empty Database (DMARC & TLS)"
 msgstr ""
 
-#: includes/class-dashboard.php:2170
+#: includes/class-dashboard.php:2203
 msgid "Fetch Reports Now"
 msgstr ""
 
-#: includes/class-dashboard.php:2176
+#: includes/class-dashboard.php:2209
 msgid ""
 "Configure a dedicated mailbox (e.g. dmarc-reports@domain.com) to "
 "automatically download and process incoming DMARC and TLSRPT report "
 "attachments."
 msgstr ""
 
-#: includes/class-dashboard.php:2201
+#: includes/class-dashboard.php:2234
 msgid "Username / Email"
 msgstr ""
 
-#: includes/class-dashboard.php:2209
+#: includes/class-dashboard.php:2242
 msgid "Mailbox Folder"
 msgstr ""
 
-#: includes/class-dashboard.php:2224
+#: includes/class-dashboard.php:2257
 msgid "Delete email from server (Recommended for dedicated mailboxes)"
 msgstr ""
 
-#: includes/class-dashboard.php:2225
+#: includes/class-dashboard.php:2258
 msgid "Mark as read (\\Seen)"
 msgstr ""
 
-#: includes/class-dashboard.php:2232
+#: includes/class-dashboard.php:2265
 msgid "Test Connection"
 msgstr ""
 
-#: includes/class-dashboard.php:2235
+#: includes/class-dashboard.php:2268
 msgid "Save IMAP Settings"
 msgstr ""
 
-#: includes/class-dashboard.php:2255
+#: includes/class-dashboard.php:2288
 msgid "Imported Reports:"
 msgstr ""
 
-#: includes/class-dashboard.php:2265
+#: includes/class-dashboard.php:2298
 msgid "Duplicates Skipped (Report IDs already present):"
 msgstr ""
 
-#: includes/class-dashboard.php:2275
+#: includes/class-dashboard.php:2308
 msgid "Fetch Errors:"
 msgstr ""
 
-#: includes/class-dashboard.php:2294
+#: includes/class-dashboard.php:2327
 msgid "How to receive automatic DMARC and TLSRPT reports"
 msgstr ""
 
-#: includes/class-dashboard.php:2297
+#: includes/class-dashboard.php:2330
 msgid ""
 "To enable automatic reporting from major email receivers (Google, Microsoft, "
 "Yahoo), publish the following DNS TXT records for your domain:"
 msgstr ""
 
-#: includes/class-dashboard.php:2302
+#: includes/class-dashboard.php:2335
 msgid "1. DMARC Aggregate Reports (RFC 7489)"
 msgstr ""
 
-#: includes/class-dashboard.php:2308
+#: includes/class-dashboard.php:2341
 msgid "2. MTA-STS TLS Reports (RFC 8460)"
 msgstr ""
 
-#: includes/class-dashboard.php:2322
+#: includes/class-dashboard.php:2355
 msgid "Total Reports Imported"
 msgstr ""
 
-#: includes/class-dashboard.php:2326
+#: includes/class-dashboard.php:2359
 msgid "DMARC Evaluated Emails"
 msgstr ""
 
-#: includes/class-dashboard.php:2332
+#: includes/class-dashboard.php:2365
 msgid "DMARC Pass Rate"
 msgstr ""
 
-#: includes/class-dashboard.php:2336
+#: includes/class-dashboard.php:2369
 msgid "MTA-STS TLS Sessions"
 msgstr ""
 
-#: includes/class-dashboard.php:2342
+#: includes/class-dashboard.php:2375
 msgid "TLS Delivery Success"
 msgstr ""
 
-#: includes/class-dashboard.php:2348
+#: includes/class-dashboard.php:2381
 msgid "DMARC Aggregate Reports (RFC 7489)"
 msgstr ""
 
-#: includes/class-dashboard.php:2352
+#: includes/class-dashboard.php:2385
 msgid ""
 "No DMARC reports imported yet. Use the upload box above to upload your first "
 "report file."
 msgstr ""
 
-#: includes/class-dashboard.php:2358 includes/class-dashboard.php:2476
+#: includes/class-dashboard.php:2391 includes/class-dashboard.php:2509
 msgid "Reporting Org"
 msgstr ""
 
-#: includes/class-dashboard.php:2359 includes/class-mailer.php:97
+#: includes/class-dashboard.php:2392 includes/class-mailer.php:99
 msgid "Domain"
 msgstr ""
 
-#: includes/class-dashboard.php:2360 includes/class-dashboard.php:2478
+#: includes/class-dashboard.php:2393 includes/class-dashboard.php:2511
 msgid "Date Range"
 msgstr ""
 
-#: includes/class-dashboard.php:2361
+#: includes/class-dashboard.php:2394
 msgid "Total Emails"
 msgstr ""
 
-#: includes/class-dashboard.php:2362
+#: includes/class-dashboard.php:2395
 msgid "Pass Rate"
 msgstr ""
 
-#: includes/class-dashboard.php:2363 includes/class-dashboard.php:2482
+#: includes/class-dashboard.php:2396 includes/class-dashboard.php:2515
 msgid "Imported On"
 msgstr ""
 
-#: includes/class-dashboard.php:2364 includes/class-dashboard.php:2483
+#: includes/class-dashboard.php:2397 includes/class-dashboard.php:2516
 msgid "Actions"
 msgstr ""
 
-#: includes/class-dashboard.php:2395 includes/class-dashboard.php:2519
+#: includes/class-dashboard.php:2428 includes/class-dashboard.php:2552
 msgid "Details"
 msgstr ""
 
-#: includes/class-dashboard.php:2406
+#: includes/class-dashboard.php:2439
 msgid "Sender IPs & Authentication Breakdown"
 msgstr ""
 
-#: includes/class-dashboard.php:2408
+#: includes/class-dashboard.php:2441
 msgid "No sender IP details found."
 msgstr ""
 
-#: includes/class-dashboard.php:2413
+#: includes/class-dashboard.php:2446
 msgid "Source IP"
 msgstr ""
 
-#: includes/class-dashboard.php:2414 includes/class-loader.php:182
+#: includes/class-dashboard.php:2447 includes/class-loader.php:185
 msgid "Country"
 msgstr ""
 
-#: includes/class-dashboard.php:2415
+#: includes/class-dashboard.php:2448
 msgid "Count"
 msgstr ""
 
-#: includes/class-dashboard.php:2416
+#: includes/class-dashboard.php:2449
 msgid "Disposition"
 msgstr ""
 
-#: includes/class-dashboard.php:2417
+#: includes/class-dashboard.php:2450
 msgid "SPF Result"
 msgstr ""
 
-#: includes/class-dashboard.php:2418
+#: includes/class-dashboard.php:2451
 msgid "DKIM Result"
 msgstr ""
 
-#: includes/class-dashboard.php:2419
+#: includes/class-dashboard.php:2452
 msgid "Header From"
 msgstr ""
 
-#: includes/class-dashboard.php:2466
+#: includes/class-dashboard.php:2499
 msgid "TLSRPT Reports (RFC 8460 - MTA-STS / DANE TLS)"
 msgstr ""
 
-#: includes/class-dashboard.php:2470
+#: includes/class-dashboard.php:2503
 msgid ""
 "No TLSRPT TLS reports imported yet. Upload a .json or .json.gz report file "
 "above."
 msgstr ""
 
-#: includes/class-dashboard.php:2477
+#: includes/class-dashboard.php:2510
 msgid "Policy Domain"
 msgstr ""
 
-#: includes/class-dashboard.php:2479
+#: includes/class-dashboard.php:2512
 msgid "Success Sessions"
 msgstr ""
 
-#: includes/class-dashboard.php:2480
+#: includes/class-dashboard.php:2513
 msgid "Failures"
 msgstr ""
 
-#: includes/class-dashboard.php:2481
+#: includes/class-dashboard.php:2514
 msgid "Success Rate"
 msgstr ""
 
-#: includes/class-dashboard.php:2530
+#: includes/class-dashboard.php:2563
 msgid "MTA-STS Policies & TLS Session Delivery Breakdown"
 msgstr ""
 
-#: includes/class-dashboard.php:2559
+#: includes/class-dashboard.php:2592
 msgid "Failure Details:"
 msgstr ""
 
-#: includes/class-dashboard.php:2563
+#: includes/class-dashboard.php:2596
 msgid "Result Type"
 msgstr ""
 
-#: includes/class-dashboard.php:2564
+#: includes/class-dashboard.php:2597
 msgid "Sending MTA IP"
 msgstr ""
 
-#: includes/class-dashboard.php:2565
+#: includes/class-dashboard.php:2598
 msgid "Receiving IP / MX"
 msgstr ""
 
-#: includes/class-dashboard.php:2566
+#: includes/class-dashboard.php:2599
 msgid "Failed Count"
 msgstr ""
 
-#: includes/class-dashboard.php:2567
+#: includes/class-dashboard.php:2600
 msgid "Additional Info"
 msgstr ""
 
-#: includes/class-dashboard.php:2577
+#: includes/class-dashboard.php:2610
 msgid "No TLS failures reported for this policy."
 msgstr ""
 
-#: includes/class-dashboard.php:2619
+#: includes/class-dashboard.php:2659
 msgid "No valid file uploaded. Please select an XML, JSON, .gz, or .zip file."
 msgstr ""
 
-#: includes/class-dashboard.php:2625
+#: includes/class-dashboard.php:2665
 msgid "Unable to read uploaded report file."
-msgstr ""
-
-#: includes/class-dashboard.php:2659
-#, php-format
-msgid "TLSRPT Report ID \"%s\" from %s has already been imported."
-msgstr ""
-
-#: includes/class-dashboard.php:2681
-msgid "Failed to save TLSRPT report to database."
 msgstr ""
 
 #: includes/class-dashboard.php:2701
 #, php-format
-msgid ""
-"TLSRPT (MTA-STS TLS) Report successfully imported! (%d successful sessions, "
-"%d failed)."
+msgid "TLSRPT Report ID \"%1$s\" from %2$s has already been imported."
 msgstr ""
 
-#: includes/class-dashboard.php:2724
-#, php-format
-msgid "DMARC Report ID \"%s\" from %s has already been imported."
+#: includes/class-dashboard.php:2726
+msgid "Failed to save TLSRPT report to database."
 msgstr ""
 
 #: includes/class-dashboard.php:2748
+#, php-format
+msgid ""
+"TLSRPT (MTA-STS TLS) Report successfully imported! (%1$d successful "
+"sessions, %2$d failed)."
+msgstr ""
+
+#: includes/class-dashboard.php:2776
+#, php-format
+msgid "DMARC Report ID \"%1$s\" from %2$s has already been imported."
+msgstr ""
+
+#: includes/class-dashboard.php:2803
 msgid "Failed to save DMARC report to database."
 msgstr ""
 
-#: includes/class-dashboard.php:2777
+#: includes/class-dashboard.php:2834
 #, php-format
-msgid "DMARC Report successfully imported! (%d messages evaluated, %d passed)."
+msgid ""
+"DMARC Report successfully imported! (%1$d messages evaluated, %2$d passed)."
 msgstr ""
 
-#: includes/class-dashboard.php:2788 includes/class-dashboard.php:2807
+#: includes/class-dashboard.php:2848 includes/class-dashboard.php:2867
 msgid "Invalid report ID."
 msgstr ""
 
-#: includes/class-dashboard.php:2798
+#: includes/class-dashboard.php:2858
 msgid "Report deleted successfully."
 msgstr ""
 
-#: includes/class-dashboard.php:2817
+#: includes/class-dashboard.php:2877
 msgid "TLS report deleted successfully."
 msgstr ""
 
-#: includes/class-dashboard.php:2884
+#: includes/class-dashboard.php:2888
+msgid "Invalid port number. Port must be between 1 and 65535."
+msgstr ""
+
+#: includes/class-dashboard.php:2896
+msgid ""
+"Connections to internal, private, or loopback network addresses are not "
+"permitted."
+msgstr ""
+
+#: includes/class-dashboard.php:2966
 msgid ""
 "All DMARC and TLSRPT database records and fetch history have been "
 "successfully cleared."
@@ -1156,37 +1167,37 @@ msgid ""
 "and DNS provider for enhanced security."
 msgstr ""
 
-#: includes/class-dnssec.php:148
+#: includes/class-dnssec.php:149
 #, php-format
 msgid "Found %d DS Record(s)"
 msgstr ""
 
-#: includes/class-dnssec.php:149
+#: includes/class-dnssec.php:150
 msgid "Delegation Signer (DS) record is present at parent TLD registry."
 msgstr ""
 
-#: includes/class-dnssec.php:156
+#: includes/class-dnssec.php:157
 msgid "Missing DS Record"
 msgstr ""
 
-#: includes/class-dnssec.php:157
+#: includes/class-dnssec.php:158
 msgid "No DS record delegating DNSSEC trust to this domain."
 msgstr ""
 
-#: includes/class-dnssec.php:167
+#: includes/class-dnssec.php:169
 #, php-format
 msgid "Found %d DNSKEY Record(s)"
 msgstr ""
 
-#: includes/class-dnssec.php:168
+#: includes/class-dnssec.php:170
 msgid "Public Zone Signing Keys (ZSK/KSK) found in DNS."
 msgstr ""
 
-#: includes/class-dnssec.php:174
+#: includes/class-dnssec.php:176
 msgid "No Public DNSKEY Records"
 msgstr ""
 
-#: includes/class-dnssec.php:175
+#: includes/class-dnssec.php:177
 msgid "DNSKEY records not returned in response."
 msgstr ""
 
@@ -1218,50 +1229,50 @@ msgstr ""
 msgid "IMAP Host, Username, and Password are required."
 msgstr ""
 
-#: includes/class-imap-fetcher.php:51 includes/class-imap-fetcher.php:84
+#: includes/class-imap-fetcher.php:52 includes/class-imap-fetcher.php:89
 #, php-format
 msgid "IMAP Connection Failed: %s"
 msgstr ""
 
-#: includes/class-imap-fetcher.php:59
+#: includes/class-imap-fetcher.php:60
 msgid "Successfully connected and authenticated to IMAP server!"
 msgstr ""
 
-#: includes/class-imap-fetcher.php:76
+#: includes/class-imap-fetcher.php:80
 msgid ""
 "IMAP configuration is incomplete. Please configure Host, Username, and "
 "Password."
 msgstr ""
 
-#: includes/class-imap-fetcher.php:109
+#: includes/class-imap-fetcher.php:114
 msgid "No new unread report emails found in mailbox."
 msgstr ""
 
-#: includes/class-imap-fetcher.php:201
+#: includes/class-imap-fetcher.php:207
 #, php-format
 msgid ""
-"IMAP Fetch Completed: %d report(s) imported, %d duplicate(s) skipped, %d "
-"error(s)."
+"IMAP Fetch Completed: %1$d report(s) imported, %2$d duplicate(s) skipped, "
+"%3$d error(s)."
 msgstr ""
 
-#: includes/class-imap-fetcher.php:259
+#: includes/class-imap-fetcher.php:266
 #, php-format
-msgid "Duplicate TLSRPT Report ID \"%s\" from %s (Already in DB)"
+msgid "Duplicate TLSRPT Report ID \"%1$s\" from %2$s (Already in DB)"
 msgstr ""
 
-#: includes/class-imap-fetcher.php:305
+#: includes/class-imap-fetcher.php:313
 #, php-format
-msgid "Imported TLSRPT Report ID \"%s\" from %s (%d sessions)"
+msgid "Imported TLSRPT Report ID \"%1$s\" from %2$s (%3$d sessions)"
 msgstr ""
 
-#: includes/class-imap-fetcher.php:329
+#: includes/class-imap-fetcher.php:338
 #, php-format
-msgid "Duplicate DMARC Report ID \"%s\" from %s (Already in DB)"
+msgid "Duplicate DMARC Report ID \"%1$s\" from %2$s (Already in DB)"
 msgstr ""
 
-#: includes/class-imap-fetcher.php:384
+#: includes/class-imap-fetcher.php:394
 #, php-format
-msgid "Imported DMARC Report ID \"%s\" from %s (%d msgs)"
+msgid "Imported DMARC Report ID \"%1$s\" from %2$s (%3$d msgs)"
 msgstr ""
 
 #: includes/class-loader.php:136
@@ -1334,134 +1345,134 @@ msgstr ""
 msgid "Uploading and parsing DMARC report..."
 msgstr ""
 
-#: includes/class-loader.php:159
+#: includes/class-loader.php:160
 #, php-format
 msgid "Processing file %1$s of %2$s (%3$s)..."
 msgstr ""
 
-#: includes/class-loader.php:160
+#: includes/class-loader.php:161
 msgid "Report imported successfully!"
 msgstr ""
 
-#: includes/class-loader.php:161
+#: includes/class-loader.php:163
 #, php-format
 msgid "%d reports imported successfully!"
 msgstr ""
 
-#: includes/class-loader.php:162
+#: includes/class-loader.php:165
 #, php-format
 msgid "Imported %1$s of %2$s reports. %3$s error(s):"
 msgstr ""
 
-#: includes/class-loader.php:163
+#: includes/class-loader.php:166
 msgid "Import failed:"
 msgstr ""
 
-#: includes/class-loader.php:164
+#: includes/class-loader.php:167
 msgid "Upload failed"
 msgstr ""
 
-#: includes/class-loader.php:165
+#: includes/class-loader.php:168
 msgid "Delete failed"
 msgstr ""
 
-#: includes/class-loader.php:166
+#: includes/class-loader.php:169
 msgid "Are you sure you want to delete this report?"
 msgstr ""
 
-#: includes/class-loader.php:167
+#: includes/class-loader.php:170
 msgid "Analysis failed."
 msgstr ""
 
-#: includes/class-loader.php:171
+#: includes/class-loader.php:174
 msgid "Pass"
 msgstr ""
 
-#: includes/class-loader.php:172
+#: includes/class-loader.php:175
 msgid "Warning"
 msgstr ""
 
-#: includes/class-loader.php:176
+#: includes/class-loader.php:179
 msgid "IP is listed on one or more blacklists!"
 msgstr ""
 
-#: includes/class-loader.php:177
+#: includes/class-loader.php:180
 msgid "IP is clean on all checked blacklists."
 msgstr ""
 
-#: includes/class-loader.php:178
+#: includes/class-loader.php:181
 msgid "No DNSBL results."
 msgstr ""
 
-#: includes/class-loader.php:179
+#: includes/class-loader.php:182
 msgid "No PTR record found"
 msgstr ""
 
-#: includes/class-loader.php:180
+#: includes/class-loader.php:183
 msgid "PTR record found"
 msgstr ""
 
-#: includes/class-loader.php:181
+#: includes/class-loader.php:184
 msgid "IP"
 msgstr ""
 
-#: includes/class-loader.php:183
+#: includes/class-loader.php:186
 msgid "Region"
 msgstr ""
 
-#: includes/class-loader.php:184
+#: includes/class-loader.php:187
 msgid "City"
 msgstr ""
 
-#: includes/class-loader.php:185
+#: includes/class-loader.php:188
 msgid "ISP"
 msgstr ""
 
-#: includes/class-loader.php:186
+#: includes/class-loader.php:189
 msgid "Organization"
 msgstr ""
 
-#: includes/class-loader.php:187
+#: includes/class-loader.php:190
 msgid "ASN"
 msgstr ""
 
-#: includes/class-loader.php:188
+#: includes/class-loader.php:191
 msgid "IP Range"
 msgstr ""
 
-#: includes/class-loader.php:189
+#: includes/class-loader.php:192
 msgid "Net Name"
 msgstr ""
 
-#: includes/class-loader.php:190
+#: includes/class-loader.php:193
 msgid "Person"
 msgstr ""
 
-#: includes/class-loader.php:191
+#: includes/class-loader.php:194
 msgid "Email"
 msgstr ""
 
-#: includes/class-loader.php:192
+#: includes/class-loader.php:195
 msgid "Source"
 msgstr ""
 
-#: includes/class-loader.php:193
+#: includes/class-loader.php:196
 msgid "Loading..."
 msgstr ""
 
-#: includes/class-loader.php:194
+#: includes/class-loader.php:197
 msgid "Fetching available models..."
 msgstr ""
 
-#: includes/class-loader.php:196
+#: includes/class-loader.php:199
 msgid "Models updated successfully."
 msgstr ""
 
-#: includes/class-loader.php:197
+#: includes/class-loader.php:200
 msgid "No models found. Make sure your API key is valid."
 msgstr ""
 
-#: includes/class-loader.php:198
+#: includes/class-loader.php:201
 msgid "Failed to fetch models. Check your API key."
 msgstr ""
 
@@ -1469,143 +1480,163 @@ msgstr ""
 msgid "No logs found."
 msgstr ""
 
-#: includes/class-mailer.php:48
+#: includes/class-mailer.php:49
 #, php-format
 msgid "⚠️ PointNet ALERT: scan error for %s"
 msgstr ""
 
-#: includes/class-mailer.php:64 includes/class-mailer.php:71
+#: includes/class-mailer.php:66 includes/class-mailer.php:73
 #, php-format
 msgid "⚠️ PointNet ALERT: %1$s — %2$s"
 msgstr ""
 
-#: includes/class-mailer.php:79
+#: includes/class-mailer.php:81
 #, php-format
 msgid "⚠️ PointNet ALERT: %s — issue detected"
 msgstr ""
 
-#: includes/class-mailer.php:86
+#: includes/class-mailer.php:88
 msgid "PointNet Mail Guard — ALERT"
 msgstr ""
 
-#: includes/class-mailer.php:90
+#: includes/class-mailer.php:92
 msgid "Scan error"
 msgstr ""
 
-#: includes/class-mailer.php:91
+#: includes/class-mailer.php:93
 msgid "Target"
 msgstr ""
 
-#: includes/class-mailer.php:96
+#: includes/class-mailer.php:98
 msgid "Email checked"
 msgstr ""
 
-#: includes/class-mailer.php:98
+#: includes/class-mailer.php:100
 msgid "Mail server"
 msgstr ""
 
-#: includes/class-mailer.php:99
+#: includes/class-mailer.php:101
 msgid "Mail server IP"
 msgstr ""
 
-#: includes/class-mailer.php:100
+#: includes/class-mailer.php:102
 msgid "WordPress IP"
 msgstr ""
 
-#: includes/class-mailer.php:101
+#: includes/class-mailer.php:103
 msgid "Server setup"
 msgstr ""
 
-#: includes/class-mailer.php:103
+#: includes/class-mailer.php:105
 msgid "SHARED (mail and WordPress on same server)"
 msgstr ""
 
-#: includes/class-mailer.php:104
+#: includes/class-mailer.php:106
 msgid "SEPARATE (dedicated mail server)"
 msgstr ""
 
-#: includes/class-mailer.php:107
+#: includes/class-mailer.php:109
 msgid "IP address"
 msgstr ""
 
-#: includes/class-mailer.php:110
+#: includes/class-mailer.php:112
 msgid "Scan time"
 msgstr ""
 
-#: includes/class-mailer.php:112
+#: includes/class-mailer.php:114
 msgid "IP is listed on one or more blacklists."
 msgstr ""
 
-#: includes/class-mailer.php:113
+#: includes/class-mailer.php:115
 msgid "PTR (reverse DNS) is not configured."
 msgstr ""
 
-#: includes/class-mailer.php:116
+#: includes/class-mailer.php:118
 msgid "SPF record is missing."
 msgstr ""
 
-#: includes/class-mailer.php:117
+#: includes/class-mailer.php:119
 msgid "SPF record is invalid."
 msgstr ""
 
-#: includes/class-mailer.php:118
+#: includes/class-mailer.php:120
 msgid "SPF record has warnings."
 msgstr ""
 
-#: includes/class-mailer.php:123
+#: includes/class-mailer.php:125
 msgid "DMARC configuration has issues."
 msgstr ""
 
-#: includes/class-mailer.php:126
+#: includes/class-mailer.php:128
 msgid "DKIM key problem detected."
 msgstr ""
 
-#: includes/class-mailer.php:130
+#: includes/class-mailer.php:132
 msgid "MTA-STS policy is missing."
 msgstr ""
 
-#: includes/class-mailer.php:132
+#: includes/class-mailer.php:134
 msgid "MTA-STS policy has warnings."
 msgstr ""
 
-#: includes/class-mailer.php:136
-msgid "DNSBL Results"
+#: includes/class-mailer.php:139
+msgid "DNSSEC authentication failed."
 msgstr ""
 
 #: includes/class-mailer.php:141
+msgid "DNSSEC is not configured."
+msgstr ""
+
+#: includes/class-mailer.php:145
+msgid "DNSBL Results"
+msgstr ""
+
+#: includes/class-mailer.php:150
 msgid "PTR Check"
 msgstr ""
 
-#: includes/class-mailer.php:143
+#: includes/class-mailer.php:152
 msgid "WARNING: not configured"
 msgstr ""
 
-#: includes/class-mailer.php:147
+#: includes/class-mailer.php:156
 msgid "SPF Check"
 msgstr ""
 
-#: includes/class-mailer.php:151
+#: includes/class-mailer.php:160
 msgid "MISSING — no SPF record found"
 msgstr ""
 
-#: includes/class-mailer.php:153
+#: includes/class-mailer.php:162
 msgid "INVALID"
 msgstr ""
 
-#: includes/class-mailer.php:155
+#: includes/class-mailer.php:164
 msgid "WARNING"
 msgstr ""
 
-#: includes/class-mailer.php:160
+#: includes/class-mailer.php:169
 msgid "DMARC Check"
 msgstr ""
 
-#: includes/class-mailer.php:169
+#: includes/class-mailer.php:178
 msgid "DKIM Check"
 msgstr ""
 
-#: includes/class-mailer.php:178
+#: includes/class-mailer.php:187
 msgid "MTA-STS Check"
+msgstr ""
+
+#: includes/class-mailer.php:195
+msgid "DNSSEC Check"
+msgstr ""
+
+#: includes/class-mailer.php:198
+msgid "ENABLED / SIGNED"
+msgstr ""
+
+#: includes/class-mailer.php:198
+msgid "NOT CONFIGURED"
 msgstr ""
 
 #: includes/class-mx.php:46

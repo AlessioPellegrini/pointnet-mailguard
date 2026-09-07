@@ -12,6 +12,8 @@ if (!defined('ABSPATH')) exit;
  */
 class PN_Mailguard_Tlsrpt_Parser {
 
+    const int MAX_UNCOMPRESSED_BYTES = 15728640; // 15 MB limit against decompression bombs
+
     /**
      * Parse a TLSRPT report from file path or binary/string content.
      *
@@ -36,7 +38,7 @@ class PN_Mailguard_Tlsrpt_Parser {
         // Decompress content if needed
         $json_content = self::decompress($content);
         if ($json_content === false) {
-            return self::error_response('Failed to decompress TLSRPT report. Format must be JSON, GZIP (.gz/.json.gz) or ZIP (.zip).');
+            return self::error_response('Failed to decompress TLSRPT report. Format must be JSON, GZIP (.gz/.json.gz) or ZIP (.zip), and uncompressed size must be under 15 MB.');
         }
 
         // Parse JSON content
@@ -51,10 +53,11 @@ class PN_Mailguard_Tlsrpt_Parser {
      */
     public static function decompress(string $data): string|false {
         $raw = ltrim($data);
+        $max_bytes = (int) apply_filters('pn_mailguard_max_uncompressed_bytes', self::MAX_UNCOMPRESSED_BYTES);
 
         // Check if already JSON
         if (str_starts_with($raw, '{') && str_contains($raw, 'organization-name')) {
-            return $data;
+            return strlen($data) <= $max_bytes ? $data : false;
         }
 
         // 1. GZIP check (magic bytes \x1f\x8b)
@@ -62,24 +65,24 @@ class PN_Mailguard_Tlsrpt_Parser {
         if ($gz_pos !== false) {
             $gz_data = substr($data, $gz_pos);
             if (function_exists('gzdecode')) {
-                $decompressed = @gzdecode($gz_data);
-                if ($decompressed !== false) {
+                $decompressed = @gzdecode($gz_data, $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
             }
             if (function_exists('gzinflate') && strlen($gz_data) > 10) {
-                $decompressed = @gzinflate(substr($gz_data, 10));
-                if ($decompressed !== false) {
+                $decompressed = @gzinflate(substr($gz_data, 10), $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
-                $decompressed = @gzinflate($gz_data);
-                if ($decompressed !== false) {
+                $decompressed = @gzinflate($gz_data, $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
             }
             if (function_exists('gzuncompress')) {
-                $decompressed = @gzuncompress($gz_data);
-                if ($decompressed !== false) {
+                $decompressed = @gzuncompress($gz_data, $max_bytes);
+                if ($decompressed !== false && strlen($decompressed) <= $max_bytes) {
                     return $decompressed;
                 }
             }
@@ -100,6 +103,12 @@ class PN_Mailguard_Tlsrpt_Parser {
 
                     if ($zip->open($tmp) === true) {
                         for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $stat = $zip->statIndex($i);
+                            if ($stat && isset($stat['size']) && $stat['size'] > $max_bytes) {
+                                $zip->close();
+                                wp_delete_file($tmp);
+                                return false;
+                            }
                             $filename = $zip->getNameIndex($i);
                             if (preg_match('/\.json$/i', $filename) || str_contains($filename, 'json')) {
                                 $json = $zip->getFromIndex($i);
@@ -107,13 +116,19 @@ class PN_Mailguard_Tlsrpt_Parser {
                             }
                         }
                         if ($json === false && $zip->numFiles > 0) {
+                            $stat = $zip->statIndex(0);
+                            if ($stat && isset($stat['size']) && $stat['size'] > $max_bytes) {
+                                $zip->close();
+                                wp_delete_file($tmp);
+                                return false;
+                            }
                             $json = $zip->getFromIndex(0);
                         }
                         $zip->close();
                     }
-                    @unlink($tmp);
+                    wp_delete_file($tmp);
 
-                    if ($json !== false) {
+                    if ($json !== false && strlen($json) <= $max_bytes) {
                         return $json;
                     }
                 }
@@ -127,13 +142,13 @@ class PN_Mailguard_Tlsrpt_Parser {
                 $payload     = substr($zip_data, 30 + $fn_len + $extra_len);
 
                 if ($comp_method === 8 && function_exists('gzinflate')) {
-                    $unzipped = @gzinflate($payload);
-                    if ($unzipped !== false) {
+                    $unzipped = @gzinflate($payload, $max_bytes);
+                    if ($unzipped !== false && strlen($unzipped) <= $max_bytes) {
                         return $unzipped;
                     }
                 } elseif ($comp_method === 0) {
                     $c_size = unpack('V', substr($zip_data, 18, 4))[1] ?? 0;
-                    if ($c_size > 0) {
+                    if ($c_size > 0 && $c_size <= $max_bytes) {
                         return substr($payload, 0, $c_size);
                     }
                 }

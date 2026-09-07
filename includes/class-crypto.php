@@ -45,9 +45,9 @@ class PN_Mailguard_Crypto {
         }
 
         $iv_length = openssl_cipher_iv_length(self::METHOD);
-        $iv        = openssl_random_pseudo_bytes($iv_length);
-
-        if ($iv === false) {
+        try {
+            $iv = random_bytes($iv_length);
+        } catch (\Throwable $e) {
             return '';
         }
 
