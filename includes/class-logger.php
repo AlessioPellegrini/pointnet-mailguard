@@ -41,6 +41,7 @@ class PN_Mailguard_Logger {
         $ip         = ($type === 'ip') ? $data['ip'] : $data['mx_ip'];
 
         $wpdb->insert($table_name, [
+            'scan_date'  => current_time('mysql'),
             'ip_address' => sanitize_text_field($ip),
             'status'     => $status,
             'details'    => sanitize_text_field($details),

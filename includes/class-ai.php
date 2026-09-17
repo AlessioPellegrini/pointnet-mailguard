@@ -670,6 +670,7 @@ class PN_Mailguard_AI {
             'dmarc_data'  => wp_json_encode($dmarc),
             'dkim_data'   => wp_json_encode($dkim),
             'mtasts_data' => wp_json_encode($mtasts),
+            'created_at'  => current_time('mysql'),
         ];
 
         // Only add dnssec_data if the column exists
