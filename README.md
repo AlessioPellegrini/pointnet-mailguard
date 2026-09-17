@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 7.0  
 **Tested up to:** 7.1  
-**Stable tag:** 1.9.2  
+**Stable tag:** 1.9.3  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -157,19 +157,22 @@ Planned improvements for upcoming releases:
 
 ## Changelog
 
-### 1.9.2
-* **New**: FCrDNS (Forward-Confirmed Reverse DNS) circular verification — checks bidirectional alignment between mail server IP and PTR hostname (IP → PTR and PTR → IP) to satisfy Google and Outlook strict anti-spam requirements.
-* **New**: SMTP STARTTLS & SSL/TLS Certificate check on port 25 — connects directly to the mail server on port 25, negotiates STARTTLS encryption, verifies certificate expiration date (with days remaining), issuer CA, and validates SAN / Common Name matching.
-* **New**: Added interactive "SMTP STARTTLS & TLS Certificate Check (Port 25)" diagnostic card to DNS & IP Tools tab with live testing on demand.
-* **New**: FCrDNS and SMTP TLS statuses integrated into Email & MX Monitor dashboard card, recent scan log badges, and terminal-style console.
-* **New**: FCrDNS and SMTP TLS integrated into email alerts (`PN_Mailguard_Mailer`), strictly adhering to configured notification levels ("All issues", "Errors only" for expired TLS certs, "None").
-* **New**: Added FCrDNS warnings and TLS certificate expiration errors to global status bar and "Attention needed" top banner.
+### 1.9.3
 * **Improved**: AI Deliverability Analysis — enabled Gemini native Structured Outputs (`responseMimeType: 'application/json'`) and increased output limit from 1,500 to 4,096 tokens, completely resolving "AI response could not be parsed" errors.
 * **Improved**: AI Resilient Parser — added robust fallback JSON extraction and explicit detection for token truncation (`finishReason === 'MAX_TOKENS'`).
 * **Improved**: AI Localization — enforced WordPress site locale across all generated analysis fields (summary, issue titles, descriptions, fixes, strengths, next steps).
 * **Fixed**: Timezone offset — explicitly saved `scan_date` and `created_at` using WordPress site timezone `current_time('mysql')` instead of database default UTC (`CURRENT_TIMESTAMP`), fixing the 2-hour time offset across all analyzers and log tables.
 * **Fixed**: DNS & IP Tools — added `get_mx_hosts()` to resolve bare domain names when testing port 25 STARTTLS encryption.
+* **New**: FCrDNS and SMTP TLS integrated into email alerts (`PN_Mailguard_Mailer`), strictly adhering to configured notification levels ("All issues", "Errors only" for expired TLS certs, "None").
+* **New**: Added FCrDNS warnings and TLS certificate expiration errors to global status bar and "Attention needed" top banner.
 * **Updated**: Italian translations (.pot, .po, .mo).
+
+### 1.9.2
+* **New**: FCrDNS (Forward-Confirmed Reverse DNS) circular verification — checks bidirectional alignment between mail server IP and PTR hostname (IP → PTR and PTR → IP) to satisfy Google and Outlook strict anti-spam requirements.
+* **New**: SMTP STARTTLS & SSL/TLS Certificate check on port 25 — connects directly to the mail server on port 25, negotiates STARTTLS encryption, verifies certificate expiration date (with days remaining), issuer CA, and validates SAN / Common Name matching.
+* **New**: Added interactive "SMTP STARTTLS & TLS Certificate Check (Port 25)" diagnostic card to DNS & IP Tools tab with live testing on demand.
+* **New**: FCrDNS and SMTP TLS statuses integrated into Email & MX Monitor dashboard card, recent scan log badges, and terminal-style console.
+* **New**: Integrated FCrDNS and SMTP TLS certificate findings into AI deliverability report, AI prompt context, and exported JSON report.
 
 ### 1.9.1
 * **New**: Complete 7-layer security verification across all reports, alerts, log history, and AI prompts (SPF, DMARC, DKIM, MTA-STS, DNSSEC, DNSBL, PTR/MX).
