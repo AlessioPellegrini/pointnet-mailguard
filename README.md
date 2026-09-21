@@ -157,6 +157,10 @@ Planned improvements for upcoming releases:
 
 ## Changelog
 
+### 1.9.4
+* **Fixed**: Transient DNS query failures causing false positive alerts (e.g. DKIM: MISSING) — added automatic retry mechanism with backoff across DKIM, DMARC, SPF, and MTA-STS DNS lookups.
+* **Improved**: DNS analyzer resilience — prevents temporary resolver packet loss or timeouts from triggering spurious email notifications.
+
 ### 1.9.3
 * **Improved**: AI Deliverability Analysis — enabled Gemini native Structured Outputs (`responseMimeType: 'application/json'`) and increased output limit from 1,500 to 4,096 tokens, completely resolving "AI response could not be parsed" errors.
 * **Improved**: AI Resilient Parser — added robust fallback JSON extraction and explicit detection for token truncation (`finishReason === 'MAX_TOKENS'`).

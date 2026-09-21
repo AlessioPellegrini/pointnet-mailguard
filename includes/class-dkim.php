@@ -107,7 +107,16 @@ class PN_Mailguard_DKIM {
         }
 
         $host    = $selector . '._domainkey.' . $domain;
-        $records = dns_get_record($host, DNS_TXT);
+        $records = @dns_get_record($host, DNS_TXT);
+        if (empty($records)) {
+            // Retry after short pause to handle transient DNS resolution timeout or packet loss
+            usleep(300000);
+            $records = @dns_get_record($host, DNS_TXT);
+            if (empty($records)) {
+                usleep(500000);
+                $records = @dns_get_record($host, DNS_TXT);
+            }
+        }
         if ($records === false) {
             $records = [];
         }

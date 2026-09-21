@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.1
-Stable tag: 1.9.3
+Stable tag: 1.9.4
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -125,6 +125,10 @@ Planned improvements for upcoming releases:
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
+
+= 1.9.4 =
+* Fixed: Transient DNS query failures causing false positive alerts (e.g. DKIM: MISSING) — added automatic retry mechanism with backoff across DKIM, DMARC, SPF, and MTA-STS DNS lookups.
+* Improved: DNS analyzer resilience — prevents temporary resolver packet loss or timeouts from triggering spurious email notifications.
 
 = 1.9.3 =
 * Improved: AI Deliverability Analysis — enabled Gemini native Structured Outputs (`responseMimeType: 'application/json'`) and increased output limit from 1,500 to 4,096 tokens, completely resolving "AI response could not be parsed" errors.
