@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: PointNet Mail Guard
- * Version: 1.9.6
+ * Version: 1.9.7
  * Description: Complete email deliverability monitoring. Checks DNSBL blacklists, PTR record and SMTP configuration natively in PHP — no external dependencies required.
  * Plugin URI: https://www.pointnet.it/
  * Author: PointNet
@@ -28,7 +28,7 @@ if (version_compare(PHP_VERSION, '8.3', '<')) {
 }
 
 // --- Constants ---
-define('PN_MAILGUARD_VERSION',    '1.9.6');
+define('PN_MAILGUARD_VERSION',    '1.9.7');
 define('PN_MAILGUARD_IS_WPORG',    false); // Set to true if published on WordPress.org
 define('PN_MAILGUARD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('PN_MAILGUARD_PLUGIN_URL', plugin_dir_url(__FILE__));

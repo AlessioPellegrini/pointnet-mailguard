@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 7.0  
 **Tested up to:** 7.1  
-**Stable tag:** 1.9.6  
+**Stable tag:** 1.9.7  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -157,6 +157,10 @@ Planned improvements for upcoming releases:
 - **Dashboard Widget** — monitor status on the WordPress admin dashboard
 
 ## Changelog
+
+### 1.9.7
+* **New**: Native GitHub Release & Tag Updater — seamless 1-click updates directly from the WordPress admin plugins and updates dashboard. Automatically queries GitHub releases and git tags with transient caching, version details modal support, and safe folder renaming.
+* **New**: Update URI Header & WordPress.org toggle — added standard Update URI header and `PN_MAILGUARD_IS_WPORG` configuration flag for clean, zero-friction transition to WordPress.org directory.
 
 ### 1.9.6
 * **New**: Export DMARC & TLSRPT Reports (JSON) — added bulk export and per-report export buttons in the DMARC & TLS Aggregate Reports table. Downloads structured JSON including individual IP sender authentication and MTA-STS session breakdown records for easy sharing or external auditing.
