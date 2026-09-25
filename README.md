@@ -6,7 +6,7 @@ Monitor your mail server and any IP address against DNSBL blacklists — two ind
 **Tags:** security, blacklist, monitor, dnsbl, email deliverability  
 **Requires at least:** WordPress 7.0  
 **Tested up to:** 7.1  
-**Stable tag:** 1.9.3  
+**Stable tag:** 1.9.6  
 **Requires PHP:** 8.3  
 **License:** GPLv2 or later — see [LICENSE](LICENSE)
 
@@ -62,6 +62,7 @@ Developed by [PointNet](https://www.pointnet.it/).
 - **DMARC Aggregate Report (RUA) parser** — XML, GZIP, and ZIP report processing with persistent DB storage and dashboard management
 - **TLSRPT Report (RFC 8460) parser** — JSON, GZIP, and ZIP report processing with persistent DB storage and dashboard management
 - **Automated IMAP Email Ingestion** — fetch and import DMARC (XML/ZIP/GZ) and TLSRPT (JSON/ZIP/GZ) reports automatically via IMAP with WP-Cron
+- **Export DMARC & TLSRPT Reports (JSON)** — download full aggregate and itemized breakdown reports (bulk or per-report) as structured JSON for easy audits and sharing
 - DKIM Analyzer — selector auto-detection, key type/length, test mode, hash algorithm
 - MTA-STS Analyzer (RFC 8461) — DNS record `_mta-sts`, policy JSON fetch, mode (enforce/testing/none), MX validation, max_age verification
 - **DNSSEC Analyzer** — authenticated DNSSEC validation via DoH (Google/Cloudflare) verifying DS, DNSKEY and AD validation flag
