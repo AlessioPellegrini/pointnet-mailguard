@@ -155,12 +155,14 @@ Planned improvements for upcoming releases:
 - **MTA-STS Analyzer section in Email Monitor card** — show MTA-STS status alongside SPF/DMARC/DKIM in scan terminal
 - **BIMI Analyzer** — Brand Indicators for Message Identification (logo verification in email clients)
 - **Dashboard Widget** — monitor status on the WordPress admin dashboard
+- **WordPress.org Submission Checklist** — when publishing to WordPress.org SVN, simply remove `includes/class-updater.php` and the `Update URI` header in `pointnet-mailguard.php` to let official WordPress.org infrastructure handle updates natively.
 
 ## Changelog
 
 ### 1.9.7
 * **New**: Native GitHub Release & Tag Updater — seamless 1-click updates directly from the WordPress admin plugins and updates dashboard. Automatically queries GitHub releases and git tags with transient caching, version details modal support, and safe folder renaming.
 * **New**: Update URI Header & WordPress.org toggle — added standard Update URI header and `PN_MAILGUARD_IS_WPORG` configuration flag for clean, zero-friction transition to WordPress.org directory.
+* **Note**: For WordPress.org submission, simply remove `includes/class-updater.php`; the loader automatically skips it with no code edits needed.
 
 ### 1.9.6
 * **New**: Export DMARC & TLSRPT Reports (JSON) — added bulk export and per-report export buttons in the DMARC & TLS Aggregate Reports table. Downloads structured JSON including individual IP sender authentication and MTA-STS session breakdown records for easy sharing or external auditing.
