@@ -41,18 +41,7 @@ class PN_Mailguard_DMARC {
 
         // DMARC record lives on _dmarc.domain
         $dmarc_domain = '_dmarc.' . $domain;
-        $txt_records  = @dns_get_record($dmarc_domain, DNS_TXT);
-        if (empty($txt_records)) {
-            usleep(300000);
-            $txt_records = @dns_get_record($dmarc_domain, DNS_TXT);
-            if (empty($txt_records)) {
-                usleep(500000);
-                $txt_records = @dns_get_record($dmarc_domain, DNS_TXT);
-            }
-        }
-        if ($txt_records === false) {
-            $txt_records = [];
-        }
+        $txt_records  = PN_Mailguard_DKIM::get_txt_records($dmarc_domain);
 
         $checks  = [];
         $passed  = $warnings = $errors = 0;

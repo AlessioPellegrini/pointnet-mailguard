@@ -107,19 +107,7 @@ class PN_Mailguard_DKIM {
         }
 
         $host    = $selector . '._domainkey.' . $domain;
-        $records = @dns_get_record($host, DNS_TXT);
-        if (empty($records)) {
-            // Retry after short pause to handle transient DNS resolution timeout or packet loss
-            usleep(300000);
-            $records = @dns_get_record($host, DNS_TXT);
-            if (empty($records)) {
-                usleep(500000);
-                $records = @dns_get_record($host, DNS_TXT);
-            }
-        }
-        if ($records === false) {
-            $records = [];
-        }
+        $records = self::get_txt_records($host);
 
         $checks  = [];
         $passed  = $warnings = $errors = 0;
@@ -136,15 +124,16 @@ class PN_Mailguard_DKIM {
             return $base;
         }
 
-        // Find valid DKIM record
+        // Find valid DKIM record (supporting chunked entries for 2048-bit keys)
         $record = '';
         foreach ($records as $rec) {
-            if (!empty($rec['txt'])) {
-                $txt = trim($rec['txt']);
-                if (str_contains($txt, 'v=DKIM1') || str_contains($txt, 'p=')) {
-                    $record = $txt;
-                    break;
-                }
+            $txt = isset($rec['entries']) && is_array($rec['entries'])
+                ? implode('', $rec['entries'])
+                : ($rec['txt'] ?? '');
+            $txt = trim($txt);
+            if (str_contains($txt, 'v=DKIM1') || str_contains($txt, 'p=')) {
+                $record = $txt;
+                break;
             }
         }
 
@@ -358,6 +347,103 @@ class PN_Mailguard_DKIM {
             return trim($parts[1]);
         }
         return $input;
+    }
+
+    /**
+     * Query TXT records using native PHP dns_get_record with retry and DoH (DNS-over-HTTPS) fallback.
+     * This handles large TXT records (such as 2048-bit DKIM keys with DNSSEC RRSIG reaching 900+ bytes)
+     * where UDP packet truncation, EDNS0 failure, or local resolver timeouts can cause native DNS lookups to fail.
+     *
+     * @param string $host
+     * @return array
+     */
+    public static function get_txt_records(string $host): array {
+        $records = @dns_get_record($host, DNS_TXT);
+        if (!empty($records)) {
+            return $records;
+        }
+
+        // Retry 1: brief pause for transient packet drop
+        usleep(300000);
+        $records = @dns_get_record($host, DNS_TXT);
+        if (!empty($records)) {
+            return $records;
+        }
+
+        // Fallback: DNS-over-HTTPS (DoH) via Google and Cloudflare
+        return self::query_doh_txt($host);
+    }
+
+    /**
+     * Query DNS-over-HTTPS (DoH) for TXT records.
+     *
+     * @param string $host
+     * @return array
+     */
+    public static function query_doh_txt(string $host): array {
+        // Try Google DoH
+        $url = 'https://dns.google/resolve?name=' . urlencode($host) . '&type=TXT';
+        $res = wp_remote_get($url, [
+            'timeout' => 5,
+            'headers' => ['Accept' => 'application/json'],
+        ]);
+
+        if (!is_wp_error($res) && wp_remote_retrieve_response_code($res) === 200) {
+            $data = json_decode(wp_remote_retrieve_body($res), true);
+            $parsed = self::parse_doh_answers($data, $host);
+            if (!empty($parsed)) {
+                return $parsed;
+            }
+        }
+
+        // Fallback to Cloudflare DoH
+        $cf_url = 'https://cloudflare-dns.com/dns-query?name=' . urlencode($host) . '&type=TXT';
+        $cf_res = wp_remote_get($cf_url, [
+            'timeout' => 5,
+            'headers' => ['Accept' => 'application/dns-json'],
+        ]);
+
+        if (!is_wp_error($cf_res) && wp_remote_retrieve_response_code($cf_res) === 200) {
+            $cf_data = json_decode(wp_remote_retrieve_body($cf_res), true);
+            $parsed = self::parse_doh_answers($cf_data, $host);
+            if (!empty($parsed)) {
+                return $parsed;
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Parse DoH JSON response into standard dns_get_record format.
+     */
+    private static function parse_doh_answers(?array $data, string $host): array {
+        if (empty($data['Answer']) || !is_array($data['Answer'])) {
+            return [];
+        }
+
+        $records = [];
+        foreach ($data['Answer'] as $ans) {
+            if (($ans['type'] ?? 0) === 16 && isset($ans['data'])) {
+                $raw = (string) $ans['data'];
+                // Normalize concatenated quoted chunks from DoH
+                $clean = preg_replace('/^"|"$/', '', $raw);
+                $clean = str_replace('" "', '', $clean);
+                $clean = trim($clean);
+
+                if (!empty($clean)) {
+                    $records[] = [
+                        'host'    => $host,
+                        'class'   => 'IN',
+                        'ttl'     => $ans['TTL'] ?? 3600,
+                        'type'    => 'TXT',
+                        'txt'     => $clean,
+                        'entries' => [$clean],
+                    ];
+                }
+            }
+        }
+        return $records;
     }
 
     /**

@@ -63,16 +63,8 @@ class PN_Mailguard_SPF {
             return $base;
         }
 
-        $txt_records = @dns_get_record($domain, DNS_TXT);
+        $txt_records = PN_Mailguard_DKIM::get_txt_records($domain);
         if (empty($txt_records)) {
-            usleep(300000);
-            $txt_records = @dns_get_record($domain, DNS_TXT);
-            if (empty($txt_records)) {
-                usleep(500000);
-                $txt_records = @dns_get_record($domain, DNS_TXT);
-            }
-        }
-        if ($txt_records === false) {
             $base['error'] = 'DNS query failed for domain: ' . $domain;
             return $base;
         }

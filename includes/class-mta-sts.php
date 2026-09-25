@@ -51,18 +51,7 @@ class PN_Mailguard_MTA_STS {
         // CHECK 1: DNS TXT record on _mta-sts.domain
         // ---------------------------------------------------------------------
         $mta_sts_domain = '_mta-sts.' . $domain;
-        $txt_records    = @dns_get_record($mta_sts_domain, DNS_TXT);
-        if (empty($txt_records)) {
-            usleep(300000);
-            $txt_records = @dns_get_record($mta_sts_domain, DNS_TXT);
-            if (empty($txt_records)) {
-                usleep(500000);
-                $txt_records = @dns_get_record($mta_sts_domain, DNS_TXT);
-            }
-        }
-        if ($txt_records === false) {
-            $txt_records = [];
-        }
+        $txt_records    = PN_Mailguard_DKIM::get_txt_records($mta_sts_domain);
 
         if (empty($txt_records)) {
             $checks[] = self::result('dns_record', 'error',

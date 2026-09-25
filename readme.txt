@@ -3,7 +3,7 @@ Contributors: pointnet
 Tags: security, blacklist, monitor, dnsbl, email deliverability
 Requires at least: 7.0
 Tested up to: 7.1
-Stable tag: 1.9.4
+Stable tag: 1.9.5
 Requires PHP: 8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -125,6 +125,10 @@ Planned improvements for upcoming releases:
 - Dashboard Widget — monitor status on the WordPress admin dashboard
 
 == Changelog ==
+
+= 1.9.5 =
+* Fixed: False positive DKIM "MISSING" alerts caused by large DNSSEC responses (900+ bytes) and UDP packet fragmentation — added automatic DNS-over-HTTPS (DoH) fallback via Google and Cloudflare endpoints for TXT lookups across DKIM, DMARC, SPF, and MTA-STS.
+* Improved: Chunked TXT record reconstruction — properly concatenates 255-byte split entries for 2048-bit RSA DKIM keys.
 
 = 1.9.4 =
 * Fixed: Transient DNS query failures causing false positive alerts (e.g. DKIM: MISSING) — added automatic retry mechanism with backoff across DKIM, DMARC, SPF, and MTA-STS DNS lookups.
