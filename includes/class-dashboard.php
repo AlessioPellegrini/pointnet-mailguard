@@ -1864,9 +1864,21 @@ class PN_Mailguard_Dashboard {
                 ),
                 ARRAY_A
             );
-            if ($anonymize && !empty($recent_dmarc)) {
+            $table_dmarc_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_RECORDS;
+            if (!empty($recent_dmarc)) {
                 foreach ($recent_dmarc as &$rd) {
-                    if (!empty($rd['email'])) $rd['email'] = $mask($rd['email']);
+                    if ($anonymize && !empty($rd['email'])) $rd['email'] = $mask($rd['email']);
+                    $recs = $wpdb->get_results(
+                        $wpdb->prepare("SELECT source_ip, country_code, count, disposition, spf_eval, dkim_eval, header_from FROM %i WHERE report_id_fk = %d ORDER BY count DESC", $table_dmarc_rec, $rd['id']),
+                        ARRAY_A
+                    );
+                    if ($anonymize && !empty($recs)) {
+                        foreach ($recs as &$rec_item) {
+                            if (!empty($rec_item['source_ip'])) $rec_item['source_ip'] = $mask($rec_item['source_ip']);
+                        }
+                        unset($rec_item);
+                    }
+                    $rd['records'] = $recs ?: [];
                 }
                 unset($rd);
             }
@@ -1893,9 +1905,21 @@ class PN_Mailguard_Dashboard {
                 ),
                 ARRAY_A
             );
-            if ($anonymize && !empty($recent_tls)) {
+            $table_tls_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
+            if (!empty($recent_tls)) {
                 foreach ($recent_tls as &$rt) {
-                    if (!empty($rt['contact_info'])) $rt['contact_info'] = $mask($rt['contact_info']);
+                    if ($anonymize && !empty($rt['contact_info'])) $rt['contact_info'] = $mask($rt['contact_info']);
+                    $trecs = $wpdb->get_results(
+                        $wpdb->prepare("SELECT policy_type, policy_domain, total_successful_sessions, total_failure_sessions, result_type, sending_mta_ip, receiving_mx_hostname, failure_count FROM %i WHERE report_id_fk = %d", $table_tls_rec, $rt['id']),
+                        ARRAY_A
+                    );
+                    if ($anonymize && !empty($trecs)) {
+                        foreach ($trecs as &$trec_item) {
+                            if (!empty($trec_item['sending_mta_ip'])) $trec_item['sending_mta_ip'] = $mask($trec_item['sending_mta_ip']);
+                        }
+                        unset($trec_item);
+                    }
+                    $rt['records'] = $trecs ?: [];
                 }
                 unset($rt);
             }
@@ -1953,6 +1977,85 @@ class PN_Mailguard_Dashboard {
         ];
 
         wp_send_json_success($report);
+    }
+
+    /**
+     * AJAX handler — export DMARC aggregate reports as JSON.
+     */
+    public static function ajax_export_dmarc_reports(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        global $wpdb;
+        $table_dmarc_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_REPORTS;
+        $table_dmarc_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_DMARC_RECORDS;
+
+        $single_id = !empty($_POST['id']) ? absint($_POST['id']) : 0;
+        if ($single_id > 0) {
+            $reports = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE id = %d", $table_dmarc_rep, $single_id), ARRAY_A);
+        } else {
+            $reports = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY created_at DESC LIMIT 100", $table_dmarc_rep), ARRAY_A);
+        }
+
+        if (empty($reports)) {
+            wp_send_json_error(['message' => __('No DMARC reports found to export.', 'pointnet-mailguard')]);
+        }
+
+        foreach ($reports as &$rep) {
+            $records = $wpdb->get_results($wpdb->prepare("SELECT source_ip, country_code, count, disposition, spf_eval, dkim_eval, header_from FROM %i WHERE report_id_fk = %d ORDER BY count DESC", $table_dmarc_rec, $rep['id']), ARRAY_A);
+            $rep['records'] = $records ?: [];
+        }
+        unset($rep);
+
+        $payload = [
+            'type'          => 'dmarc_aggregate_reports',
+            'exported_at'   => gmdate('Y-m-d\TH:i:s\Z'),
+            'domain'        => self::get_monitored_domain(),
+            'total_reports' => count($reports),
+            'reports'       => $reports,
+        ];
+
+        wp_send_json_success($payload);
+    }
+
+    /**
+     * AJAX handler — export TLSRPT reports as JSON.
+     */
+    public static function ajax_export_tls_reports(): void {
+        check_ajax_referer('pn_mailguard_ajax_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('0', 403);
+
+        global $wpdb;
+        $table_tls_rep = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_REPORTS;
+        $table_tls_rec = $wpdb->prefix . PN_Mailguard_Installer::TABLE_TLS_RECORDS;
+
+        $single_id = !empty($_POST['id']) ? absint($_POST['id']) : 0;
+        if ($single_id > 0) {
+            $reports = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE id = %d", $table_tls_rep, $single_id), ARRAY_A);
+        } else {
+            $reports = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i ORDER BY created_at DESC LIMIT 100", $table_tls_rep), ARRAY_A);
+        }
+
+        if (empty($reports)) {
+            wp_send_json_error(['message' => __('No TLSRPT reports found to export.', 'pointnet-mailguard')]);
+        }
+
+        foreach ($reports as &$trep) {
+            $trep['policies'] = json_decode($trep['policies_json'] ?? '[]', true);
+            $records = $wpdb->get_results($wpdb->prepare("SELECT policy_type, policy_domain, total_successful_sessions, total_failure_sessions, result_type, sending_mta_ip, receiving_mx_hostname, failure_count FROM %i WHERE report_id_fk = %d", $table_tls_rec, $trep['id']), ARRAY_A);
+            $trep['records'] = $records ?: [];
+        }
+        unset($trep);
+
+        $payload = [
+            'type'          => 'tlsrpt_reports',
+            'exported_at'   => gmdate('Y-m-d\TH:i:s\Z'),
+            'domain'        => self::get_monitored_domain(),
+            'total_reports' => count($reports),
+            'reports'       => $reports,
+        ];
+
+        wp_send_json_success($payload);
     }
 
     // -------------------------------------------------------------------------
@@ -2547,7 +2650,14 @@ class PN_Mailguard_Dashboard {
 
         <!-- Section 1: DMARC Reports -->
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:20px; margin-bottom:24px;">
-            <h3 style="font-size:15px; margin:0 0 16px; color:#1d2327;">✉️ <?php esc_html_e('DMARC Aggregate Reports (RFC 7489)', 'pointnet-mailguard'); ?></h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-size:15px; margin:0; color:#1d2327;">✉️ <?php esc_html_e('DMARC Aggregate Reports (RFC 7489)', 'pointnet-mailguard'); ?></h3>
+                <?php if (!empty($dmarc_reports)): ?>
+                    <button type="button" class="button button-secondary button-small pn-export-dmarc-all-btn" style="display:inline-flex; align-items:center; gap:4px;">
+                        📥 <?php esc_html_e('Export DMARC (JSON)', 'pointnet-mailguard'); ?>
+                    </button>
+                <?php endif; ?>
+            </div>
 
             <?php if (empty($dmarc_reports)): ?>
                 <p style="font-size:13px; color:#999; text-align:center; padding:20px 0; margin:0;">
@@ -2563,7 +2673,7 @@ class PN_Mailguard_Dashboard {
                             <th style="width:100px; text-align:center;"><?php esc_html_e('Total Emails', 'pointnet-mailguard'); ?></th>
                             <th style="width:100px; text-align:center;"><?php esc_html_e('Pass Rate', 'pointnet-mailguard'); ?></th>
                             <th style="width:130px; text-align:center;"><?php esc_html_e('Imported On', 'pointnet-mailguard'); ?></th>
-                            <th style="width:120px; text-align:right;"><?php esc_html_e('Actions', 'pointnet-mailguard'); ?></th>
+                            <th style="width:160px; text-align:right;"><?php esc_html_e('Actions', 'pointnet-mailguard'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2592,11 +2702,14 @@ class PN_Mailguard_Dashboard {
                                 </span>
                             </td>
                             <td style="text-align:center; font-size:11px; color:#666;"><?php echo esc_html(substr($rep->created_at, 0, 10)); ?></td>
-                            <td style="text-align:right;">
-                                <button type="button" class="button button-small button-secondary pn-toggle-details-btn" data-target="details-dmarc-<?php echo esc_attr($rep->id); ?>">
+                            <td style="text-align:right; white-space:nowrap;">
+                                <button type="button" class="button button-small button-secondary pn-toggle-details-btn" data-target="details-dmarc-<?php echo esc_attr($rep->id); ?>" title="<?php esc_attr_e('View details', 'pointnet-mailguard'); ?>">
                                     👁️ <?php esc_html_e('Details', 'pointnet-mailguard'); ?>
                                 </button>
-                                <button type="button" class="button button-small button-link-delete pn-delete-report-btn" data-id="<?php echo esc_attr($rep->id); ?>" style="color:#d63638;">
+                                <button type="button" class="button button-small button-secondary pn-export-dmarc-single-btn" data-id="<?php echo esc_attr($rep->id); ?>" data-org="<?php echo esc_attr($rep->org_name); ?>" title="<?php esc_attr_e('Export JSON', 'pointnet-mailguard'); ?>">
+                                    📥
+                                </button>
+                                <button type="button" class="button button-small button-link-delete pn-delete-report-btn" data-id="<?php echo esc_attr($rep->id); ?>" style="color:#d63638;" title="<?php esc_attr_e('Delete', 'pointnet-mailguard'); ?>">
                                     🗑️
                                 </button>
                             </td>
@@ -2665,7 +2778,14 @@ class PN_Mailguard_Dashboard {
 
         <!-- Section 2: TLSRPT Reports -->
         <div style="background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:20px;">
-            <h3 style="font-size:15px; margin:0 0 16px; color:#1d2327;">🔒 <?php esc_html_e('TLSRPT Reports (RFC 8460 - MTA-STS / DANE TLS)', 'pointnet-mailguard'); ?></h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-size:15px; margin:0; color:#1d2327;">🔒 <?php esc_html_e('TLSRPT Reports (RFC 8460 - MTA-STS / DANE TLS)', 'pointnet-mailguard'); ?></h3>
+                <?php if (!empty($tls_reports)): ?>
+                    <button type="button" class="button button-secondary button-small pn-export-tls-all-btn" style="display:inline-flex; align-items:center; gap:4px;">
+                        📥 <?php esc_html_e('Export TLS (JSON)', 'pointnet-mailguard'); ?>
+                    </button>
+                <?php endif; ?>
+            </div>
 
             <?php if (empty($tls_reports)): ?>
                 <p style="font-size:13px; color:#999; text-align:center; padding:20px 0; margin:0;">
@@ -2682,7 +2802,7 @@ class PN_Mailguard_Dashboard {
                             <th style="width:100px; text-align:center;"><?php esc_html_e('Failures', 'pointnet-mailguard'); ?></th>
                             <th style="width:100px; text-align:center;"><?php esc_html_e('Success Rate', 'pointnet-mailguard'); ?></th>
                             <th style="width:130px; text-align:center;"><?php esc_html_e('Imported On', 'pointnet-mailguard'); ?></th>
-                            <th style="width:120px; text-align:right;"><?php esc_html_e('Actions', 'pointnet-mailguard'); ?></th>
+                            <th style="width:160px; text-align:right;"><?php esc_html_e('Actions', 'pointnet-mailguard'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2716,11 +2836,14 @@ class PN_Mailguard_Dashboard {
                                 </span>
                             </td>
                             <td style="text-align:center; font-size:11px; color:#666;"><?php echo esc_html(substr($trep->created_at, 0, 10)); ?></td>
-                            <td style="text-align:right;">
-                                <button type="button" class="button button-small button-secondary pn-toggle-details-btn" data-target="details-tls-<?php echo esc_attr($trep->id); ?>">
+                            <td style="text-align:right; white-space:nowrap;">
+                                <button type="button" class="button button-small button-secondary pn-toggle-details-btn" data-target="details-tls-<?php echo esc_attr($trep->id); ?>" title="<?php esc_attr_e('View details', 'pointnet-mailguard'); ?>">
                                     👁️ <?php esc_html_e('Details', 'pointnet-mailguard'); ?>
                                 </button>
-                                <button type="button" class="button button-small button-link-delete pn-delete-tls-report-btn" data-id="<?php echo esc_attr($trep->id); ?>" style="color:#d63638;">
+                                <button type="button" class="button button-small button-secondary pn-export-tls-single-btn" data-id="<?php echo esc_attr($trep->id); ?>" data-org="<?php echo esc_attr($trep->org_name); ?>" title="<?php esc_attr_e('Export JSON', 'pointnet-mailguard'); ?>">
+                                    📥
+                                </button>
+                                <button type="button" class="button button-small button-link-delete pn-delete-tls-report-btn" data-id="<?php echo esc_attr($trep->id); ?>" style="color:#d63638;" title="<?php esc_attr_e('Delete', 'pointnet-mailguard'); ?>">
                                     🗑️
                                 </button>
                             </td>

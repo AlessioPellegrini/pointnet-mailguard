@@ -157,6 +157,10 @@ Planned improvements for upcoming releases:
 
 ## Changelog
 
+### 1.9.6
+* **New**: Export DMARC & TLSRPT Reports (JSON) — added bulk export and per-report export buttons in the DMARC & TLS Aggregate Reports table. Downloads structured JSON including individual IP sender authentication and MTA-STS session breakdown records for easy sharing or external auditing.
+* **Improved**: System Information export now includes full itemized breakdown records for recent DMARC aggregate and TLSRPT reports.
+
 ### 1.9.5
 * **Fixed**: False positive DKIM "MISSING" alerts caused by large DNSSEC responses (900+ bytes) and UDP packet fragmentation — added automatic DNS-over-HTTPS (DoH) fallback via Google and Cloudflare endpoints for TXT lookups across DKIM, DMARC, SPF, and MTA-STS.
 * **Improved**: Chunked TXT record reconstruction — properly concatenates 255-byte split entries for 2048-bit RSA DKIM keys.

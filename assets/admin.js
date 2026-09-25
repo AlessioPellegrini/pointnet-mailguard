@@ -1231,4 +1231,120 @@ jQuery(document).ready(function($) {
             }
         });
     });
+
+    // -------------------------------------------------------------------------
+    // Report Export Handlers (JSON Download)
+    // -------------------------------------------------------------------------
+    function downloadJsonFile(jsonData, defaultFilename) {
+        var str = typeof jsonData === 'string' ? jsonData : JSON.stringify(jsonData, null, 2);
+        var blob = new Blob([str], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = defaultFilename || 'report.json';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 200);
+    }
+
+    // Bulk DMARC export
+    $(document).on('click', '.pn-export-dmarc-all-btn', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var originalText = $btn.text();
+        $btn.prop('disabled', true).text('⏳ ' + (pnMailguard.exporting || 'Exporting...'));
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_export_dmarc_reports',
+            nonce: pnMailguard.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).text(originalText);
+            if (res.success && res.data) {
+                var domain = res.data.domain || 'domain';
+                var dateStr = new Date().toISOString().slice(0, 10);
+                downloadJsonFile(res.data, 'dmarc-reports-' + domain + '-' + dateStr + '.json');
+            } else {
+                alert(res.data && res.data.message ? res.data.message : 'Export failed');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).text(originalText);
+            alert('Export request failed.');
+        });
+    });
+
+    // Single DMARC report export
+    $(document).on('click', '.pn-export-dmarc-single-btn', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var reportId = $btn.data('id');
+        var org = ($btn.data('org') || 'dmarc').toString().toLowerCase().replace(/[^a-z0-9]/g, '-');
+        $btn.prop('disabled', true);
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_export_dmarc_reports',
+            nonce: pnMailguard.nonce,
+            id: reportId
+        }, function(res) {
+            $btn.prop('disabled', false);
+            if (res.success && res.data) {
+                var filename = 'dmarc-report-' + org + '-' + reportId + '.json';
+                downloadJsonFile(res.data, filename);
+            } else {
+                alert(res.data && res.data.message ? res.data.message : 'Export failed');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false);
+            alert('Export request failed.');
+        });
+    });
+
+    // Bulk TLSRPT export
+    $(document).on('click', '.pn-export-tls-all-btn', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var originalText = $btn.text();
+        $btn.prop('disabled', true).text('⏳ ' + (pnMailguard.exporting || 'Exporting...'));
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_export_tls_reports',
+            nonce: pnMailguard.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).text(originalText);
+            if (res.success && res.data) {
+                var domain = res.data.domain || 'domain';
+                var dateStr = new Date().toISOString().slice(0, 10);
+                downloadJsonFile(res.data, 'tlsrpt-reports-' + domain + '-' + dateStr + '.json');
+            } else {
+                alert(res.data && res.data.message ? res.data.message : 'Export failed');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).text(originalText);
+            alert('Export request failed.');
+        });
+    });
+
+    // Single TLSRPT report export
+    $(document).on('click', '.pn-export-tls-single-btn', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var reportId = $btn.data('id');
+        var org = ($btn.data('org') || 'tls').toString().toLowerCase().replace(/[^a-z0-9]/g, '-');
+        $btn.prop('disabled', true);
+        $.post(ajaxurl, {
+            action: 'pn_mailguard_export_tls_reports',
+            nonce: pnMailguard.nonce,
+            id: reportId
+        }, function(res) {
+            $btn.prop('disabled', false);
+            if (res.success && res.data) {
+                var filename = 'tlsrpt-report-' + org + '-' + reportId + '.json';
+                downloadJsonFile(res.data, filename);
+            } else {
+                alert(res.data && res.data.message ? res.data.message : 'Export failed');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false);
+            alert('Export request failed.');
+        });
+    });
 });

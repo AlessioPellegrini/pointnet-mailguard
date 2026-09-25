@@ -56,6 +56,8 @@ class PN_Mailguard_Loader {
         add_action('wp_ajax_pn_mailguard_upload_dmarc_report', ['PN_Mailguard_Dashboard', 'ajax_upload_dmarc_report']);
         add_action('wp_ajax_pn_mailguard_delete_dmarc_report', ['PN_Mailguard_Dashboard', 'ajax_delete_dmarc_report']);
         add_action('wp_ajax_pn_mailguard_delete_tls_report',   ['PN_Mailguard_Dashboard', 'ajax_delete_tls_report']);
+        add_action('wp_ajax_pn_mailguard_export_dmarc_reports',['PN_Mailguard_Dashboard', 'ajax_export_dmarc_reports']);
+        add_action('wp_ajax_pn_mailguard_export_tls_reports',  ['PN_Mailguard_Dashboard', 'ajax_export_tls_reports']);
         add_action('wp_ajax_pn_mailguard_test_imap',           ['PN_Mailguard_Dashboard', 'ajax_test_imap']);
         add_action('wp_ajax_pn_mailguard_fetch_imap_now',      ['PN_Mailguard_Dashboard', 'ajax_fetch_imap_now']);
         add_action('wp_ajax_pn_mailguard_reset_dmarc_data',    ['PN_Mailguard_Dashboard', 'ajax_reset_dmarc_data']);
@@ -168,6 +170,7 @@ class PN_Mailguard_Loader {
             'uploadFailedGeneric' => __('Upload failed', 'pointnet-mailguard'),
             'deleteFailed'        => __('Delete failed', 'pointnet-mailguard'),
             'confirmDeleteReport' => __('Are you sure you want to delete this report?', 'pointnet-mailguard'),
+            'exporting'           => __('Exporting...', 'pointnet-mailguard'),
             'analysisFailed'     => __('Analysis failed.', 'pointnet-mailguard'),
             'passed'             => __('passed', 'pointnet-mailguard'),
             'warnings'           => __('warnings', 'pointnet-mailguard'),
