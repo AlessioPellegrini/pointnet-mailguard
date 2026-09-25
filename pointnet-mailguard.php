@@ -12,6 +12,7 @@
  * Requires PHP: 8.3
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Update URI: https://github.com/AlessioPellegrini/pointnet-mailguard
  */
 
 if (!defined('ABSPATH')) exit;
@@ -28,6 +29,7 @@ if (version_compare(PHP_VERSION, '8.3', '<')) {
 
 // --- Constants ---
 define('PN_MAILGUARD_VERSION',    '1.9.6');
+define('PN_MAILGUARD_IS_WPORG',    false); // Set to true if published on WordPress.org
 define('PN_MAILGUARD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('PN_MAILGUARD_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('PN_MAILGUARD_PLUGIN_FILE', __FILE__);
@@ -55,6 +57,12 @@ if (is_admin() || wp_doing_cron() || (defined('WP_CLI') && WP_CLI)) {
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-whois.php';
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-dashboard.php';
     require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-loader.php';
+
+    // GitHub Release Updater (if class exists and not on WordPress.org)
+    if (file_exists(PN_MAILGUARD_PLUGIN_DIR . 'includes/class-updater.php') && (!defined('PN_MAILGUARD_IS_WPORG') || !PN_MAILGUARD_IS_WPORG)) {
+        require_once PN_MAILGUARD_PLUGIN_DIR . 'includes/class-updater.php';
+        PN_Mailguard_Updater::init();
+    }
 
     // --- Boot ---
     PN_Mailguard_Loader::init();
