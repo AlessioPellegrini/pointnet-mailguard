@@ -203,11 +203,12 @@ class PN_Mailguard_Updater {
             return $source;
         }
 
-        if ($wp_filesystem && $wp_filesystem->move($source, $target)) {
-            return trailingslashit($target);
+        if (!$wp_filesystem) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            WP_Filesystem();
         }
 
-        if (@rename($source, $target)) {
+        if ($wp_filesystem && $wp_filesystem->move($source, $target)) {
             return trailingslashit($target);
         }
 

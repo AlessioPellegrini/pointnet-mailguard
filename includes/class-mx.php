@@ -220,7 +220,7 @@ class PN_Mailguard_MX {
         }
 
         // 2. Send EHLO
-        fwrite($socket, "EHLO mailguard.test\r\n");
+        stream_socket_sendto($socket, "EHLO mailguard.test\r\n");
         $ehlo_response = '';
         while (!feof($socket)) {
             $line = fgets($socket, 1024);
@@ -237,7 +237,7 @@ class PN_Mailguard_MX {
             $res['starttls_supported'] = true;
 
             // Send STARTTLS command
-            fwrite($socket, "STARTTLS\r\n");
+            stream_socket_sendto($socket, "STARTTLS\r\n");
             $starttls_resp = fgets($socket, 1024);
 
             if ($starttls_resp && str_starts_with(trim($starttls_resp), '220')) {
@@ -307,9 +307,10 @@ class PN_Mailguard_MX {
             }
         }
 
-        // Send QUIT and close
-        @fwrite($socket, "QUIT\r\n");
-        @fclose($socket);
+        // Send QUIT and close socket connection
+        @stream_socket_sendto($socket, "QUIT\r\n");
+        @stream_socket_shutdown($socket, STREAM_SHUT_RDWR);
+        unset($socket);
 
         return $res;
     }
