@@ -229,6 +229,7 @@ class PN_Mailguard_Mailer {
                 $tls_icon = !empty($tls['cert_valid']) ? '✅' : '⚠️';
                 $body .= '  - ' . $tls_icon . ' STARTTLS: ' . (!empty($tls['starttls_supported']) ? __('Supported', 'pointnet-mailguard') : __('Not supported', 'pointnet-mailguard')) . "\n";
                 if (!empty($tls['cert_valid_to'])) {
+                    /* translators: %d: number of days remaining until certificate expiration */
                     $exp_status = !empty($tls['is_expired']) ? __('EXPIRED', 'pointnet-mailguard') : sprintf(__('%d days remaining', 'pointnet-mailguard'), intval($tls['days_remaining'] ?? 0));
                     $body .= '  - ' . __('Certificate', 'pointnet-mailguard') . ': ' . sanitize_text_field($tls['cert_valid_to']) . ' (' . $exp_status . ")\n";
                 }

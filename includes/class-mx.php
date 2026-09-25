@@ -202,6 +202,7 @@ class PN_Mailguard_MX {
         $socket = @stream_socket_client("tcp://{$mx_host}:{$port}", $errno, $errstr, 4, STREAM_CLIENT_CONNECT, $context);
 
         if (!$socket) {
+            /* translators: 1: mail server host, 2: network port number */
             $res['error'] = !empty($errstr) ? $errstr : sprintf(__('Could not connect to %1$s on port %2$d (connection refused or port filtered).', 'pointnet-mailguard'), $mx_host, $port);
             return $res;
         }
