@@ -843,6 +843,9 @@ class PN_Mailguard_AI {
             if (!empty($scan['ptr'])) {
                 $context_parts[] = 'PTR: ' . $scan['ptr'] . ($scan['ptr_warning'] ? ' (WARNING)' : ' (OK)');
             }
+            if (isset($scan['fcrdns_valid'])) {
+                $context_parts[] = 'FCrDNS (Forward-Confirmed Reverse DNS): ' . ($scan['fcrdns_valid'] ? 'OK (circolare valido)' : 'MISMATCH (disallineato)') . (!empty($scan['fcrdns_msg']) ? ' — ' . $scan['fcrdns_msg'] : '');
+            }
             if (!empty($scan['dnsbl'])) {
                 foreach ($scan['dnsbl'] as $name => $val) {
                     $context_parts[] = "DNSBL {$name}: {$val}";
@@ -923,6 +926,35 @@ class PN_Mailguard_AI {
             if (!empty($data['tls_reports']) && !empty($data['tls_reports']['total_reports'])) {
                 $tr = $data['tls_reports'];
                 $context_parts[] = "TLSRPT Reports: {$tr['total_reports']} reports, {$tr['successful_sessions']} successful TLS sessions, {$tr['failed_sessions']} failed sessions ({$tr['overall_success_rate']}% success rate)";
+            }
+
+            $smtp_tls = $data['smtp_tls'] ?? ($scan['smtp_tls'] ?? null);
+            if (!empty($smtp_tls) && is_array($smtp_tls)) {
+                $tls_lines = [];
+                $tls_lines[] = 'Connessione Porta 25: ' . (!empty($smtp_tls['connected']) ? 'RIUSCITA' : 'FALLITA (' . ($smtp_tls['error'] ?? '') . ')');
+                if (!empty($smtp_tls['connected'])) {
+                    $tls_lines[] = 'STARTTLS: ' . (!empty($smtp_tls['starttls_supported']) ? 'Supportato' : 'Non supportato');
+                    if (!empty($smtp_tls['tls_active'])) {
+                        $tls_lines[] = 'Certificato SSL/TLS: ' . (!empty($smtp_tls['is_expired']) ? 'SCADUTO 🔴' : 'Valido ✅')
+                            . ' (scadenza: ' . ($smtp_tls['cert_valid_to'] ?? 'N/A') . ', ' . ($smtp_tls['days_remaining'] ?? 0) . ' giorni rimanenti)';
+                        $tls_lines[] = 'Emittente Certificato: ' . ($smtp_tls['cert_issuer'] ?? 'N/A');
+                        $tls_lines[] = 'CN: ' . ($smtp_tls['cert_subject'] ?? 'N/A');
+                        if (!empty($smtp_tls['san_list'])) {
+                            $tls_lines[] = 'SANs: ' . implode(', ', (array) $smtp_tls['san_list']);
+                        }
+                        $tls_lines[] = 'Corrispondenza Host MX: ' . (!empty($smtp_tls['host_matches_cert']) ? 'SÌ ✅' : 'NO ⚠️');
+                    }
+                }
+                $context_parts[] = 'SMTP TLS (Porta 25): ' . implode(' | ', $tls_lines);
+            }
+
+            $latest_ai = self::get_latest($domain);
+            if (!empty($latest_ai)) {
+                $ai_ctx = "Ultimo Report AI ({$latest_ai->created_at}): Punteggio {$latest_ai->score}/100, Severità: {$latest_ai->severity}";
+                if (!empty($latest_ai->summary_it)) {
+                    $ai_ctx .= " — Sintesi: {$latest_ai->summary_it}";
+                }
+                $context_parts[] = $ai_ctx;
             }
         }
 
