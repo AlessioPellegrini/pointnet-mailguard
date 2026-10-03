@@ -13,8 +13,11 @@ class PN_Mailguard_Mailer {
         $has_fcrdns_warn = isset($data['fcrdns_valid']) && !$data['fcrdns_valid'] && empty($data['ptr_warning']);
         $has_tls_error   = !empty($data['smtp_tls']['is_expired']);
         $has_tls_warn    = !empty($data['smtp_tls']) && (empty($data['smtp_tls']['connected']) || empty($data['smtp_tls']['cert_valid']) || !empty($data['smtp_tls']['is_expired']));
+        $transient_key   = 'pn_mailguard_pending_alert_' . md5($type . '_' . ($data['email'] ?? $data['ip'] ?? 'default'));
 
         if (empty($data['error']) && empty($data['is_alert']) && empty($data['ptr_warning']) && empty($data['spf_warning']) && empty($data['dmarc_warning']) && empty($data['dkim_warning']) && empty($data['mtasts_warning']) && empty($data['dnssec_warning']) && !$has_fcrdns_warn && !$has_tls_warn) {
+            // Scan is completely healthy: reset any pending strike
+            delete_transient($transient_key);
             return;
         }
 
@@ -23,6 +26,33 @@ class PN_Mailguard_Mailer {
         if ($level === 'none') {
             return;
         }
+
+        // Two-strike confirmation for transient DNS-related warnings/errors.
+        // Instant alerts are always sent for definite, non-transient critical failures:
+        // - Host listed on a DNSBL blacklist ($data['is_alert'])
+        // - TLS certificate explicitly expired ($has_tls_error)
+        // - Explicit scan exception ($data['error'])
+        $is_instant_critical = !empty($data['is_alert']) || !empty($data['error']) || $has_tls_error;
+
+        if (!$is_instant_critical) {
+            $transient_key = 'pn_mailguard_pending_alert_' . md5($type . '_' . ($data['email'] ?? $data['ip'] ?? 'default'));
+            $pending = get_transient($transient_key);
+
+            if (!$pending) {
+                // First strike: record the incident and hold the email alert.
+                // If the next scan confirms the failure within 48h, strike 2 will send the email.
+                set_transient($transient_key, 1, 48 * HOUR_IN_SECONDS);
+                return;
+            }
+
+            // Second strike confirmed: clear the transient and proceed to send the alert.
+            delete_transient($transient_key);
+        } else {
+            // If healthy or critically alerted, reset any pending strike
+            $transient_key = 'pn_mailguard_pending_alert_' . md5($type . '_' . ($data['email'] ?? $data['ip'] ?? 'default'));
+            delete_transient($transient_key);
+        }
+
         if ($level === 'errors') {
             // Only send for real errors/alert, not for warnings
             // "Real errors": scan failure, DNSBL listing, SPF missing, DKIM error/missing, DNSSEC error, and TLS certificate expired

@@ -113,11 +113,11 @@ class PN_Mailguard_DMARC {
             );
             $warnings++;
         } elseif ($policy === 'quarantine') {
-            $checks[] = self::result('policy', 'warning',
-                'Policy moderate: p=quarantine',
-                'p=quarantine sends failing emails to the spam folder. Good intermediate step — consider moving to p=reject for maximum protection once you have verified all legitimate senders pass DMARC.'
+            $checks[] = self::result('policy', 'ok',
+                'Policy active: p=quarantine',
+                'p=quarantine protects your domain by sending failing emails to the spam folder. Consider moving to p=reject for maximum protection once all legitimate senders are verified.'
             );
-            $warnings++;
+            $passed++;
         } elseif ($policy === 'reject') {
             $checks[] = self::result('policy', 'ok',
                 'Policy strict: p=reject',
